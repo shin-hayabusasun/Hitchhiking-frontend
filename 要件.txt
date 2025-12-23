@@ -1,0 +1,2769 @@
+ヒッチハイクマッチングシステム フロントエンド内部設計書
+
+1.0 システム概要
+
+1.1 はじめに
+
+本文書は、「ヒッチハイクマッチングシステム」のフロントエンド内部設計を定義するものである。本アプリケーションは、フロントエンドにNext.js、バックエンドにFastAPIを採用した技術スタックで構成される。本文書では、開発の根幹をなすモジュール設計とAPI設計を中心に詳述する。ここに記された設計は、開発チーム全体で技術的方針を統一し、高品質かつ保守性の高い実装を推進するための技術的指針であり、プロジェクトの成功に不可欠な戦略的文書として位置づけられる。
+
+1.2 プロジェクト基本情報
+
+* 文書名: ヒッチハイクマッチングシステム 内部設計書
+* バージョン: Ver.2
+* 作成者: ジー・フォー・ソリューションズ
+* 作成日: December 22, 2025
+* フロントエンド技術: Next.js
+* バックエンド技術: FastAPI
+* データベース: PostgreSQL
+
+2.0 開発・動作環境
+
+2.1 動作環境と開発体制
+
+本セクションでは、アプリケーションが稼働する本番環境のインフラ構成と、開発を遂行するためのチーム体制およびツールを定義する。これにより、技術的制約とワークフローの全体像を明確にする。
+
+2.1.1 動作環境
+
+本システムのインフラ構成は以下の通りである。
+
+* フロントエンド (Next.js): Vercel
+* バックエンド (FastAPI): AWS ECS
+* データベース: ポスグレ (PostgreSQL)
+
+2.1.2 開発環境
+
+開発チームの体制と使用ツールは以下の通りである。
+
+* 開発手法: 2人1組、3チームでのペアプログラミング
+* 共同編集ツール: VSCode LiveShare
+* バージョン管理: GitHub
+
+3.0 コーディング規約
+
+3.1 規約の目的
+
+本規約は、ジー・フォー・ソリューションズにおけるプログラム開発の品質、保守性、そして一貫性を確保するために策定された。明確なルールを共有することは、複数人での開発を円滑化し、長期的なメンテナンスコストを低減させるための基盤となる。
+
+3.2 全体規約
+
+開発全体を通して遵守すべき基本ルールを以下に示す。
+
+* コメント: 日本語で記述し、「% Start(担当者名)」とコードの内容説明で始め、コード本文を書き終わったら「% End」で終える。
+* インデント: Tabキーを使用する。
+* 一行の文字数: 最大79文字までを推奨し、可読性を損なわない範囲で改行する。
+* 関心の分離: 構造 (HTML)、プレゼンテーション (CSS)、動作 (TypeScript/JavaScript) を厳格に分離し、各層の独立性を担保する。
+* 命名規則: コードは大文字小文字を区別し、言語ごとの慣習（例: TypeScriptのCamelCase）に従い、プロジェクト全体で一貫性を保つ。
+
+3.3 言語別規約: フロントエンド
+
+これらの規約を遵守することで、クリーンで保守性の高いコードベースが保証される。続くセクションでは、これらの規約が適用される高レベルのアーキテクチャについて詳述する。
+
+3.3.1 TypeScript
+
+* ソースファイルと構成:
+  * export default は使用禁止とし、すべて名前付きエクスポート (export) で統一する。
+    * Rationale: インポート時の曖昧さを排除し、コードベース全体での検索性と自動リファクタリングの信頼性を向上させるため。
+  * namespace 構文および require は使用禁止とする。
+* 型安全性と型変換:
+  * 型強制は String(), Boolean() を使用し、単項プラス + や parseInt による不完全な変換は避ける。
+  * enum 型の値は、必ず比較演算子で明示的に比較する。
+* クラスと関数:
+  * 名前付き関数の定義には関数宣言 function を使用し、関数式は原則禁止とする。
+  * アロー関数で戻り値を使用しない場合は、ブロック本体 { } を使用する。
+* 制御構造と反復処理:
+  * 配列の反復処理には map() を使用し、古典的な for(;;) ループは使用しない。
+    * Rationale: イミュータブルなパターンを奨励し、変換ロジックと反復処理のメカニクスを明確に分離することで、コードの可読性を高めるため。
+  * if, for, while 等は常に波括弧 { } を用いる。
+
+3.3.2 HTML
+
+* 全般ルール:
+  * 文書エンコーディングは UTF-8（BOMなし）とする。
+  * インデントは半角スペース2個とする。
+* ドキュメント構造と構文:
+  * 文頭には必ず <!doctype html> を記述し、標準モードでレンダリングさせる。
+  * マルチメディア要素には必ず代替テキスト（alt 属性）を提供し、アクセシビリティを確保する。
+* 属性とフォーマット:
+  * 属性値の引用符には二重引用符 " を使用する。
+  * type 属性（例: text/css, text/javascript）は省略する。
+  * HTML内への直接的なスタイル記述（style 属性）は避ける。
+
+3.3.3 CSS
+
+* セレクターと命名:
+  * クラス名は簡潔かつ意味のある単語を用い、単語間はハイフン - で連結する。
+  * クラス名に要素名を付与する。
+* プロパティと値:
+  * font や padding など, 可能な限りショートハンドプロパティを使用する。
+  * 値が 0 の場合は単位を省略する（flex-basis 等、単位が必須な場合を除く）。
+  * 色指定は3文字の16進表記（例: #ebc）が可能な場合はそれを用い、小文字で統一する。
+* フォーマットと書式:
+  * すべての宣言はセミコロン ; で終わらせる。
+  * プロパティのコロン : の後には半角スペースを入れる。
+  * セレクターと宣言ブロックの開始括弧 { の間には半角スペースを1つ入れる。
+
+4.0 モジュールアーキテクチャ
+
+4.1 設計思想
+
+本アプリケーションのフロントエンドは、Next.jsの機能を最大限に活用したコンポーネント指向アーキテクチャを採用する。このアーキテクチャは、並列開発ワークフローの実現とコード重複の削減に不可欠であり、機能開発のスケジュール遵守能力に直接影響を与える。モジュールを page, component, overlay の3種類に明確に分類し、それぞれの責務を定義することで、見通しが良く、再利用性の高い設計を実現する。
+
+4.2 モジュール分類
+
+* page: アプリケーションの各画面を構成する最上位のモジュール。URLのルーティングと直接対応する。
+* component: page を構成する再利用可能なUIパーツ。ヘッダー、ボタン、カードなど、複数の画面で共通して使用される要素が含まれる。
+* overlay: アプリケーション上で最前面に表示される要素。ポップアップ、モーダルダイアログ、カレンダー入力などが該当する。
+
+4.3 モジュール一覧
+
+4.3.1 Page モジュール
+
+モジュール名 (ファイルパス)	概要
+ログイン・認証系	
+page/login/index.tsx	ログイン画面を表示するUI。ユーザー/管理者の認証を行う。
+page/login/Regist.tsx	新規登録画面のUI表示。OCR一致後にテーブルへ追加する。
+page/login/Complete.tsx	新規登録完了画面のUI表示。
+page/login/logout.tsx	ログアウト完了画面の表示。
+同乗者 (Hitchhiker) 系	
+page/hitch_hiker/Search.tsx	同乗者の募集画面を表示するUI。
+page/hitch_hiker/SearchFilter.tsx	同乗者募集検索のフィルタ画面。
+page/hitch_hiker/DriveDetail/[id].tsx	ドライブ詳細画面。詳細確認と申請が可能。
+page/hitch_hiker/passenger/CreateDrivePassenger.tsx	同乗者側募集作成画面。ルートや日時を設定する。
+page/hitch_hiker/passenger/EditDrivePassenger.tsx	同乗者側募集編集画面。既存募集の編集・削除を行う。
+pages/hitch_hiker/review/[driveId].tsx	ドライブ終了後のレビュー入力画面。
+運転者 (Driver) 系	
+pages/driver/drives/index.tsx	マイドライブ画面。作成したドライブ予定の一覧を表示・管理。
+pages/driver/drives/create.tsx	新規ドライブ作成画面。
+pages/driver/drives/edit/[driveId].tsx	ドライブ編集画面。
+pages/driver/requests/index.tsx	申請確認画面。同乗者からのリクエストを一覧表示し承認/拒否を行う。
+pages/driver/nearby/index.tsx	近くの募集表示画面。現在地周辺の同乗者リクエストを表示。
+pages/driver/search/index.tsx	募集検索画面。条件を指定して同乗者の募集を検索する。
+pages/driver/search/[requestId].tsx	同乗者側募集詳細画面。募集に応答する。
+pages/driver/manage/index.tsx	ドライブ管理画面（予定中、進行中、完了のタブ切り替え）。
+pages/driver/complete.tsx	ドライブ終了後の評価入力・完了報告画面。
+共通・その他機能	
+page/index.tsx	ホーム画面（Homepage）のUI表示。
+page/hitch_hiker/MyPage.tsx	マイページ画面。ユーザー情報を表示する。
+pages/mypage/index.tsx	プロフィール詳細や設定への導線を持つマイページ。
+pages/points/index.tsx	ポイントホーム画面（残高表示、履歴・交換への遷移）。
+pages/points/history.tsx	ポイント獲得・利用履歴の一覧表示画面。
+pages/points/exchange/index.tsx	ポイント交換画面（商品検索・交換手続き）。
+pages/points/orders/index.tsx	交換した商品の注文履歴確認画面。
+pages/inquiry/index.tsx	運営への問い合わせフォームおよびFAQ表示画面。
+pages/settings/index.tsx	設定ホーム画面（プロフィール、通知、決済などへの導線）。
+pages/settings/identity.tsx	本人確認画面（個人情報・セキュリティ設定）。
+pages/settings/notifications.tsx	通知設定画面（プッシュ通知等の受信設定）。
+pages/settings/payment.tsx	決済情報画面（クレカ登録・確認・削除）。
+管理者 (Admin) 系	
+pages/admin/dashboard.tsx	管理者ダッシュボード。重要指標表示および管理メニュー。
+pages/admin/users/index.tsx	顧客管理画面。検索、警告、削除を行う。
+pages/admin/products/products.tsx	商品情報管理画面。一覧閲覧、新規登録、編集・削除。
+pages/admin/products/stocks.tsx	在庫管理画面。在庫数確認と補充。
+pages/admin/orders/orders.tsx	注文管理画面。注文一覧確認とステータス管理。
+
+[Note: Source document lists page/admin/CustomerManagement.tsx as a page, but its function as a reusable card component places it more appropriately in the Component module list.]
+
+4.3.2 Component モジュール
+
+モジュール名 (ファイルパス)	概要
+ヘッダー・共通部品	
+components/hitch_hiker/Header.tsx	同乗者として利用する場合のヘッダーを表示する。
+components/hitch_hiker/Request.tsx	同乗者が募集をするための画面に推移するためのヘッダーUI。
+components/TitleHeader.tsx	タイトルと戻るボタンだけを変えて表示するヘッダー。
+components/driver/DriverHeader.tsx	運転者用ヘッダー（タイトル、通知、マイページアイコン）。
+components/driver/CreateDriveHeader.tsx	作成・編集画面用ヘッダー（戻るボタン、削除ボタン）。
+components/driver/DriveManagementHeader.tsx	自分が作成したドライブ予定を確認・編集・管理するUIのヘッダー。
+pages/hitch_hiker/MyRequest.tsx	マイリクエストヘッダー（戻るボタン機能など）。
+カード・リスト部品	
+components/hitch_hiker/cards/RecruitmentManagementCard.tsx	募集管理画面用のカード。同乗者が登録した募集を管理する。
+components/hitch_hiker/SearchCard.tsx	検索募集カードのUI。検索結果を表示する。
+components/driver/MyDriveCard.tsx	マイドライブカード。自分が作成したドライブ情報を表示。
+components/driver/RequestCheckCard.tsx	申請確認カード。リクエスト情報を表示し承認・拒否を行う。
+components/driver/drives/index.tsx	DriveManagementCard（原文ママ）。ドライブ情報の表示、バッジ表示など。
+components/cards/DriverRecruitmentCard.tsx	ドライバーの募集情報（ルート、日時、金額等）をカード形式で表示。
+components/cards/DriveManagementCard.tsx	ドライブのステータスに応じた情報表示とアクション提供。
+page/hitch_hiker/PassengerRequest.tsx	同乗者マイリクエストカード（申請中、承認済み、完了画面など）。
+page/item/MerchandiseSerch.tsx	商品検索カード表示画面。
+page/admin/CustomerManagement.tsx	顧客管理カード（警告・削除ボタン付き）。
+components/points/orders/index.tsx	OrderHistoryCard（クラス名）。注文した商品情報を表示。
+components/cards/ReviewInputCard.tsx	PointHistoryCard（クラス名）。ポイント取引履歴をリスト形式で表示するカード。
+
+4.3.3 Overlay モジュール
+
+モジュール名 (ファイルパス)	概要
+利用者系	
+components/hitch_hiker/calender.ts	カレンダーを入力するポップアップ（UIコンポーネント/オーバーレイ）。 [Note: Source lists extension as .ts, may be a typo for .tsx]
+管理者系	
+components/admin/ManageAccountOverlay.tsx	警告または削除確認画面を表示するオーバーレイ。
+components/admin/products/ProductFormOverlay.ts	商品登録/編集の情報入力画面、または在庫補充の数量入力画面を表示するオーバーレイ。 [Note: Source lists extension as .ts, may be a typo for .tsx]
+
+5.0 主要モジュール詳細設計
+
+5.1 はじめに
+
+本セクションでは、アプリケーションの主要機能を担う page モジュールについて、その仕様を詳細に解説する。各モジュールの責務範囲、処理フロー、関連コンポーネントを明確に定義することで、実装の具体的な指針を提供し、開発者間の認識齟齬を排除する。
+
+5.2 ログイン・認証系モジュール
+
+* page/login/index.tsx (ログイン画面)
+  * モジュール名: page/login/index.tsx
+  * 概要: ログイン画面を表示し、ユーザーまたは管理者の認証を行うUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. LoginPage関数が呼び出され、ログイン画面が表示される。
+    2. ユーザーは「新規登録」ボタンまたは「ログイン」ボタンを押下する。
+    3. 新規登録の場合: 新規登録画面 (/login/Regist) へ遷移する。
+    4. ログインの場合: 入力内容（メールアドレス形式、8文字以上のパスワード）がチェックされる。
+    5. バリデーションエラーがある場合、警告が表示される。
+    6. バリデーションを通過した場合、管理者ログインか一般ユーザーログインかを判定し、対応する認証APIが呼び出される。
+    7. 認証が失敗した場合、警告が表示される。
+    8. 認証が成功した場合、セッション情報を保存し、ホーム画面 (/) へ遷移する。
+* page/login/Regist.tsx (新規登録画面)
+  * モジュール名: page/login/Regist.tsx
+  * 概要: 新規ユーザー登録を行うためのUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. RegistPage関数が呼び出され、新規登録画面が表示される。
+    2. ユーザーは「戻る」ボタンまたは「登録する」ボタンを押下する。
+    3. 戻る場合: ログアウト画面へ遷移する。
+      * [Architect's Note: The flow from registration back to logout is counter-intuitive and may be an error in the source specification. Confirm this logic before implementation.]
+    4. 登録する場合: 入力内容（パスワード8文字以上、メールアドレス形式、運転免許証提出済みか）がチェックされる。
+    5. バリデーションエラーがある場合、警告が表示される。
+    6. バリデーションを通過した場合、登録情報をAPIへ送信する。
+    7. API処理後、登録完了画面 (/login/Complete) へ遷移する。
+* page/login/Complete.tsx (新規登録完了画面)
+  * モジュール名: page/login/Complete.tsx
+  * 概要: 新規登録が完了したことを示す画面のUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. CompletePage関数が呼び出され、登録完了画面が表示される。
+    2. ユーザーが「ログインボタン」を押下する。
+    3. ログアウト画面へ遷移する。
+      * [Architect's Note: The flow from registration completion to the logout screen is an unusual UX pattern. The intended flow should be confirmed, as a direct transition to the login page might be more appropriate.]
+* page/login/logout.tsx (ログアウト完了画面)
+  * モジュール名: page/login/logout.tsx
+  * 概要: ログアウトが完了したことを示す画面のUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. LogoutPage関数が呼び出され、ログアウト画面が表示される。
+    2. ユーザーが「ログイン画面へ」ボタンを押下する。
+    3. ログイン画面 (/login) へ遷移する。
+
+5.3 共通・コア機能モジュール
+
+* page/index.tsx (ホーム画面)
+  * モジュール名: page/index.tsx
+  * 概要: アプリケーションのホームページUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. HomePage関数が呼び出される。
+    2. セッションの有無を確認し、なければログイン画面へ遷移する。
+    3. セッションがあれば、ホーム画面が表示される。
+    4. ユーザーは各機能（ログアウト、設定、ポイント、同乗者、運転者、問い合わせ）のボタンを押下する。
+    5. ログアウト: ログアウトAPIを呼び出し、ログアウト画面へ遷移する。
+    6. その他: 対応する各機能の画面へ遷移する（設定ホーム、ポイントホーム、同乗者募集検索、マイドライブ、問い合わせ）。
+* page/hitch_hiker/MyPage.tsx (マイページ画面)
+  * モジュール名: page/hitch_hiker/MyPage.tsx
+  * 概要: ユーザーの情報を表示するマイページ画面。
+  * 担当者: 田所櫂人
+  * 処理フロー:
+    1. MyPage関数が呼び出される。
+    2. 初期化処理後、APIを呼び出してユーザー情報を取得する。
+    3. 取得した情報をもとにマイページ画面が表示される。
+    4. ユーザーは「戻る」「編集」「マイリクエスト」のいずれかのボタンを押下する。
+    5. 戻る: 募集検索画面へ遷移する。
+    6. 編集: Stateを更新し、編集画面へ遷移する。
+    7. マイリクエスト: Stateを更新し、マイリクエスト画面へ遷移する。
+* pages/settings/index.tsx (設定ホーム画面)
+  * モジュール名: pages/settings/index.tsx
+  * 概要: プロフィール設定、通知設定、ログアウトなどへの導線を提供する画面。
+  * 担当者: 五藤暖葵
+  * 処理フロー:
+    1. SettingPageクラスが呼び出される。
+    2. API通信でログイン中のユーザー情報を取得する。
+    3. 取得した情報をもとに設定画面が表示される。
+    4. ユーザーは「本人確認」「通知設定」「決済情報」「ログアウト」のいずれかを選択する。
+    5. 選択に応じて、各設定画面へ遷移するか、ログアウト処理を実行する。
+* pages/points/index.tsx (ポイントホーム画面)
+  * モジュール名: pages/points/index.tsx
+  * 概要: 現在の保有ポイント数を表示し、ポイント履歴画面や商品交換画面へのナビゲーションを提供する画面。
+  * 担当者: 黒星朋来
+  * 処理フロー:
+    1. ポイント画面が表示される。
+    2. APIを通じて残高データを取得する。
+    3. ポイント残高カードとメニューグリッドが表示される。
+    4. ユーザーは「履歴」ボタンまたは「商品検索」ボタンを選択する。
+    5. 履歴: ポイント履歴画面 (/points/history) へ遷移する。
+    6. 商品検索: ポイント交換画面 (/points/exchange) へ遷移する。
+* pages/inquiry/index.tsx (問い合わせ画面)
+  * モジュール名: pages/inquiry/index.tsx
+  * 概要: 運営への問い合わせフォームおよびFAQを表示する画面。
+  * 担当者: 五藤暖葵
+  * 処理フロー:
+    1. InquiryPageクラスが呼び出され、問い合わせ画面が表示される。
+    2. ユーザーが問い合わせ内容を入力する。
+    3. 送信ボタン押下時に入力内容のバリデーションを行う。不備があればエラーメッセージを表示する。
+    4. バリデーションを通過した場合、API通信で問い合わせ内容を送信する。
+    5. 問い合わせ完了メッセージを表示後、ホーム画面へ遷移する。
+
+5.4 同乗者（Hitchhiker）機能モジュール
+
+* page/hitch_hiker/Search.tsx (募集検索画面)
+  * モジュール名: page/hitch_hiker/Search.tsx
+  * 概要: 同乗者向けの募集検索画面を表示するUI。
+  * 担当者: 稗田隼也
+  * 処理フロー:
+    1. SearchPage関数が呼び出される。
+    2. _app.tsxからState情報をインポートし、APIを呼び出して募集情報を取得する。
+    3. 取得したデータを基に、関連コンポーネント（ヘッダー、検索カード等）をレンダリングし、検索結果一覧を表示する。
+    4. ユーザーは「募集管理へ」ボタンを押下するか、募集カードの「詳細を見る」ボタンを押下する。
+    5. 募集管理へ: 募集管理画面へ遷移する。
+    6. 詳細を見る: ドライブ詳細画面へ遷移する。
+* page/hitch_hiker/DriveDetail/[id].tsx (ドライブ詳細画面)
+  * モジュール名: page/hitch_hiker/DriveDetail/[id].tsx
+  * 概要: ドライブの詳細情報を確認し、申請することができる画面。
+  * 担当者: 田所櫂人
+  * 処理フロー:
+    1. DriveDetailPage関数が呼び出される。動的ルーティングのIDが変更される。
+    2. APIを呼び出して、該当IDのドライブ詳細情報を取得する。
+    3. 取得した情報をもとにドライブ詳細画面が表示される。
+    4. ユーザーは「メッセージ」ボタンまたは「申請する」ボタンを押下する。
+    5. メッセージ: チャットテーブルを新規作成または既存のものを利用するAPIを呼び出し、画面遷移する。
+    6. 申請する: 申請用APIを呼び出し、申請後の一覧ページへ遷移する。
+* page/hitch_hiker/passenger/CreateDrivePassenger.tsx (募集作成画面)
+  * モジュール名: page/hitch_hiker/passenger/CreateDrivePassenger.tsx
+  * 概要: 同乗者がルート、日時等の条件を設定して募集を作成する画面。
+  * 担当者: 田所櫂人
+  * 処理フロー:
+    1. CreateDrivePassengerPage関数が呼び出され、初期化される。
+    2. 同乗者側募集作成画面が表示される。
+    3. ユーザーは「戻る」ボタンを押下するか、募集内容を入力して「募集を作成」ボタンを押下する。
+    4. 戻る: 検索画面へ戻る。
+    5. 募集を作成: ルート情報、希望日時、詳細情報が入力されているかチェックされる。不備があれば警告が表示される。
+    6. バリデーションを通過した場合、APIを呼び出して募集を登録し、募集検索画面へ遷移する。
+* page/hitch_hiker/passenger/EditDrivePassenger.tsx (募集編集画面)
+  * モジュール名: page/hitch_hiker/passenger/EditDrivePassenger.tsx
+  * 概要: 既存の募集内容を編集または削除する画面。
+  * 担当者: 田所櫂人
+  * 処理フロー:
+    1. CreateDrivePassengerPage関数が呼び出され、初期化される。
+    2. 同乗者側募集作成（編集）画面が表示される。
+    3. ユーザーは「ゴミ箱マーク」「戻る」「変更を保存」のいずれかを押下する。
+    4. ゴミ箱マーク: 募集を削除し、募集検索画面へ遷移する。
+    5. 戻る: 検索画面へ戻る。
+    6. 変更を保存: 入力内容をチェックし、問題がなければAPI（PUT）を呼び出して情報を更新し、募集管理画面へ遷移する。
+* pages/hitch_hiker/review/[driveId].tsx (レビュー画面)
+  * モジュール名: pages/hitch_hiker/review/[driveId].tsx
+  * 概要: ドライブ終了後、運転者への評価とコメントを入力する画面。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. PassengerReviewPageが呼び出される。
+    2. URLパラメータのdriveIdを用いてAPIから対象ドライブ情報を取得し、Stateに格納する。
+    3. フォーム画面が表示され、ユーザーが評価・コメントを入力する。
+    4. 入力値がStateに更新される。
+    5. ユーザーが「送信」を選択すると、APIを通じてレビューが登録される。
+    6. 送信後、送信完了画面 (/passenger/history) へ遷移する。
+
+5.5 運転者（Driver）機能モジュール
+
+* pages/driver/drives/index.tsx (マイドライブ画面)
+  * モジュール名: pages/driver/drives/index.tsx
+  * 概要: 運転者として登録したドライブ予定の一覧を表示・管理する。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. DriverDrivesPageが呼び出される。
+    2. API (GET /driver/drives) を呼び出し、ドライブ一覧を取得してStateに格納する。
+    3. 取得したデータをMyDriveCardコンポーネントに渡し、一覧を描画する。
+    4. ユーザーは「ドライブを作成」「詳細を見る」「編集」またはヘッダーの各タブを選択する。
+    5. 選択に応じて、新規作成画面、詳細画面、編集画面、または各機能（申請、近くの募集、検索）の画面へ遷移する。
+* pages/driver/drives/create.tsx (新規ドライブ作成画面)
+  * モジュール名: pages/driver/drives/create.tsx
+  * 概要: ルートや条件を設定して募集を開始する新規ドライブ作成画面。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. CreateDrivePageが呼び出され、ドライブ作成画面が表示される。
+    2. ユーザーが出発地、目的地、日時などの登録内容を入力し、Stateが更新される。
+    3. ユーザーが保存を選択すると入力チェックが行われる。
+    4. バリデーションを通過した場合、API (POST /drives) を呼び出して新規登録を行う。
+    5. 成功すればマイドライブ画面 (/driver/drives) へ遷移する。
+* pages/driver/drives/edit/[driveId].tsx (ドライブ編集画面)
+  * モジュール名: pages/driver/drives/edit/[driveId].tsx
+  * 概要: 既存の募集内容を編集または削除する画面。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. EditDrivePageが呼び出され、編集画面が表示される。
+    2. API (GET /drives/:id) で既存データを取得し、フォームに初期セットする。
+    3. ユーザーは「削除」ボタンを押下するか、入力内容を変更して「保存」ボタンを押下する。
+    4. 削除: 確認後、API (DELETE /drives/:id) を呼び出し、完了後にマイドライブ画面へ遷移する。
+    5. 保存: 入力チェック後、API (PUT /drives/:id) を呼び出して情報を更新し、完了後にマイドライブ画面へ遷移する。
+* pages/driver/requests/index.tsx (申請確認画面)
+  * モジュール名: pages/driver/requests/index.tsx
+  * 概要: 同乗者からのリクエストを一覧表示し、承認/拒否を行う。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. DriverRequestsPageが呼び出される。
+    2. API (GET /driver/requests) で「承認待ち」の申請リストを取得し、Stateに格納する。
+    3. リストをRequestCheckCardに渡し、一覧を描画する。
+    4. ユーザーは各カードの「承認」または「拒否」ボタンを押下する。
+    5. 承認: 他の運転者が承認済みでないかチェック後、承認API (POST /requests/:id/approve) を実行し、リストから削除する。
+    6. 拒否: 拒否API (POST /requests/:id/reject) を実行し、リストから削除する。
+    7. 処理後、画面を再描画する。
+* pages/driver/nearby/index.tsx (近くの募集表示画面)
+  * モジュール名: pages/driver/nearby/index.tsx
+  * 概要: 現在地周辺の同乗者リクエストをリスト表示する。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. DriverNearbyPageが呼び出される。
+    2. ブラウザのGeolocation APIで現在地を取得する。
+    3. 取得した位置情報をクエリとしてAPI (GET /passenger-requests/nearby) に送信し、近隣の募集データを取得してStateに格納する。
+    4. リストをDriverRecruitmentCardで描画する。
+    5. ユーザーがカードを選択すると、詳細画面 (/driver/search/[requestId]) へ遷移する。
+* pages/driver/search/index.tsx (募集検索画面)
+  * モジュール名: pages/driver/search/index.tsx
+  * 概要: 条件を指定して同乗者の募集を検索する。
+  * 担当者: 小松暉
+  * 処理フロー:
+    1. DriverSearchPageが呼び出される。
+    2. ユーザーが「募集を検索」ボタンを押下すると、フィルタ画面 (/driver/searchFilter.tsx) へ遷移する。
+    3. フィルタ画面で条件を入力し、検索画面に戻る。
+    4. 検索条件に基づきAPI (GET /passenger-requests) で結果を取得し、Stateに格納する。
+    5. 結果リストをDriverRecruitmentCardで描画する。
+    6. ユーザーがカードを選択すると、詳細画面 (/driver/search/[requestId]) へ遷移する。
+* pages/driver/manage/index.tsx (ドライブ管理画面)
+  * モジュール名: pages/driver/manage/index.tsx
+  * 概要: 「予定中」「進行中」「完了」の各ステータスに応じてドライブを管理するタブベースのUI。
+  * 担当者: 黒星朋来
+  * 処理フロー:
+    * 「予定中」タブ:
+      1. APIで予定中のドライブデータを取得する。
+      2. 取得データをDriveDetailCardで一覧表示する。
+      3. ユーザーは「承認待ち確認」「編集」「キャンセル」のいずれかを選択する。
+      4. 承認待ち確認: 申請者リスト画面へ遷移する。
+      5. 編集: ドライブ編集画面 (/driver/edit/[driveId]) へ遷移する。
+      6. キャンセル: キャンセルAPIを呼び出し、実行後に画面を更新する。
+    * 「進行中」タブ:
+      1. APIで進行中のドライブデータを取得する。
+      2. 取得データをDriveManagementCard (status="active") で一覧表示する。
+      3. ユーザーは「チャットアイコン」または「完了する」ボタンを選択する。
+      4. チャットアイコン: チャット画面へ遷移する。
+      5. 完了する: 確認後、APIでステータスを更新し、完了報告画面 (/driver/complete) へ遷移する。
+    * 「完了」タブ:
+      1. APIで完了済みのドライブ履歴データを取得する。
+      2. 取得データをDriveManagementCard (status="completed") で一覧表示する。
+      3. 評価未済みのドライブには「評価」ボタンが表示される。
+      4. ユーザーが「評価」ボタンを押下すると、評価入力画面へ遷移する。
+
+5.6 管理者（Admin）機能モジュール
+
+* pages/admin/dashboard.tsx (管理者ホーム画面)
+  * モジュール名: pages/admin/dashboard.tsx
+  * 概要: 管理者向けの重要指標表示および各管理メニューへの導線画面。
+  * 担当者: 五藤暖葵
+  * 処理フロー:
+    1. AdminDashboardPageクラスが呼び出される。
+    2. API通信で管理者権限を確認し、統計データ（総顧客数、総注文数、総商品数、付与ポイント）を取得する。
+    3. 取得した数値をカード形式で表示し、各管理機能へのリンク一覧を表示する。
+    4. 管理者は「顧客管理」「商品情報管理」「在庫管理」「注文管理」「ログアウト」のいずれかを選択する。
+    5. 選択に応じて、各管理画面へ遷移するか、ログアウト処理を行う。
+* pages/admin/users/index.tsx (顧客管理画面)
+  * モジュール名: pages/admin/users/index.tsx
+  * 概要: 登録ユーザーの検索、ステータス確認、警告・削除を行う管理画面。
+  * 担当者: 五藤暖葵
+  * 処理フロー:
+    1. UserManagementPageクラスが呼び出される。
+    2. API通信で顧客データを取得し、統計情報（総数、確認済み、警告中）を計算して表示する。
+    3. 検索バーと顧客リスト（CustomerManagementコンポーネント）が表示される。
+    4. 管理者はリスト上の「警告」または「削除」を選択する。
+    5. 警告: 警告送信APIを呼び出し、「警告完了」を表示する。
+    6. 削除: 削除APIを呼び出し、「削除完了」を表示する。
+* pages/admin/products/products.tsx (商品情報管理画面)
+  * モジュール名: pages/admin/products/products.tsx
+  * 概要: 商品情報の一覧閲覧、新規登録、編集・削除を行う画面。
+  * 担当者: 小松 憲生
+  * 処理フロー:
+    1. ProductManagementPageが呼び出され、商品APIから商品一覧データを取得する。
+    2. 取得したデータをもとに、各コンポーネント（ヘッダー、統計、商品カード）がインポートされ、画面が表示される。
+    3. 管理者は「新規ボタン」「編集ボタン」「削除ボタン」のいずれかを押下する。
+    4. 新規/編集: ProductFormOverlayを呼び出し、入力フォームを表示する。
+    5. 削除: DeleteOverlayを呼び出し、確認ダイアログを表示する。
+* pages/admin/products/stocks.tsx (商品在庫管理画面)
+  * モジュール名: pages/admin/products/stocks.tsx
+  * 概要: 在庫数の確認と補充を行う画面。
+  * 担当者: 小松 憲生
+  * 処理フロー:
+    1. StockManagementPageが呼び出され、商品APIから在庫関連データを取得する。
+    2. 取得したデータをもとに、各コンポーネントがインポートされ、在庫管理画面が表示される。
+    3. 管理者は「在庫補充ボタン」を押下する。
+    4. ProductFormOverlayが呼び出され、補充数量の入力画面が表示される。
+* pages/admin/orders/orders.tsx (注文管理画面)
+  * モジュール名: pages/admin/orders/orders.tsx
+  * 概要: 顧客からの注文一覧を確認し、ステータス管理を行う画面。
+  * 担当者: 小松 憲生
+  * 処理フロー:
+    1. OrderManagementPageが呼び出され、注文データを取得する。
+    2. 取得したデータと状態管理ロジックを統括し、各子コンポーネント（ヘッダー、検索バー、タブ、注文カード）を呼び出す。
+    3. 管理者は検索バーやタブを操作して表示する注文を絞り込む。
+    4. フィルタリングされた注文リストがカード形式で表示される。
+
+6.0 API設計概要
+
+6.1 API連携の重要性
+
+本システムにおいて、フロントエンド（Next.js）とバックエンド（FastAPI）間のAPI連携は、アプリケーションの動的な機能を支える中枢神経系である。APIはデータの永続化、状態更新、そしてビジネスロジック実行の責務を担う。明確に定義されたAPIインターフェース（コントラクト）は、フロントエンドとバックエンドチームが独立して並行開発を進めることを可能にする。この分離は、開発プロセス全体のボトルネックを解消し、プロジェクトを効率化する上で極めて戦略的な価値を持つ。
+
+6.2 主要APIエンドポイント一覧
+
+フロントエンドが利用する主要なAPIエンドポイントを機能グループごとに以下に示す。これにより、各フロントエンドモジュールがどのバックエンド機能に依存するかを俯瞰できる。
+
+* ログイン系 (5.1): ユーザーおよび管理者の認証処理。
+* 同乗者用 (5.2): 運転者の募集情報を検索・取得。
+* ドライブ管理 (5.3 - 5.8): 運転者・同乗者のドライブ情報の登録、取得、更新、削除。
+* 申請管理 (5.9): 同乗者からの申請に対する承認・拒否処理。
+* 募集検索 (5.10): 近くの募集や条件を指定した募集の検索。
+* ポイント管理 (5.11): ポイント残高や履歴の取得、注文履歴の確認。
+* 問い合わせ (5.12): 運営への問い合わせ送信。
+* 設定 (5.13): ユーザー情報の取得・更新、本人確認、通知設定、決済情報管理。
+* 決済 (5.14): 決済処理。
+* 管理者 - 顧客管理 (5.15): 顧客情報の取得、統計確認、警告、削除。
+* 管理者 - 商品管理 (5.16): 商品情報の登録、取得、更新、削除。
+* 管理者 - 在庫管理 (5.17): 在庫情報の取得と補充。
+* 管理者 - 注文管理 (5.18): 注文情報の取得とステータス更新。
+\section{API設計}
+%start 稗田
+\subsection{ログイン系}
+\subsubsection{管理者orユーザーログイン}
+
+\begin{enumerate}
+\item リクエストヘッダーのメールアドレスとパスワードを取り出す.また,管理者ログインかユーザーログインかをパラメータから取り出して,正しい処理をする.
+\item user テーブルから,メールアドレスでselectして,リクエストヘッダーのパスワードをhash化した値とテーブル内の値が一致するか確認
+\item 認証結果が成功したら,セクションとレスポンスを返す.失敗したら,失敗したことを伝える.
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/user/login }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        mail & string & メールアドレス & body \\ \hline
+        password & string & パスワード & body\\ \hline
+        isuser & int & ユーザーか管理者か(1はユーザー,0は管理者)& body\\ \hline
+        credentials & 固定値include & セッション & body\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        ok & boolean & 認証成功か\\ \hline
+        isuser & int & ユーザーか管理者か(1はユーザー,0は管理者)\\ \hline
+        
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+
+
+\subsubsection{登録API}
+
+\begin{enumerate}
+\item リクエストヘッダーの情報を取り出す.
+\item user テーブルに入れる.またリクエストヘッダーのパスワードをhash化した値を用いる
+
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/user/regist }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        mail & string & メールアドレス & body \\ \hline
+        password & string & パスワード & body\\ \hline
+        name & array & 氏名を名字と名前でつなげる & body\\ \hline
+        sex & int & 1なら男0なら女 & body\\ \hline
+        barthday & array & [2004,06,30]のように & body\\ \hline
+        adress & array & 郵便情報をstring型でつなげる & body\\ \hline
+        identification & string & base64記法 & body\\ \hline
+        isdriver & int & 運転者としても登録するなら,1.しないなら0 & body\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        ok & boolean & 登録成功か\\ \hline
+        
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ログアウト}
+
+\begin{enumerate}
+\item セッションからuseridを取り出す
+\item ログアウト処理をして,セッションを消去する
+
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/user/logout }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credentials & 固定値include & セッション & body\\ \hline
+       
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        ok & boolean & ログアウト成功か\\ \hline
+        
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ログイン中か確認}
+
+\begin{enumerate}
+\item セッションが発行されいるものと一致するか確認する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/user/IsLogin }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credentials & 固定値include & セッション & body\\
+       
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        ok & boolean & ログインできているか\\ \hline
+        
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{同乗者用}
+\subsubsection{募集検索情報取得}
+
+\begin{enumerate}
+\item リクエストヘッダーの情報を取り出す.
+\item フィルタ情報をもとにsql文を作成.また,sqlには,userテーブルとプロフィールテーブルなどを連結,レコードごとのログインユーザーとのベクトルを計算して,マッチング度を項目に追加するという処理も書く.募集テーブルから募集中という表記のもので取り出す
+\item 取り出したレコードをオブジェクトの配列化する
+\item 
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/hitchhiker/boshukensaku }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        filter & object & フィルタするオブジェクトの内容 & body\\ \hline
+        credentials & 固定値include & セッション & body\\ \hline
+       
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        card & array(オブジェクトの配列) & 検索結果\\ \hline
+        
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+
+
+%end 稗田
+% start 田所櫂人
+
+\subsection{マイドライブ情報取得}
+
+\begin{enumerate}
+  \item リクエストヘッダーの \texttt{token} を検証し，
+        運転者の \texttt{ユーザーID} を特定する.
+  \item 「募集のテーブル」から，
+        特定したユーザーIDが作成したレコードを検索する.
+  \item クエリパラメータ \texttt{status} が指定されている場合，
+        \texttt{募集状況} カラムでフィルタリングを行う.
+  \item 取得した募集リストを
+        最新の出発時間順にソートして返却する.
+\end{enumerate}
+
+\vspace{5mm}
+\texttt{GET /api/driver/drives}
+
+\begin{table}[H]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    % 左側: Request
+    \textbf{Request}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        token  & string & 認証トークン & header \\ \hline
+        status & string & ステータスフィルタ & query \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.40\textwidth}
+    % 右側: Response
+    \textbf{Response}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ \hline\hline
+        drives & array & ドライブ情報のリスト \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+\end{table}
+
+
+\subsection{ドライブ新規登録}
+
+\begin{enumerate}
+  \item \texttt{token} より作成者IDを特定し，
+        入力データのバリデーション
+        （未来の日時か，運賃が正の数か等）を行う.
+  \item 「経路のテーブル (Table 5)」に
+        \texttt{出発地}，\texttt{目的地}，\texttt{時間} などの
+        位置情報・日時情報を保存し，
+        \texttt{経路ID} を発行する.
+  \item 「募集のテーブル (Table 4)」に
+        \texttt{募集ユーザーID}，
+        \texttt{経路ID}，
+        \texttt{運賃}，
+        \texttt{募集人数} を登録し，
+        \texttt{募集状況} を進行中に設定する.
+\end{enumerate}
+
+
+\vspace{5mm}
+\texttt{POST /api/drives}
+
+\begin{table}[H]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    \textbf{Request}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        token          & string & 認証トークン & header \\ \hline
+        departure      & string & 出発地 & body \\ \hline
+        destination    & string & 目的地 & body \\ \hline
+        departuretime  & string & 出発日時 & body \\ \hline
+        capacity       & number & 募集定員 & body \\ \hline
+        fee            & number & 料金 & body \\ \hline
+        message        & string & 補足メッセージ  & body \\ \hline
+        vehiclerules   & object & 車両ルール & body \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.40\textwidth}
+    \textbf{Response}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ \hline\hline
+        id      & number & 作成された募集ID \\ \hline
+        message & string & 完了メッセージ \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+\end{table}
+
+
+\subsection{ドライブ詳細取得 (編集用)}
+
+\begin{enumerate}
+  \item 指定された \texttt{id}（募集ID）をキーに，
+        「募集」および「経路」テーブルから
+        現在の登録内容を取得する.
+  \item \texttt{token} から取得した操作者IDが，
+        \texttt{募集ユーザーID} と一致するか
+        権限検証を行う.
+  \item 一致する場合，
+        フロントエンドの編集フォームに必要な
+        すべての項目値を返却する.
+\end{enumerate}
+
+
+\vspace{5mm}
+\texttt{GET /api/drives/{id}}
+
+\begin{table}[H]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    \textbf{Request}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        token & string & 認証トークン & header \\ \hline
+        id    & string & ドライブID & path \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.40\textwidth}
+    \textbf{Response}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ \hline\hline
+        drive & object & ドライブ詳細情報 \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+\end{table}
+
+
+\subsection{ドライブ情報更新}
+
+\begin{enumerate}
+  \item 操作者の権限確認後，
+        「経路のテーブル」および
+        「募集のテーブル」の該当レコードを
+        リクエストデータで更新する.
+  \item \texttt{募集状況} が
+        進行中以外のレコードは
+        原則更新不可とする.
+  \item 更新成功後，
+        完了メッセージを返却する.
+\end{enumerate}
+
+\vspace{5mm}
+\texttt{PUT /api/drives/{id}}
+
+\begin{table}[H]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    \textbf{Request}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        token         & string & 認証トークン & header \\ \hline
+        id            & string & ドライブID & path \\ \hline
+        departure     & string & 出発地 & body \\ \hline
+        destination   & string & 目的地 & body \\ \hline
+        departuretime & string & 出発日時 & body \\ \hline
+        capacity      & number & 募集定員 & body \\ \hline
+        fee           & number & 料金 & body \\ \hline
+        message       & string & 補足メッセージ & body \\ \hline
+        vehiclerules  & object & 車両ルール & body \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.40\textwidth}
+    \textbf{Response (200 OK)}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ \hline\hline
+        message & string & 完了メッセージ \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+\end{table}
+
+
+\subsection{ドライブ削除}
+
+\begin{enumerate}
+  \item \texttt{token} を検証し，
+        作成者本人であることを確認する.
+  \item 対象の募集に紐づく
+        「申請取引」を確認し，
+        既に成立済みの取引がある場合は
+        削除を制限するか，
+        キャンセル処理を別途行う.
+  \item 問題がなければ,
+        「募集のテーブル」から
+        該当レコードを削除する.
+\end{enumerate}
+
+\vspace{5mm}
+\texttt{DELETE /api/drives/{id}}
+
+\begin{table}[H]
+  \centering
+  \begin{minipage}[t]{0.55\textwidth}
+    \textbf{Request}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        token & string & 認証トークン & Header \\ \hline
+        id    & string & ドライブID & Path \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.40\textwidth}
+    \textbf{Response}
+    \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ \hline\hline
+        message & string & 完了メッセージ \\ \hline
+      \end{tabular}
+    }
+  \end{minipage}
+\end{table}
+
+% end 田所櫂人
+
+%start稗田
+
+%end稗田
+
+%startひかる
+\subsection{ドライブ作成・編集・管理}
+\subsubsection{マイドライブ情報取得}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,運転者のユーザーIDを特定する 
+\item drives テーブルから,特定したユーザーIDが作成したドライブ情報を検索する
+\item クエリパラメータ status に応じてフィルタリングを行う（recruiting: 募集中, matched: 確定済み, completed: 完了）
+\item 日時順（未来の日付が上）にソートして返却する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/driver/drives }
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        status& string& ステータス& query\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        drives& array & ドライブ情報のリスト\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ドライブ新規登録}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,作成者となるユーザーIDを特定する 
+\item 入力データのバリデーションを行う（過去日時の禁止,定員の数値チェック等）
+\item recruitmentsテーブルに新規レコードを作成し,作成者IDに特定したユーザーIDを設定する.ステータスは recruiting とする
+\item recruitmentsテーブルに車両ルール（禁煙,ペット可否等）を保存する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/drives}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        departure& string& 出発地& body\\ \hline
+        destination& string& 目的地&body\\ \hline
+        departuretime& string& 出発日時&body\\ \hline
+        capacity& number& 募集定員&body\\ \hline
+        fee& number& 料金&body\\
+        message& string& 補足メッセージ& body\\ \hline
+        vehiclerules& object& 車両ルール& body\\
+        
+        
+        \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        id& number & 作成された募集ID\\ \hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ドライブ詳細取得 (編集用)}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,アクセスユーザーのIDを特定する 
+\item 指定されたidのドライブ情報を取得する
+\item ドライブの作成者IDとアクセスユーザーIDが一致するか確認する（編集権限チェック）
+\item 一致した場合,編集用データを返却する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/drives/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string& ドライブID & path\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        drive & object & ドライブ詳細情報\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ドライブ情報更新}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,アクセスユーザーのIDを特定する 
+\item 作成者本人確認を行う
+\item データを更新し,重要項目の変更があれば同乗者へ通知キューを作成する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{PUT /api/drives/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & ドライブID & path\\ \hline
+        departure & string & 出発地 & body \\ \hline
+        destination& string& 目的地&body\\ \hline
+        departuretime& string& 出発日時&body\\ \hline
+        capacity& number& 募集定員&body\\ \hline
+        fee& number& 料金&body\\
+        message& string& 補足メッセージ& body\\ \hline
+        vehiclerules& object& 車両ルール& body\\
+        
+        
+        \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{ドライブ削除}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,アクセスユーザーのIDを特定する 
+\item 作成者本人確認を行う
+\item 確定済みの同乗者がいないか確認し,問題なければ論理削除する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{DELETE /api/drives/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & ドライブID & path\\  \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{申請管理}
+\subsubsection{申請一覧取得}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,運転者のユーザーIDを特定する 
+\item drives テーブルからこのユーザーが作成したドライブIDリストを取得する
+\item 取得したドライブに対する申請のうち,ステータスが pending のものを抽出する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/driver/requests}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        status & string & "pending" & query\\  \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        requests & array & 申請情報のリスト\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{申請承認}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,実行者が正当な募集者か確認する
+\item 申請ステータスを approved に更新する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/applications/:id/approve}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & 申請ID & path\\  \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{申請拒否}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,実行者が正当な募集者か確認する
+\item 申請ステータスを rejected に更新する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/applications/:id/reject}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & 申請ID & path\\  \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{近くの募集・検索}
+\subsubsection{近くの募集検索}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証する
+\item クエリの lat, lng (GPS座標) を受け取る
+\item PostGIS等を使用し,指定座標から半径 radius km以内を出発地とするリクエストを検索する
+\item 各リクエストについて運転者とのマッチング度を計算し,距離が近い順にソートして返却する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/passenger-requests/nearby}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        lat & number & 緯度 & query\\ \hline
+        lng & number & 経度 & query \\ \hline
+        radius & number & 半径 & query\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        requests & array & 募集リスト\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{同乗者リクエスト条件検索}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証する
+\item 指定された条件（エリア,日時,予算）に一致するリクエストを検索する
+\item 各リクエストについて運転者とのマッチング度を計算し,マッチング度順にソートして返却する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/passenger-requests}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        from & string & 出発地エリア & query\\ \hline
+        to & string & 目的地エリア & query \\ \hline
+        data & string & 希望日 & query\\ \hline
+        minbudget & number & 予算下限& query\\ \hline
+        maxbudget & number & 予算上限& query\\\hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        requests & array & 募集リスト\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{リクエスト詳細取得}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証する
+\item 指定されたリクエストIDの詳細情報を取得する
+\item 同乗者の詳細プロフィールを結合し,マッチング情報を付与する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/passenger-requests/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & リクエストID & path\\ \\hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        requests & object & リクエスト詳細\\ \hline
+        passenger & object & 同乗者プロフィール\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{リクエストへの応答}
+\begin{enumerate}
+\item リクエストに含まれるセッションを検証し,運転者のIDを特定する
+\item 運転者から同乗者側募集への応答として applicationsテーブルにレコードを作成する
+\end{enumerate}
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/applications}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        targetid & number & 応答するリクエストID & body\\ \hline
+        type & string & "requests" & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & 完了メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+%endひかる
+
+%start黒星
+\subsection{ポイント管理}
+\subsubsection{履歴取得}
+ポイントの全履歴データを取得する. 
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/point/history}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        type & string & 履歴の種類でフィルタリングする場合に指定& query \\ \hline
+        limit& number& 1回のリクエストで取得する件数を指定& query\\ \hline
+        offset& number& 取得開始位置またはページ番号を指定& query\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        transactions& array & ポイント取引履歴リスト\\ \hline
+        id& string & 取引ID\\ \hline
+        type& string & 取引種別\\ \hline
+        amount& number & ポイント額\\ \hline
+        description& string & 取引内容\\ \hline
+        date& string & 取引日時\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{残高取得}
+現在のポイント残高と,その内訳を取得する. 
+\vspace{5mm} % 表との間隔調整
+\texttt{POST /api/point/remain}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        Authorization & string & ログインユーザーを特定するための認証トークン& header \\ \hline
+        
+        \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        totalBalance& number & 合計保有ポイント\\ 
+        breakdown & object & 内訳\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+%end黒星
+
+
+%beginごとう
+
+\subsubsection{注文履歴確認}
+\vspace{5mm} % 表との間隔調整
+\texttt{GET /api/points/orders}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 位置\\ \hline\hline
+        status & string & タブの状態& query \\
+        
+        
+        \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        orders & array & 注文リスト \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+
+\subsection{問い合わせ}
+\subsubsection{お問い合わせ送信}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う（未ログイン時は省略可）.リクエストボディに含まれるお問い合わせ内容（種類,メールアドレス,件名,本文）のバリデーションを行い,管理者に通知およびデータベースへ保存する.
+
+\vspace{5mm}
+
+\texttt{POST /api/inquiry}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        category & string & 問い合わせ種類 & body \\ \hline
+        email & string & メールアドレス & body \\ \hline
+        subject & string & 件名 & body \\ \hline
+        body & string & 本文 & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        %success & boolean & 送信成功フラグ \\ \hline
+        message & string & 完了メッセージ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{設定}
+
+\subsubsection{ユーザー情報取得}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.設定画面のヘッダー表示に必要な,ユーザーの基本情報（ID,氏名,メールアドレス,本人確認状態）を取得して返却する.
+
+\vspace{5mm}
+
+\texttt{GET /api/users/me}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+         credential& 固定値 include& セッション& header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        name & string & 氏名 \\ \hline
+        email& string& メールアドレス\\ \hline
+        isVerified & boolean & 本人確認済フラグ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{プロフィール更新}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.リクエストボディに含まれる個人情報（氏名,生年月日,住所,電話番号）の形式チェックを行い,データベースのユーザー情報を更新する.
+
+\vspace{5mm}
+
+\texttt{PUT /api/users/me/profile}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+         credential& 固定値 include& セッション& header \\ \hline
+        lastName & string & 姓 & body \\ \hline
+        firstName & string & 名 & body \\ \hline
+        birthDate & string & 生年月日 & body \\ \hline
+        email & string & メールアドレス & body \\ \hline
+        phone & string & 電話番号 & body \\ \hline
+        address & string & 住所 & body \\ \hline
+        password & string & パスワード変更の際 & body \\ \hline
+
+        
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        success & boolean & 更新成功フラグ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{本人確認書類アップロード}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.リクエストボディに含まれる画像データを受け取り,ストレージへ保存する.その後,管理者の確認待ちステータスへ更新する.
+
+\vspace{5mm}
+
+\texttt{POST /api/users/me/identity-document}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+         credential& 固定値 include& セッション& header \\ \hline
+        file & file & 書類画像データ & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        success & boolean & アップロード成功 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{通知設定更新}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.各通知項目（同乗申請,メッセージ,リマインダー）のオン・オフ設定を受け取り,データベースの設定情報を更新する.
+
+\vspace{5mm}
+
+\texttt{PUT /api/settings/notifications}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        rideRequest & boolean & 同乗申請通知 & body \\ \hline
+        message & boolean & メッセージ通知 & body \\ \hline
+        reminder & boolean & リマインダー & body \\ \hline
+        promotion & boolean & プロモーション & body \\ \hline
+
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message& string & メッセージ\\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{クレジットカード追加}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.決済代行会社から発行されたカードトークンを受け取り,顧客情報と紐付けて保存する.
+
+\vspace{5mm}
+
+\texttt{POST /api/payment/cards}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        payment\_token & string & 決済トークン & body \\ \hline
+        id & string & カードID & path \\ \hline
+        cardnumber & string & カード番号 & header\\ \hline
+        name & string & カード名義人 & header \\ \hline
+        date & string & 有効期限 & header \\ \hline
+        code & number & セキュリティコード & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        cardId & string & カードID \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{クレジットカード編集}
+ヘッダーに含まれるトークンを用いてユーザー認証を行う.パスパラメータで指定されたカードIDに対応する情報を編集する.
+
+\vspace{5mm}
+
+\texttt{PUT /api/payment/cards/\{id\}}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        id & string & カードID & path \\ \hline
+        cardnumber & string & カード番号 & header\\ \hline
+        name & string & カード名義人 & header \\ \hline
+        date & string & 有効期限 & header \\ \hline
+        code & number & セキュリティコード & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{決済}
+Cookieに含まれるセッション情報 を用いて同乗者（支払者）を特定する.指定されたドライブIDに対して,登録済みのデフォルトカードを用いて決済を実行する.二重決済防止のため,サーバー側で当該ドライブの決済ステータスを確認する.
+
+\vspace{5mm}
+
+\texttt{POST /api/payment/transactions}
+
+\begin{table}[H] \centering \begin{minipage}[t]{0.55\textwidth} \textbf{Request} \vspace{1mm}
+
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+    パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+    credential& 固定値 include& セッション& header \\ \hline
+    drive\_id & string & ドライブID & path\\ \hline
+    amount & integer & 決済金額(円) & body \\ \hline
+    \end{tabular}
+    }
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.40\textwidth}
+    \textbf{Response}
+    \vspace{1mm}
+    
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{|l|l|l|}
+    \hline
+    パラメータ & 型 & 説明 \\ 
+    \hline\hline
+    transactionId & string & 取引ID \\ \hline
+    status & string & 決済状態 \\ \hline
+    paidAt & string & 決済日時 \\ \hline
+    \end{tabular}
+    }
+\end{minipage}
+
+\end{table}
+
+\subsection{顧客管理}
+\subsubsection{管理者統計情報取得}
+ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.システム全体の総顧客数,総注文数,総商品数,発行ポイント総額などを集計して返却する.
+
+\vspace{5mm}
+
+\texttt{GET /api/admin/stats}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth}
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        credential& 固定値 include& セッション& header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.40\textwidth}
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        totalUsers & number & 総顧客数 \\ \hline
+        totalOrders & number & 総注文数 \\ \hline
+        totalProductsnumber & number & 総商品数\\ \hline
+        issuedPoints & number & 付与ポイント総額 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+
+%endごとう
+
+%beginのり
+
+\subsubsection{顧客一覧取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,クエリパラメータ（\texttt{limit}, \texttt{offset}, \texttt{search}, \texttt{sort}）を受け取り,顧客テーブルから条件に一致する顧客データを検索・取得する.取得した顧客情報のリスト（ID,氏名,メールアドレス,ステータス等）をレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+\texttt{GET admin/customers}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        limit & number & 取得数 & query \\ \hline
+        offset & number & 取得開始位置 & query \\ \hline
+        search & string & 検索キーワード & query \\ \hline
+        sort & string & ソート順 & query \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        customers & array & 顧客一覧 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{顧客統計情報取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,顧客テーブルを集計し,現在の総顧客数,本人確認が完了している顧客数,および警告ステータスにある顧客数を算出する.算出結果を顧客管理ダッシュボード用の統計情報としてレスポンスで返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/customers/stats}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        total\_count & number & 総顧客数 \\ \hline
+        verified\_count & number & 本人確認済み件数 \\ \hline
+        warned\_count & number & 警告済み件数 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{顧客警告送信}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された顧客ID（\texttt{id}）を持つユーザーをデータベースから検索し,警告回数の加算またはステータスの更新を行う.処理成功時,更新後の顧客データと完了メッセージを返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{POST admin/customers/:id/warn}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 顧客ID & path \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        customer & object & 更新された顧客情報 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{顧客アカウント削除}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された顧客ID（\texttt{id}）を持つユーザーをデータベースから検索し,アカウントの有効化フラグ（\texttt{is\_active}）を\texttt{false}に更新して無効化する（またはレコードを物理削除する）.処理完了後,結果メッセージを返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{DELETE admin/customers/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 顧客ID & path \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\newpage
+\subsection{商品管理}
+
+\subsubsection{商品一覧取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,クエリパラメータ（\texttt{limit}, \texttt{offset}, \texttt{keyword}, \texttt{sort}）に基づいて商品テーブル（\texttt{products}）から商品データを検索・取得する.取得した商品情報のリスト（ID,名称,カテゴリ,在庫数,警告閾値など）をレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/products}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        limit & number & 取得数 & query \\ \hline
+        offset & number & 取得開始位置 & query \\ \hline
+        keyword & string & 検索キーワード & query \\ \hline
+        sort & string & ソート順 & query \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        products & array[object] & 商品一覧 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{商品統計情報取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,商品テーブル（\texttt{products}）を集計し,登録されている商品種類数,販売中の商品種類数,および全商品の総在庫数を算出する.算出結果をダッシュボード表示用の統計情報としてレスポンスで返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/products/stats}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        product\_type\_count & number & 商品種類数 \\ \hline
+        sales\_product\_count & number & 販売商品種類数 \\ \hline
+        total\_stock & number & 総在庫数 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{商品情報登録}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,リクエストボディに含まれる商品情報（商品名,カテゴリID,ポイント,在庫数,説明,警告閾値,画像データ）のバリデーションを行い,データベースの商品テーブル（\texttt{products}）に新規レコードとして保存する.保存成功時,登録された商品情報と完了メッセージを返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{POST admin/products}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        name & string & 商品名 & body \\ \hline
+        category\_id & string & カテゴリID & body \\ \hline
+        points & number & ポイント & body \\ \hline
+        stock & number & 初期在庫数 & body \\ \hline
+        description & string & 商品説明 & body \\ \hline
+        alert\_threshold & number & 在庫警告閾値 & body \\ \hline
+        image & string & 商品画像データ & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        product & object & 登録された商品情報 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{商品情報更新}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された商品ID（\texttt{id}）を持つ商品の情報を,リクエストボディに含まれる内容（商品名,カテゴリID,ポイント,在庫数,説明,警告閾値,画像データ）で更新する.更新成功時,更新後の商品情報と完了メッセージを返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{PUT admin/products/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 商品ID & path \\ \hline
+        name & string & 商品名 & body \\ \hline
+        category\_id & string & カテゴリID & body \\ \hline
+        points & number & ポイント & body \\ \hline
+        stock & number & 在庫数 & body \\ \hline
+        description & string & 商品説明 & body \\ \hline
+        alert\_threshold & number & 在庫警告閾値 & body \\ \hline
+        image & string & 商品画像データ & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        product & object & 更新された商品情報 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{商品削除}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された商品ID（\texttt{id}）を持つ商品をデータベースから削除する（または削除フラグを立てて無効化する）.削除処理が完了した後,結果メッセージをレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{DELETE admin/products/:id}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 商品ID & path \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{在庫管理}
+\subsubsection{在庫統計情報取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,商品テーブル（\texttt{products}）を集計し,現在の総在庫数,在庫数が警告閾値を下回っている商品数（在庫警告数）,およびこれまでの総販売数を算出する.算出結果を在庫管理ダッシュボード用の統計情報としてレスポンスで返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/stocks/stats}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        total\_stock & number & 総在庫数 \\ \hline
+        warning\_count & number & 在庫警告数 \\ \hline
+        total\_sales & number & 総販売数 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{在庫補充}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された商品ID（\texttt{id}）を持つ商品をデータベースから特定し,リクエストボディで指定された補充数量（\texttt{amount}）を現在の在庫数に加算して更新する.更新処理が完了した後,完了メッセージと更新後の現在庫数をレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{POST admin/products/:id/replenish}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 商品ID & path \\ \hline
+        amount & number & 補充数量 & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        current\_stock & number & 更新後の現在庫数 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsection{注文管理}
+
+\subsubsection{注文一覧取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,クエリパラメータ（\texttt{limit}, \texttt{offset}, \texttt{status}, \texttt{search}, \texttt{sort}）に基づいて注文データを検索・取得する.取得した注文情報のリスト（注文番号,ステータス,顧客情報,商品情報,数量,合計金額など）をレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/orders}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        limit & number & 取得数 & query \\ \hline
+        offset & number & 取得開始位置 & query \\ \hline
+        status & string & ステータス（準備中/発送済み等） & query \\ \hline
+        search & string & 検索キーワード（注文番号等） & query \\ \hline
+        sort & string & ソート順 & query \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        orders & array[object] & 注文一覧 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{注文統計情報取得}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,注文テーブル（\texttt{orders}）を集計し,総注文数,出荷準備中の注文数,および発送済みの注文数を算出する.算出結果を注文管理ダッシュボード用の統計情報としてレスポンスで返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{GET admin/orders/stats}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        total\_orders & number & 総注文数 \\ \hline
+        ready\_count & number & 出荷準備中注文数 \\ \hline
+        shipped\_count & number & 発送済み注文数 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+\subsubsection{注文ステータス更新}
+%ヘッダーに含まれるトークンを用いて管理者権限の認証を行う.
+ヘッダーに含まれるセッションを用いて管理者権限の認証を行う.
+
+その後,パスパラメータで指定された注文ID（\texttt{id}）を持つ注文データを検索し,リクエストボディで指定された新しいステータス（\texttt{status}）に更新する.更新処理が完了した後,更新された注文情報と完了メッセージをレスポンスとして返却する.
+
+\vspace{5mm} % 表との間隔調整
+
+\texttt{PUT admin/orders/:id/status}
+
+\begin{table}[H]
+    \centering
+    \begin{minipage}[t]{0.55\textwidth} % 左側: Request (幅を少し広めに確保)
+        \textbf{Request}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 & 場所 \\ \hline\hline
+        %token & string & 管理者トークン & header \\ \hline
+        credentials & 固定値include & セッション & header \\ \hline
+        id & string & 注文ID & path \\ \hline
+        status & string & 新しいステータス & body \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+    \hfill % 左右の間隔を空ける
+    \begin{minipage}[t]{0.40\textwidth} % 右側: Response
+        \textbf{Response}
+        \vspace{1mm}
+        
+        \centering
+        \resizebox{\textwidth}{!}{% 表を領域幅に合わせて縮小
+        \begin{tabular}{|l|l|l|}
+        \hline
+        パラメータ & 型 & 説明 \\ 
+        \hline\hline
+        message & string & メッセージ \\ \hline
+        order & object & 更新された注文情報 \\ \hline
+        \end{tabular}
+        }
+    \end{minipage}
+\end{table}
+
+%endのり
