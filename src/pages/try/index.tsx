@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
-      <h1>noriki tesuto</h1>
+      <h1>noriki tesutokkk</h1>
       
     </main>
   );
