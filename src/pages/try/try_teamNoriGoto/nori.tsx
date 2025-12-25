@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: 24, fontFamily: "Inter, system-ui, sans-serif" }}>
-      <h1>憲生　brach作ってpushのテスト</h1>
+      <h1>憲生　branch作ってからpushのテスト</h1>
       
     </main>
   );
