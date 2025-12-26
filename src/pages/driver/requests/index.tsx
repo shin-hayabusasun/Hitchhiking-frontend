@@ -27,6 +27,50 @@ export function DriverRequestsPage() {
     { name: '近くの募集', path: '/driver/nearby' },
     { name: '募集検索', path: '/driver/search' },
   ];
+  const styles = {
+		container: {
+			maxWidth: '448px', // max-w-md と同じ幅
+			margin: '0 auto',  // mx-auto (中央寄せ)
+			padding: '1rem',   // px-4 pt-4 相当
+			width: '100%',
+		},
+		tabsList: {
+			display: 'grid',
+			gridTemplateColumns: 'repeat(4, 1fr)', // 4等分
+			gap: '4px',
+			backgroundColor: '#f3f4f6', // 薄いグレー背景
+			padding: '4px',
+			borderRadius: '8px',
+			marginBottom: '1rem',
+		},
+		buttonBase: {
+			position: 'relative' as const,
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			fontSize: '12px', // フォントサイズを明示
+			padding: '8px 4px',
+			borderRadius: '6px',
+			border: 'none',
+			cursor: 'pointer',
+			width: '100%',
+			fontWeight: 500,
+			textDecoration: 'none',
+			transition: 'all 0.2s',
+			lineHeight: '1.5', // 高さを確保
+		},
+		// アクティブ時のスタイル
+		active: {
+			backgroundColor: '#ffffff', // 白背景
+			color: '#000000',           // ★文字色を黒に固定
+			boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+		},
+		// 非アクティブ時のスタイル
+		inactive: {
+			backgroundColor: 'transparent',
+			color: '#6b7280',           // ★文字色をグレーに固定
+		},
+	};
 
 	const [requests, setRequests] = useState<Request[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -92,58 +136,29 @@ export function DriverRequestsPage() {
 		<div className="driver-requests-page">
 			<DriverHeader title="申請確認" />
 
-			<div className="driver-requests-container">
-				{/* <div className="driver-tabs">
-					<button
-						type="button"
-						className="tab-button"
-						onClick={() => {
-							handleTabClick('drives');
-						}}
-					>
-						マイドライブ
-					</button>
-					<button 
-						type="button" 
-						className="tab-button active">
-						申請確認
-					</button>
-					<button
-						type="button"
-						className="tab-button"
-						onClick={() => {
-							handleTabClick('nearby');
-						}}
-					>
-						近くの募集
-					</button>
-					<button
-						type="button"
-						className="tab-button"
-						onClick={() => {
-							handleTabClick('search');
-						}}
-					>
-						募集検索
-					</button>
-				</div> */}
-				<div className="driver-tabs">
-      				{tabs.map((tab) => {
-        			// 現在のURLとタブのパスが一致していたら active にする
-        			const isActive = currentPath === tab.path;
-        
-        			return (
-          			<button
-            			key={tab.path}
-            			type="button"
-            			className={`tab-button ${isActive ? 'active' : ''}`}
-            			onClick={() => router.push(tab.path)}
-          			>
-            		{tab.name}
-          			</button>
-        			);
-      				})}
-    			</div>
+			<div style={styles.container}>
+				<div style={styles.tabsList}>
+					{tabs.map((tab) => {
+						const isActive = currentPath === tab.path;
+
+						// スタイルを結合 (基本 + アクティブ/非アクティブ)
+						const currentButtonStyle = {
+							...styles.buttonBase,
+							...(isActive ? styles.active : styles.inactive)
+						};
+
+						return (
+							<button
+								key={tab.id}
+								type="button"
+								style={currentButtonStyle}
+								onClick={() => router.push(tab.path)}
+							>
+								{tab.name}
+							</button>
+						);
+					})}
+				</div>
 
 				{loading && (
 					<div className="loading-container">

@@ -20,13 +20,61 @@ export function DriverNearbyPage() {
 	const router = useRouter();
 	const currentPath = router.pathname; // 現在のURLを取得
 
-  // どのページがどのパスに対応するか定義
-  const tabs = [
-    { name: 'マイドライブ', path: '/driver/drives' },
-    { name: '申請確認', path: '/driver/requests' },
-    { name: '近くの募集', path: '/driver/nearby' },
-    { name: '募集検索', path: '/driver/search' },
-  ];
+	// どのページがどのパスに対応するか定義
+	const tabs = [
+		{ name: 'マイドライブ', path: '/driver/drives' },
+		{ name: '申請確認', path: '/driver/requests' },
+		{ name: '近くの募集', path: '/driver/nearby' },
+		{ name: '募集検索', path: '/driver/search' },
+	];
+
+	// スタイル定義（Tailwindなしで再現）
+	// スタイル定義（確実に文字が見えるように調整済み）
+	const styles = {
+		container: {
+			maxWidth: '448px', // max-w-md と同じ幅
+			margin: '0 auto',  // mx-auto (中央寄せ)
+			padding: '1rem',   // px-4 pt-4 相当
+			width: '100%',
+		},
+		tabsList: {
+			display: 'grid',
+			gridTemplateColumns: 'repeat(4, 1fr)', // 4等分
+			gap: '4px',
+			backgroundColor: '#f3f4f6', // 薄いグレー背景
+			padding: '4px',
+			borderRadius: '8px',
+			marginBottom: '1rem',
+		},
+		buttonBase: {
+			position: 'relative' as const,
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'center',
+			fontSize: '12px', // フォントサイズを明示
+			padding: '8px 4px',
+			borderRadius: '6px',
+			border: 'none',
+			cursor: 'pointer',
+			width: '100%',
+			fontWeight: 500,
+			textDecoration: 'none',
+			transition: 'all 0.2s',
+			lineHeight: '1.5', // 高さを確保
+		},
+		// アクティブ時のスタイル
+		active: {
+			backgroundColor: '#ffffff', // 白背景
+			color: '#000000',           // ★文字色を黒に固定
+			boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+		},
+		// 非アクティブ時のスタイル
+		inactive: {
+			backgroundColor: 'transparent',
+			color: '#6b7280',           // ★文字色をグレーに固定
+		},
+	};
+
 	const [requests, setRequests] = useState<PassengerRequest[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
@@ -101,24 +149,29 @@ export function DriverNearbyPage() {
 	return (
 		<div className="min-h-screen bg-gray-100">
 			<DriverHeader title="近くの募集" />
-			<main className="p-8">
-				<div className="driver-tabs">
-      				{tabs.map((tab) => {
-        			// 現在のURLとタブのパスが一致していたら active にする
-        			const isActive = currentPath === tab.path;
-        
-        			return (
-          			<button
-            			key={tab.path}
-            			type="button"
-            			className={`tab-button ${isActive ? 'active' : ''}`}
-            			onClick={() => router.push(tab.path)}
-          			>
-            		{tab.name}
-          			</button>
-        			);
-      				})}
-    			</div>
+			<div style={styles.container}>
+				<div style={styles.tabsList}>
+					{tabs.map((tab) => {
+						const isActive = currentPath === tab.path;
+
+						// スタイルを結合 (基本 + アクティブ/非アクティブ)
+						const currentButtonStyle = {
+							...styles.buttonBase,
+							...(isActive ? styles.active : styles.inactive)
+						};
+
+						return (
+							<button
+								key={tab.id}
+								type="button"
+								style={currentButtonStyle}
+								onClick={() => router.push(tab.path)}
+							>
+								{tab.name}
+							</button>
+						);
+					})}
+				</div>
 				<h2 className="text-2xl font-bold mb-6 text-center">近くの募集</h2>
 
 				{error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -156,7 +209,7 @@ export function DriverNearbyPage() {
 						))}
 					</div>
 				)}
-			</main>
+			</div>
 		</div>
 	);
 }
