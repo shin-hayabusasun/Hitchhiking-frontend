@@ -18,6 +18,15 @@ interface PassengerRequest {
 
 export function DriverSearchPage() {
 	const router = useRouter();
+	const currentPath = router.pathname; // 現在のURLを取得
+
+  // どのページがどのパスに対応するか定義
+  const tabs = [
+    { name: 'マイドライブ', path: '/driver/drives' },
+    { name: '申請確認', path: '/driver/requests' },
+    { name: '近くの募集', path: '/driver/nearby' },
+    { name: '募集検索', path: '/driver/search' },
+  ];
 	const [requests, setRequests] = useState<PassengerRequest[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -58,8 +67,26 @@ export function DriverSearchPage() {
 
 	return (
 		<div className="min-h-screen bg-gray-100">
-			<DriverHeader />
+			<DriverHeader title="募集検索" />
 			<main className="p-8">
+				<div className="driver-tabs">
+      				{tabs.map((tab) => {
+        			// 現在のURLとタブのパスが一致していたら active にする
+        			const isActive = currentPath === tab.path;
+        
+        			return (
+          			<button
+            			key={tab.path}
+            			type="button"
+            			className={`tab-button ${isActive ? 'active' : ''}`}
+            			onClick={() => router.push(tab.path)}
+          			>
+            		{tab.name}
+          			</button>
+        			);
+      				})}
+    			</div>
+				
 				<h2 className="text-2xl font-bold mb-6 text-center">募集を検索</h2>
 
 				<div className="bg-white p-6 rounded-lg shadow-md mb-6">

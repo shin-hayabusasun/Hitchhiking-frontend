@@ -17,9 +17,22 @@ interface Request {
 
 export function DriverRequestsPage() {
 	const router = useRouter();
+
+	const currentPath = router.pathname; // 現在のURLを取得
+
+  // どのページがどのパスに対応するか定義
+  const tabs = [
+    { name: 'マイドライブ', path: '/driver/drives' },
+    { name: '申請確認', path: '/driver/requests' },
+    { name: '近くの募集', path: '/driver/nearby' },
+    { name: '募集検索', path: '/driver/search' },
+  ];
+
 	const [requests, setRequests] = useState<Request[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
+	
+	
 
 	// 申請一覧取得
 	useEffect(() => {
@@ -65,22 +78,22 @@ export function DriverRequestsPage() {
 		}
 	}
 
-	function handleTabClick(tab: string) {
-		if (tab === 'drives') {
-			router.push('/driver/drives');
-		} else if (tab === 'nearby') {
-			router.push('/driver/nearby');
-		} else if (tab === 'search') {
-			router.push('/driver/search');
-		}
-	}
+	// function handleTabClick(tab: string) {
+	// 	if (tab === 'drives') {
+	// 		router.push('/driver/drives');
+	// 	} else if (tab === 'nearby') {
+	// 		router.push('/driver/nearby');
+	// 	} else if (tab === 'search') {
+	// 		router.push('/driver/search');
+	// 	}
+	// }
 
 	return (
 		<div className="driver-requests-page">
 			<DriverHeader title="申請確認" />
 
 			<div className="driver-requests-container">
-				<div className="driver-tabs">
+				{/* <div className="driver-tabs">
 					<button
 						type="button"
 						className="tab-button"
@@ -90,7 +103,9 @@ export function DriverRequestsPage() {
 					>
 						マイドライブ
 					</button>
-					<button type="button" className="tab-button active">
+					<button 
+						type="button" 
+						className="tab-button active">
 						申請確認
 					</button>
 					<button
@@ -111,7 +126,24 @@ export function DriverRequestsPage() {
 					>
 						募集検索
 					</button>
-				</div>
+				</div> */}
+				<div className="driver-tabs">
+      				{tabs.map((tab) => {
+        			// 現在のURLとタブのパスが一致していたら active にする
+        			const isActive = currentPath === tab.path;
+        
+        			return (
+          			<button
+            			key={tab.path}
+            			type="button"
+            			className={`tab-button ${isActive ? 'active' : ''}`}
+            			onClick={() => router.push(tab.path)}
+          			>
+            		{tab.name}
+          			</button>
+        			);
+      				})}
+    			</div>
 
 				{loading && (
 					<div className="loading-container">

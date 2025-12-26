@@ -18,6 +18,15 @@ interface PassengerRequest {
 
 export function DriverNearbyPage() {
 	const router = useRouter();
+	const currentPath = router.pathname; // 現在のURLを取得
+
+  // どのページがどのパスに対応するか定義
+  const tabs = [
+    { name: 'マイドライブ', path: '/driver/drives' },
+    { name: '申請確認', path: '/driver/requests' },
+    { name: '近くの募集', path: '/driver/nearby' },
+    { name: '募集検索', path: '/driver/search' },
+  ];
 	const [requests, setRequests] = useState<PassengerRequest[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
@@ -81,7 +90,7 @@ export function DriverNearbyPage() {
 	if (loading) {
 		return (
 			<div className="min-h-screen bg-gray-100">
-				<DriverHeader />
+				<DriverHeader title="近くの募集" />
 				<main className="p-8 text-center">
 					<p>位置情報を取得中...</p>
 				</main>
@@ -91,8 +100,25 @@ export function DriverNearbyPage() {
 
 	return (
 		<div className="min-h-screen bg-gray-100">
-			<DriverHeader />
+			<DriverHeader title="近くの募集" />
 			<main className="p-8">
+				<div className="driver-tabs">
+      				{tabs.map((tab) => {
+        			// 現在のURLとタブのパスが一致していたら active にする
+        			const isActive = currentPath === tab.path;
+        
+        			return (
+          			<button
+            			key={tab.path}
+            			type="button"
+            			className={`tab-button ${isActive ? 'active' : ''}`}
+            			onClick={() => router.push(tab.path)}
+          			>
+            		{tab.name}
+          			</button>
+        			);
+      				})}
+    			</div>
 				<h2 className="text-2xl font-bold mb-6 text-center">近くの募集</h2>
 
 				{error && <p className="text-red-500 text-center mb-4">{error}</p>}

@@ -78,72 +78,116 @@ interface DriverHeaderProps {
 
 // % End
 
+// 
+// % Start(AI Assistant)
+// 運転者用ヘッダー（標準CSS版）: 特別な設定なしでデザインを再現します
+
+
+
 export function DriverHeader({
-    title = 'マイドライブ', // デフォルトタイトルを合わせました
+    title = '運転者として利用',
     showNotification = true,
     showMyPage = true,
-    showBackButton = true,    // デフォルトで表示するように変更
+    showBackButton = true,
 }: DriverHeaderProps) {
     const router = useRouter();
 
-    // --- 各ボタンの動作 ---
-    
-    function handleBackClick() {
-        router.back(); // 前のページに戻る
-        // または router.push('/home'); など固定の場所に戻したい場合はこちら
-    }
+    // --- ボタンの動作 ---
+    const handleBackClick = () => router.back();
+    const handleNotificationClick = () => router.push('/notifications');
+    const handleMyPageClick = () => router.push('/mypage');
 
-    function handleNotificationClick() {
-        router.push('/notifications');
-    }
-
-    function handleMyPageClick() {
-        router.push('/mypage');
-    }
+    // --- スタイル定義（ここがデザインの正体です） ---
+    const styles = {
+        header: {
+            backgroundColor: 'white',
+            position: 'sticky' as const, // 上に固定
+            top: 0,
+            zIndex: 10,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)', // 薄い影
+            width: '100%',
+        },
+        container: {
+            maxWidth: '28rem', // max-w-md 相当
+            margin: '0 auto',  // 中央寄せ
+            padding: '0.75rem 1rem', // px-4 py-3 相当
+        },
+        flexRow: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+        },
+        leftGroup: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px', // gap-3
+        },
+        rightGroup: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px', // gap-2
+        },
+        title: {
+            color: '#16a34a', // text-green-600 相当
+            fontSize: '1.125rem',
+            fontWeight: 'bold',
+            margin: 0,
+        },
+        button: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '8px',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            borderRadius: '9999px', // 丸くする
+            color: '#4b5563', // text-gray-600
+            position: 'relative' as const,
+        },
+        badge: {
+            position: 'absolute' as const,
+            top: '4px',
+            right: '4px',
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#ef4444', // bg-red-500
+            borderRadius: '50%',
+        }
+    };
 
     return (
-        // 1. 全体の枠組み（白い帯・影付き・上部固定）
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-            <div className="max-w-md mx-auto px-4 py-3">
-                
-                {/* 左右を両端揃えにするコンテナ */}
-                <div className="flex items-center justify-between">
+        <header style={styles.header}>
+            <div style={styles.container}>
+                <div style={styles.flexRow}>
                     
-                    {/* --- 左側のグループ（戻るボタン + タイトル） --- */}
-                    <div className="flex items-center gap-3">
+                    {/* 左側（戻る + タイトル） */}
+                    <div style={styles.leftGroup}>
                         {showBackButton && (
                             <button
                                 type="button"
                                 onClick={handleBackClick}
-                                className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+                                style={styles.button}
                                 aria-label="戻る"
                             >
-                                {/* ArrowLeft アイコン */}
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="m12 19-7-7 7-7"/>
                                     <path d="M19 12H5"/>
                                 </svg>
                             </button>
                         )}
-                        
-                        {/* タイトル（緑色） */}
-                        <h1 className="text-green-600 font-bold text-lg">
-                            {title}
-                        </h1>
+                        <h1 style={styles.title}>{title}</h1>
                     </div>
 
-                    {/* --- 右側のグループ（マイページ + 通知） --- */}
-                    <div className="flex items-center gap-2">
-                        
-                        {/* マイページボタン */}
+                    {/* 右側（マイページ + 通知） */}
+                    <div style={styles.rightGroup}>
                         {showMyPage && (
                             <button
                                 type="button"
                                 onClick={handleMyPageClick}
-                                className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+                                style={styles.button}
                                 aria-label="マイページ"
                             >
-                                {/* User アイコン */}
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                                     <circle cx="12" cy="7" r="4"/>
@@ -151,22 +195,18 @@ export function DriverHeader({
                             </button>
                         )}
 
-                        {/* 通知ボタン */}
                         {showNotification && (
                             <button
                                 type="button"
                                 onClick={handleNotificationClick}
-                                className="relative p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+                                style={styles.button}
                                 aria-label="通知"
                             >
-                                {/* Bell アイコン */}
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
                                     <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
                                 </svg>
-                                
-                                {/* 赤い未読バッジ（絶対配置で右上に置く） */}
-                                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                                <span style={styles.badge} />
                             </button>
                         )}
                     </div>
@@ -176,3 +216,4 @@ export function DriverHeader({
         </header>
     );
 }
+// % End

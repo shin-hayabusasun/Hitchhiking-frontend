@@ -59,6 +59,8 @@ export function DriverDrivesPage() {
 		router.push('/driver/search');
 	}
 
+	
+
 	async function handleDelete(id: string) {
 		if (!confirm('本当に削除しますか？')) {
 			return;
