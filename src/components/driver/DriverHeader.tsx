@@ -95,7 +95,7 @@ export function DriverHeader({
     // --- ボタンの動作 ---
     const handleBackClick = () => router.back();
     const handleNotificationClick = () => router.push('/notifications');
-    const handleMyPageClick = () => router.push('/mypage');
+    const handleMyPageClick = () => router.push('/driver/mypage');
 
     // --- スタイル定義（ここがデザインの正体です） ---
     const styles = {
