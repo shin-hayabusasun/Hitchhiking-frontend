@@ -1,97 +1,171 @@
 // % Start(田所櫂人)
-// 外部設計書 4.3.5 マイページ画面のUI再現
 
+
+// マイページ画面: 外部設計書 4.3.5 に基づくUI刷新とセッション管理の統合
+
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 
-export default function MyPage() {
+interface UserProfile {
+    name: string;
+    avatarLabel: string; // 名前の一文字目など
+    isVerified: boolean;
+    useCount: number;
+    rating: number;
+    registrationDate: string;
+    bio: string;
+    hobby: string;
+    purpose: string;
+}
+
+export const MyPage: React.FC = () => {
     const router = useRouter();
+    const [user, setUser] = useState<UserProfile | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const fetchProfile = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/api/user/profile', {
+                method: 'GET',
+                credentials: 'include',
+            });
+
+            if (response.status === 401) {
+                router.push('/login?callback=/mypage');
+                return;
+            }
+
+            const data = await response.json();
+            // 設計書のイメージに合わせたデータ構造に変換
+            setUser(data.data || data);
+        } catch (err) {
+            console.error('Failed to load profile');
+        } finally {
+            setLoading(false);
+        }
+    }, [router]);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
+
+    if (loading) return null;
 
     return (
-        <div className="min-h-screen bg-[#F2F5F9] pb-20 font-sans text-slate-900">
+
+        <div className="min-h-screen bg-[#F8F9FA] font-sans text-slate-700">
+
             <Head>
                 <title>マイページ | G4</title>
             </Head>
 
-            {/* ヘッダー */}
-            <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100 sticky top-0 z-50">
-                <button onClick={() => router.back()} className="p-2 -ml-2 text-slate-400 hover:text-slate-600">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-                    </svg>
+
+            {/* ヘッダー: 設計書 ①、② に対応 */}
+            <header className="bg-white px-4 py-4 flex items-center justify-between border-b border-slate-100 sticky top-0 z-50">
+                <button onClick={() => router.back()} className="p-2 text-slate-500">
+                    <span className="text-xl">←</span>
                 </button>
-                <h1 className="text-lg font-black tracking-tight">マイページ</h1>
-                <div className="w-10"></div> {/* バランス調整用空要素 */}
+                <h1 className="text-lg font-bold">マイページ</h1>
+
+                <button 
+                    onClick={() => router.push('/settings/profile')}
+                    className="text-sm font-medium text-slate-600 px-2"
+                >
+
+                    編集
+                </button>
             </header>
 
-            <main className="max-w-md mx-auto px-6 pt-8">
+            <main className="max-w-md mx-auto p-5 space-y-4">
                 
-                {/* ユーザープロファイルカード (写真のような立体感) */}
-                <div className="bg-white rounded-[3rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-white flex flex-col items-center">
-                    {/* アイコン部分 */}
-                    <div className="relative">
-                        <div className="w-24 h-24 bg-gradient-to-tr from-slate-100 to-slate-50 rounded-[2.2rem] flex items-center justify-center shadow-inner">
-                            <svg className="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-                            </svg>
-                        </div>
-                        {/* 本人確認済みバッジ */}
-                        <div className="absolute -bottom-1 -right-1 bg-[#22C55E] rounded-full p-1.5 border-[3px] border-white shadow-sm">
-                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
+                {/* メインプロフィールカード */}
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-50 flex flex-col items-center">
+                    <div className="w-24 h-24 bg-[#E8F0FE] rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 mb-4">
+                        {user?.avatarLabel || user?.name?.charAt(0) || '山'}
                     </div>
-
-                    <h2 className="mt-6 text-2xl font-black text-slate-800">田中 太郎</h2>
                     
-                    <div className="mt-4 flex items-center gap-3">
-                        <span className="px-5 py-2 bg-slate-900 text-white text-[11px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-slate-200">
-                            同乗者
-                        </span>
-                        <div className="flex items-center text-[#F59E0B] bg-[#FFFBEB] px-4 py-1.5 rounded-full border border-[#FEF3C7]">
-                            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span className="ml-1.5 text-xs font-black text-[#B45309]">4.8</span>
+                    <h2 className="text-xl font-bold mb-2">{user?.name || '山田 太郎'}</h2>
+                    
+                    {/* 本人確認バッジ */}
+                    <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full mb-8">
+                        <span className="text-blue-500 text-xs">🛡️</span>
+                        <span className="text-[10px] font-bold text-blue-500 tracking-wider">本人確認済み</span>
+                    </div>
+
+                    {/* 利用統計 */}
+                    <div className="w-full grid grid-cols-3 gap-4 border-t border-slate-50 pt-6">
+                        <div className="text-center">
+                            <p className="text-lg font-bold">{user?.useCount || 0}</p>
+                            <p className="text-[10px] text-slate-400">利用回数</p>
+                        </div>
+                        <div className="text-center border-l border-r border-slate-50">
+                            <p className="text-lg font-bold flex items-center justify-center gap-1">
+                                <span className="text-yellow-400 text-sm">★</span> {user?.rating || '0.0'}
+                            </p>
+                            <p className="text-[10px] text-slate-400">評価</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-lg font-bold whitespace-nowrap">{user?.registrationDate || '2024-01〜'}</p>
+                            <p className="text-[10px] text-slate-400">登録日</p>
                         </div>
                     </div>
                 </div>
 
-                {/* メニューリスト (丸みを帯びたグループ) */}
-                <div className="mt-10 space-y-4">
-                    <p className="px-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Activity</p>
-                    <div className="bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-50 overflow-hidden">
-                        <MenuItem label="マイリクエスト" icon="file-text" />
-                        <MenuItem label="プロフィール詳細" icon="user" isLast />
+                {/* マイリクエストへのリンク: 設計書 ③ に対応 */}
+                <button 
+                    onClick={() => router.push('/hitch_hiker/MyRequest')}
+                    className="w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-between group active:bg-slate-50 transition-colors"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
+                            📍
+                        </div>
+                        <span className="font-bold text-slate-700">マイリクエスト</span>
                     </div>
+                    <span className="text-slate-300 group-hover:translate-x-1 transition-transform">›</span>
+                </button>
 
-                    <p className="px-6 pt-4 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">General</p>
-                    <div className="bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-50 overflow-hidden">
-                        <MenuItem label="お支払い情報" icon="credit-card" />
-                        <MenuItem label="アプリ設定" icon="settings" />
-                        <MenuItem label="ヘルプ・サポート" icon="help-circle" isLast />
-                    </div>
+                {/* 詳細情報セクション: 設計書 ④ に対応 */}
+                <div className="space-y-3">
+                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
+                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">自己紹介</h3>
+                        <p className="text-[14px] leading-relaxed text-slate-600">
+                            {user?.bio || 'よろしくお願いします！'}
+                        </p>
+                    </section>
+
+                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
+                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">趣味</h3>
+                        <p className="text-[14px] text-slate-600">
+                            {user?.hobby || '旅行、写真、カフェ巡り'}
+                        </p>
+                    </section>
+
+                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
+                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">主な利用目的</h3>
+                        <p className="text-[14px] text-slate-600">
+                            {user?.purpose || '通勤・出張'}
+                        </p>
+                    </section>
                 </div>
 
-                {/* ログアウトボタン */}
-                <button className="w-full mt-12 py-5 bg-white text-[#EF4444] font-black rounded-[2.5rem] border border-red-50 shadow-sm active:scale-[0.98] transition-all duration-200">
-                    ログアウト
+                {/* ログアウトボタン (フッター付近) */}
+                <button 
+                    onClick={() => { if(confirm('ログアウトしますか？')) router.push('/login'); }}
+                    className="w-full py-8 text-slate-300 text-[10px] font-bold tracking-[0.2em] uppercase hover:text-red-300 transition-colors"
+                >
+                    Sign out from account
+ d61e1f7 (a)
                 </button>
             </main>
         </div>
     );
-}
 
-// メニュー項目のサブコンポーネント
-function MenuItem({ label, icon, isLast = false }: { label: string; icon: string; isLast?: boolean }) {
-    return (
-        <button className={`w-full flex items-center justify-between px-8 py-6 hover:bg-slate-50 transition-colors ${!isLast ? 'border-b border-slate-50' : ''}`}>
-            <span className="text-[15px] font-bold text-slate-700">{label}</span>
-            <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    );
-}
+};
+
+export default MyPage;
+
 // % End
