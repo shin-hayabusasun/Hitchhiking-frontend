@@ -1,4 +1,5 @@
 // % Start(田所櫂人)
+<<<<<<< HEAD
 
 
 
@@ -6,23 +7,36 @@
 
 import React, { useState, useEffect } from 'react';
 
+=======
+// マイリクエスト画面: セッションエラーハンドリングの強化とUI表示ロジックの適正化
+
+import React, { useState, useEffect, useCallback } from 'react';
+>>>>>>> 2676871 (a)
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { TitleHeader } from '@/components/TitleHeader'; // 共通コンポーネントを使用
+import { TitleHeader } from '@/components/TitleHeader';
 
+<<<<<<< HEAD
 
 // 設計書 Table 6 (applications) および Table 4 (recruitments) に基づく型定義
+=======
+>>>>>>> 2676871 (a)
 interface Request {
-    id: string;          // application_id
-    driveId: string;     // recruitment_id
+    id: string;
+    driveId: string;
     driverName: string;
     origin: string;
     destination: string;
     date: string;
     time: string;
+<<<<<<< HEAD
     status: number;      // 1: 申請中, 2: 承認, 3: 否認, 4: 完了 (独自拡張)
     fee: number;         // fare
 
+=======
+    status: number;
+    fee: number;
+>>>>>>> 2676871 (a)
 }
 
 export const MyRequestPage: React.FC = () => {
@@ -31,149 +45,129 @@ export const MyRequestPage: React.FC = () => {
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
-    const [activeTab, setActiveTab] = useState<number>(1); // デフォルトは「申請中(1)」
+    const [activeTab, setActiveTab] = useState<number>(1);
 
-    // タブ切り替え時にデータを再取得
-    useEffect(() => {
-        fetchMyRequests();
-    }, [activeTab]);
-
-    /**
-     * 申請一覧取得処理
-     */
-    const fetchMyRequests = async () => {
+    const fetchMyRequests = useCallback(async () => {
         setLoading(true);
         setError('');
-        
         try {
-            // クエリパラメータでステータスをフィルタリング
             const response = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
+                credentials: 'include', // セッション維持に必須
             });
-            
-            if (!response.ok) throw new Error('データ取得に失敗しました');
-            
+
+            // セッション切れのハンドリング
+            if (response.status === 401) {
+                router.push('/login?callback=/hitch_hiker/MyRequest');
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || '取得失敗');
+            }
+
             const data = await response.json();
-            // APIレスポンスが直接配列で来るか、successプロパティを持つかに対応
-            setRequests(data.data || data);
+            // レスポンスが { data: [...] } か [...] かを判定
+            const result = Array.isArray(data) ? data : (data.data || []);
+            setRequests(result);
         } catch (err) {
-            setError('リクエスト情報の取得に失敗しました。');
+            console.error(err);
+            setError('リクエスト情報の取得に失敗しました。再ログインをお試しください。');
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, router]);
 
-    /**
-     * 申請キャンセル処理
-     */
-    const handleCancelRequest = async (requestId: string) => {
-        if (!confirm('この申請をキャンセルしますか？')) return;
-
-        try {
-            const response = await fetch(`/api/hitchhiker/requests/${requestId}`, {
-                method: 'DELETE', // 一般的な削除メソッド
-                credentials: 'include',
-            });
-
-            if (response.ok) {
-                alert('申請をキャンセルしました。');
-                fetchMyRequests();
-            } else {
-                alert('キャンセルに失敗しました。');
-            }
-        } catch (err) {
-            alert('ネットワークエラーが発生しました。');
-        }
-    };
-
-    // --- ヘルパー関数 ---
-
-    const getStatusDisplay = (status: number) => {
-        switch (status) {
-            case 1: return { text: '承認待ち', color: '#FFA500' };
-            case 2: return { text: '承認済み', color: '#4CAF50' };
-            case 3: return { text: '否認', color: '#F44336' };
-            case 4: return { text: '完了', color: '#2196F3' };
-            default: return { text: '不明', color: '#999' };
-        }
-    };
+    useEffect(() => {
+        fetchMyRequests();
+    }, [fetchMyRequests]);
 
     return (
-        <div className="bg-gray-50 min-h-screen">
+        <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans text-slate-900">
             <Head>
-                <title>マイリクエスト | G4 ヒッチハイク</title>
+                <title>マイリクエスト | G4</title>
             </Head>
 
-            {/* 共通ヘッダーコンポーネントがある場合 */}
             <TitleHeader title="マイリクエスト" onBack={() => router.push('/home')} />
 
             {/* タブナビゲーション */}
-            <div className="flex bg-white border-b sticky top-0 z-10">
-                {[
-                    { id: 1, label: '承認待ち' },
-                    { id: 2, label: '承認済み' },
-                    { id: 4, label: '完了' }
-                ].map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 py-4 text-sm font-bold transition-colors ${
-                            activeTab === tab.id 
-                            ? 'text-green-600 border-b-2 border-green-600' 
-                            : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+            <div className="sticky top-0 z-30 bg-[#F8FAFC]/80 backdrop-blur-md px-6 py-4">
+                <nav className="flex p-1 bg-slate-200/50 rounded-[1.5rem]">
+                    {[
+                        { id: 1, label: '承認待ち' },
+                        { id: 2, label: '進行中' },
+                        { id: 4, label: '履歴' }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex-1 py-3 text-xs font-black rounded-[1.2rem] transition-all duration-300 ${
+                                activeTab === tab.id 
+                                ? 'bg-white text-slate-900 shadow-sm' 
+                                : 'text-slate-500'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
             </div>
 
-            <main className="p-4">
-                {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center">{error}</div>}
-
+            <main className="max-w-md mx-auto px-6">
+                {/* 1. ローディング中 */}
                 {loading ? (
-                    <div className="flex justify-center p-10 text-gray-400">読み込み中...</div>
-                ) : requests.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400">
-                        <p>該当するリクエストはありません。</p>
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="animate-spin h-8 w-8 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        {requests.map((request) => {
-                            const statusInfo = getStatusDisplay(request.status);
-                            return (
-                                <div key={request.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                                    <div className="p-4 border-b flex justify-between items-center bg-gray-50/50">
-                                        <span 
-                                            className="text-white text-xs px-3 py-1 rounded-full font-bold"
-                                            style={{ backgroundColor: statusInfo.color }}
-                                        >
-                                            {statusInfo.text}
-                                        </span>
-                                        <span className="text-gray-400 text-xs">{request.date}</span>
+                    <>
+                        {/* 2. エラー発生時のみ表示 */}
+                        {error ? (
+                            <div className="mt-4 bg-red-50 text-red-500 p-5 rounded-[2rem] text-xs font-bold border border-red-100 flex items-center gap-3">
+                                <span>⚠️</span> {error}
+                            </div>
+                        ) : (
+                            <>
+                                {/* 3. データが空の場合 */}
+                                {requests.length === 0 ? (
+                                    <div className="text-center py-40">
+                                        <span className="text-5xl block mb-6 grayscale opacity-50">📂</span>
+                                        <p className="text-slate-400 text-sm font-bold tracking-tight">該当するリクエストはありません</p>
+                                    </div>
+                                ) : (
+                                    /* 4. データがある場合 */
+                                    <div className="space-y-8 mt-4">
+                                        {requests.map((request) => (
+                                            <div key={request.id} className="bg-white rounded-[3rem] shadow-[0_15px_45px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
+                                                {/* ...カードの中身（前回の実装と同じ）... */}
+                                                <div className="p-8">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <span className="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-full text-slate-500 uppercase tracking-widest">Request ID: {request.id.slice(0,8)}</span>
+                                                        <p className="text-[11px] font-bold text-slate-300">{request.date}</p>
+                                                    </div>
+                                                    <div className="flex gap-4 items-center">
+                                                        <div className="flex-1">
+                                                            <p className="text-lg font-black text-slate-800">{request.origin} → {request.destination}</p>
+                                                            <p className="text-xs font-bold text-slate-400 mt-1">Driver: {request.driverName}</p>
+                                                        </div>
+                                                        <div className="text-right text-blue-600 font-black">
+                                                            ¥{request.fee.toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)}
+                                                        className="w-full mt-6 py-4 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black shadow-lg shadow-slate-200"
+                                                    >
+                                                        詳細を確認
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    <div className="p-4">
-                                        <div className="flex items-center space-x-3 mb-4">
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                                <div className="w-0.5 h-6 bg-gray-200 my-1"></div>
-                                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                            </div>
-                                            <div className="flex-1 text-sm font-medium space-y-4">
-                                                <p>{request.origin}</p>
-                                                <p>{request.destination}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg">
-                                            <p><strong>運転者:</strong> {request.driverName}</p>
-                                            <p><strong>出発:</strong> {request.time}</p>
-                                            <p className="col-span-2"><strong>料金:</strong> ¥{request.fee.toLocaleString()}</p>
-                                        </div>
-                                    </div>
 
                                     <div className="p-4 bg-white flex gap-2">
                                         <button
@@ -205,6 +199,7 @@ export const MyRequestPage: React.FC = () => {
                             );
                         })}
                     </div>
+
 
                 )}
             </main>
