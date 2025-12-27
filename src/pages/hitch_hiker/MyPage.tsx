@@ -1,180 +1,153 @@
 // % Start(田所櫂人)
-<<<<<<< HEAD
+
 
 // 外部設計書 4.3.5 マイページ画面のUI再現
-=======
->>>>>>> 2676871 (a)
 
 
-// マイページ画面: 外部設計書 4.3.5 に基づくUI刷新とセッション管理の統合
- d61e1f7 (a)
+// マイページ: セッション維持の安定化と、外部設計書 4.2.1 に基づくプロフィールUIの刷新
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { TitleHeader } from '@/components/TitleHeader';
 
-<<<<<<< HEAD
+
 
 export default function MyPage() {
-=======
-interface UserProfile {
-    name: string;
-    avatarLabel: string; // 名前の一文字目など
-    isVerified: boolean;
-    useCount: number;
-    rating: number;
-    registrationDate: string;
-    bio: string;
-    hobby: string;
-    purpose: string;
-}
-
-export const MyPage: React.FC = () => {
->>>>>>> 2676871 (a)
     const router = useRouter();
     const [user, setUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
 
-    const fetchProfile = useCallback(async () => {
+    // セッション有効性を確認しながらデータを取得する関数
+    const fetchUserProfile = useCallback(async () => {
         setLoading(true);
         try {
             const response = await fetch('/api/user/profile', {
                 method: 'GET',
-                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // Cookie（セッション）を送信
             });
 
             if (response.status === 401) {
+                // セッションが切れている場合はログイン画面へ強制遷移
+                console.warn('Session expired. Redirecting to login...');
                 router.push('/login?callback=/mypage');
                 return;
             }
 
+            if (!response.ok) throw new Error('Profile fetch failed');
+
             const data = await response.json();
-            // 設計書のイメージに合わせたデータ構造に変換
             setUser(data.data || data);
         } catch (err) {
-            console.error('Failed to load profile');
+            setError('プロフィールの読み込みに失敗しました。再ログインをお試しください。');
+            console.error(err);
         } finally {
             setLoading(false);
         }
     }, [router]);
 
     useEffect(() => {
-        fetchProfile();
-    }, [fetchProfile]);
+        fetchUserProfile();
+    }, [fetchUserProfile]);
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+                <div className="animate-spin h-10 w-10 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Authenticating...</p>
+            </div>
+        );
+    }
 
     return (
-
-        <div className="min-h-screen bg-[#F8F9FA] font-sans text-slate-700">
- d61e1f7 (a)
+        <div className="min-h-screen bg-[#F8FAFC] pb-32 font-sans text-slate-900">
+ 2fa6a17 (a)
             <Head>
                 <title>マイページ | G4</title>
             </Head>
 
 
-            {/* ヘッダー: 設計書 ①、② に対応 */}
-            <header className="bg-white px-4 py-4 flex items-center justify-between border-b border-slate-100 sticky top-0 z-50">
-                <button onClick={() => router.back()} className="p-2 text-slate-500">
-                    <span className="text-xl">←</span>
-                </button>
-                <h1 className="text-lg font-bold">マイページ</h1>
- d61e1f7 (a)
-                <button 
-                    onClick={() => router.push('/settings/profile')}
-                    className="text-sm font-medium text-slate-600 px-2"
-                >
+            <TitleHeader title="マイページ" onBack={() => router.push('/home')} />
 
-                    編集
-                </button>
-            </header>
-
-            <main className="max-w-md mx-auto p-5 space-y-4">
-                
-                {/* メインプロフィールカード */}
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-50 flex flex-col items-center">
-                    <div className="w-24 h-24 bg-[#E8F0FE] rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 mb-4">
-                        {user?.avatarLabel || user?.name?.charAt(0) || '山'}
-                    </div>
+            <main className="max-w-md mx-auto px-6 pt-8">
+                {/* プロフィールカード */}
+                <div className="bg-white rounded-[3.5rem] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.04)] border border-white mb-10 text-center relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-slate-50 to-white -z-10"></div>
                     
-                    <h2 className="text-xl font-bold mb-2">{user?.name || '山田 太郎'}</h2>
-                    
-                    {/* 本人確認バッジ */}
-                    <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full mb-8">
-                        <span className="text-blue-500 text-xs">🛡️</span>
-                        <span className="text-[10px] font-bold text-blue-500 tracking-wider">本人確認済み</span>
+                    <div className="w-28 h-28 bg-slate-100 rounded-[2.5rem] mx-auto mb-6 border-4 border-white shadow-sm flex items-center justify-center text-4xl overflow-hidden">
+                        {user?.avatarUrl ? <img src={user.avatarUrl} alt="avatar" /> : '👤'}
                     </div>
 
-                    {/* 利用統計 */}
-                    <div className="w-full grid grid-cols-3 gap-4 border-t border-slate-50 pt-6">
-                        <div className="text-center">
-                            <p className="text-lg font-bold">{user?.useCount || 0}</p>
-                            <p className="text-[10px] text-slate-400">利用回数</p>
-                        </div>
-                        <div className="text-center border-l border-r border-slate-50">
-                            <p className="text-lg font-bold flex items-center justify-center gap-1">
-                                <span className="text-yellow-400 text-sm">★</span> {user?.rating || '0.0'}
-                            </p>
-                            <p className="text-[10px] text-slate-400">評価</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-lg font-bold whitespace-nowrap">{user?.registrationDate || '2024-01〜'}</p>
-                            <p className="text-[10px] text-slate-400">登録日</p>
-                        </div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-1">{user?.name || 'Guest User'}</h2>
+                    <p className="text-xs font-bold text-slate-400 mb-6">{user?.email}</p>
+
+                    <div className="flex justify-center gap-4">
+                        <button 
+                            onClick={() => router.push('/settings/profile')}
+                            className="px-6 py-2.5 bg-slate-900 text-white rounded-full text-[11px] font-black shadow-lg shadow-slate-200 active:scale-95 transition-all"
+                        >
+                            編集する
+                        </button>
                     </div>
                 </div>
 
-                {/* マイリクエストへのリンク: 設計書 ③ に対応 */}
-                <button 
-                    onClick={() => router.push('/hitch_hiker/MyRequest')}
-                    className="w-full bg-white p-5 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-between group active:bg-slate-50 transition-colors"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
-                            📍
-                        </div>
-                        <span className="font-bold text-slate-700">マイリクエスト</span>
+                {/* ポイント・統計セクション */}
+                <div className="grid grid-cols-2 gap-4 mb-10">
+                    <div className="bg-blue-600 rounded-[2.5rem] p-6 text-white shadow-xl shadow-blue-100">
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Current Points</p>
+                        <p className="text-2xl font-black">{user?.points?.toLocaleString() || 0} <span className="text-xs uppercase">pt</span></p>
                     </div>
-                    <span className="text-slate-300 group-hover:translate-x-1 transition-transform">›</span>
-                </button>
+                    <button 
+                        onClick={() => router.push('/points/history')}
+                        className="bg-white rounded-[2.5rem] p-6 border border-slate-100 flex flex-col justify-center active:scale-95 transition-all shadow-sm"
+                    >
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">History</p>
+                        <p className="text-sm font-black text-slate-700">ポイント履歴 →</p>
+                    </button>
+                </div>
 
-                {/* 詳細情報セクション: 設計書 ④ に対応 */}
+                {/* メニューリスト */}
                 <div className="space-y-3">
-                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
-                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">自己紹介</h3>
-                        <p className="text-[14px] leading-relaxed text-slate-600">
-                            {user?.bio || 'よろしくお願いします！'}
-                        </p>
-                    </section>
-
-                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
-                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">趣味</h3>
-                        <p className="text-[14px] text-slate-600">
-                            {user?.hobby || '旅行、写真、カフェ巡り'}
-                        </p>
-                    </section>
-
-                    <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-50">
-                        <h3 className="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">主な利用目的</h3>
-                        <p className="text-[14px] text-slate-600">
-                            {user?.purpose || '通勤・出張'}
-                        </p>
-                    </section>
+                    {[
+                        { label: '募集管理', icon: '📋', path: '/hitch_hiker/RecruitmentManagement' },
+                        { label: 'マイリクエスト', icon: '✉️', path: '/hitch_hiker/MyRequest' },
+                        { label: 'ポイント交換', icon: '🎁', path: '/points/exchange' },
+                        { label: '設定・ヘルプ', icon: '⚙️', path: '/settings' },
+                    ].map((item) => (
+                        <button
+                            key={item.label}
+                            onClick={() => router.push(item.path)}
+                            className="w-full bg-white p-6 rounded-[2rem] flex items-center justify-between group active:bg-slate-50 transition-all border border-transparent hover:border-slate-100 shadow-sm"
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className="text-xl">{item.icon}</span>
+                                <span className="text-[14px] font-bold text-slate-700">{item.label}</span>
+                            </div>
+                            <span className="text-slate-300 group-hover:translate-x-1 transition-transform">→</span>
+                        </button>
+                    ))}
                 </div>
 
-                {/* ログアウトボタン (フッター付近) */}
+                {/* ログアウト */}
                 <button 
-                    onClick={() => { if(confirm('ログアウトしますか？')) router.push('/login'); }}
-                    className="w-full py-8 text-slate-300 text-[10px] font-bold tracking-[0.2em] uppercase hover:text-red-300 transition-colors"
+                    onClick={async () => {
+                        if(confirm('ログアウトしますか？')) {
+                            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                            router.push('/login');
+                        }
+                    }}
+                    className="w-full mt-12 py-5 text-red-400 text-[12px] font-black tracking-widest uppercase hover:text-red-600 transition-colors"
                 >
-                    Sign out from account
- d61e1f7 (a)
+                    Sign Out
+ 2fa6a17 (a)
                 </button>
             </main>
         </div>
     );
 
-<<<<<<< HEAD
+
 // メニュー項目のサブコンポーネント
 function MenuItem({ label, icon, isLast = false }: { label: string; icon: string; isLast?: boolean }) {
     return (
@@ -187,10 +160,5 @@ function MenuItem({ label, icon, isLast = false }: { label: string; icon: string
     );
 }
 
-=======
-};
 
-export default MyPage;
- 2fa6a17 (a)
->>>>>>> 2676871 (a)
 // % End
