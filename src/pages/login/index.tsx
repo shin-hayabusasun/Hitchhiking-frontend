@@ -106,7 +106,7 @@ export function LoginPage() {
           <div className="bg-blue-50 rounded-2xl p-4 mb-8 border border-blue-100">
             <div className="text-[11px] mb-3 leading-tight">
               <p className="text-blue-800 font-bold mb-1">デモアカウント</p>
-              <p className="text-blue-700">一般: test@example.com / password123</p>
+              <p className="text-blue-700">一般: user@test.com / password123</p>
               <p className="text-purple-700">管理者: admin@rideshare.jp / admin123</p>
             </div>
             
