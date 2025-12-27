@@ -11,9 +11,11 @@ export function LogoutPage() {
 		router.push('/login');
 	}
 
+
   return (
 
 	
+
 
 
 		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -45,6 +47,7 @@ export function LogoutPage() {
         </svg>
       </div>
     </div>
+
   </div>
 
   {/* ログアウト完了メッセージ */}
@@ -61,8 +64,25 @@ export function LogoutPage() {
     ログイン画面へ
   </button>
 </div>
+
   </div>
+
+  {/* ログアウト完了メッセージ */}
+  <h2 className="text-red-500 text-2xl font-bold text-center mb-auto">
+    ログアウト完了
+  </h2>
+
+  {/* ログイン画面へボタン */}
+  <button
+    type="button"
+    className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all"
+    onClick={handleLoginClick}
+  >
+    ログイン画面へ
+  </button>
 </div>
+
+
 
 
 
