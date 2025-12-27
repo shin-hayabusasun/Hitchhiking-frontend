@@ -1,180 +1,97 @@
 // % Start(田所櫂人)
-// マイページ画面: ユーザーの基本情報、評価、各種メニュー（プロフィール編集、マイリクエスト、設定等）を表示する
+// 外部設計書 4.3.5 マイページ画面のUI再現
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { TitleHeader } from '@/components/TitleHeader';
+import Head from 'next/head';
 
-// 設計書 Table 1, 2 等に基づいたユーザー情報の型定義
-interface UserInfo {
-    name: string;
-    email: string;
-    isVerified: boolean;
-    introduction?: string; // 自己紹介
-    rating?: number;       // 評価（外部設計書のマッチング機能に関連）
-    isDriver: boolean;     // 運転者か同乗者か
-}
-
-export function MyPage() {
+export default function MyPage() {
     const router = useRouter();
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    // 1. ユーザー情報取得処理
-    useEffect(() => {
-        async function fetchUserInfo() {
-            try {
-                // credentials: 'include' によりセッションCookieを送信
-                const response = await fetch('/api/user/profile', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    throw new Error('セッションが切れたか、情報が見つかりません');
-                }
-
-                const data = await response.json();
-                setUserInfo(data);
-            } catch (err) {
-                setError('ユーザー情報の取得に失敗しました。再度ログインしてください。');
-                console.error('Fetch error:', err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchUserInfo();
-    }, []);
-
-    // --- ハンドラー関数 ---
-
-    // プロフィール編集（外部設計書 3.2.1）
-    const handleEditClick = () => {
-        router.push('/settings/profile');
-    };
-
-    // マイリクエスト / マイドライブ（同乗者・運転者で出し分け）
-    const handleActivityClick = () => {
-        if (userInfo?.isDriver) {
-            router.push('/driver/drives'); // 5.3 マイドライブ情報取得画面へ
-        } else {
-            router.push('/hitch_hiker/MyRequest'); // 4.1.6 マイリクエスト画面へ
-        }
-    };
-
-    // 設定画面へ（外部設計書 4.6）
-    const handleSettingsClick = () => {
-        router.push('/settings');
-    };
-
-    // 戻るボタン（ホームまたは検索画面へ）
-    const handleBack = () => {
-        router.push('/home');
-    };
-
-    // --- レンダリング条件分岐 ---
-
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-            </div>
-        );
-    }
-
-    if (error || !userInfo) {
-        return (
-            <div className="p-4 text-center">
-                <p className="text-red-500 mb-4">{error || 'ユーザー情報が見つかりません'}</p>
-                <button 
-                    onClick={() => router.push('/login')}
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                >
-                    ログイン画面へ
-                </button>
-            </div>
-        );
-    }
 
     return (
-        <div className="mypage-page bg-gray-50 min-h-screen">
-            <TitleHeader title="マイページ" onBack={handleBack} />
+        <div className="min-h-screen bg-[#F2F5F9] pb-20 font-sans text-slate-900">
+            <Head>
+                <title>マイページ | G4</title>
+            </Head>
 
-            <div className="mypage-container max-w-md mx-auto p-4">
-                {/* ユーザー基本情報カード */}
-                <div className="user-info-card bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <div className="flex items-center space-x-4">
-                        <div className="user-avatar bg-gray-200 rounded-full p-3">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
+            {/* ヘッダー */}
+            <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100 sticky top-0 z-50">
+                <button onClick={() => router.back()} className="p-2 -ml-2 text-slate-400 hover:text-slate-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 className="text-lg font-black tracking-tight">マイページ</h1>
+                <div className="w-10"></div> {/* バランス調整用空要素 */}
+            </header>
+
+            <main className="max-w-md mx-auto px-6 pt-8">
+                
+                {/* ユーザープロファイルカード (写真のような立体感) */}
+                <div className="bg-white rounded-[3rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-white flex flex-col items-center">
+                    {/* アイコン部分 */}
+                    <div className="relative">
+                        <div className="w-24 h-24 bg-gradient-to-tr from-slate-100 to-slate-50 rounded-[2.2rem] flex items-center justify-center shadow-inner">
+                            <svg className="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                             </svg>
                         </div>
-                        <div className="user-info">
-                            <h2 className="text-xl font-bold text-gray-800">{userInfo.name}</h2>
-                            <p className="text-sm text-gray-500">{userInfo.email}</p>
+                        {/* 本人確認済みバッジ */}
+                        <div className="absolute -bottom-1 -right-1 bg-[#22C55E] rounded-full p-1.5 border-[3px] border-white shadow-sm">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" />
+                            </svg>
                         </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {userInfo.isVerified ? (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
-                                ✓ 本人確認済み
-                            </span>
-                        ) : (
-                            <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">
-                                未本人確認
-                            </span>
-                        )}
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                            {userInfo.isDriver ? '運転者' : '同乗者'}
+                    <h2 className="mt-6 text-2xl font-black text-slate-800">田中 太郎</h2>
+                    
+                    <div className="mt-4 flex items-center gap-3">
+                        <span className="px-5 py-2 bg-slate-900 text-white text-[11px] font-black rounded-full uppercase tracking-widest shadow-lg shadow-slate-200">
+                            同乗者
                         </span>
+                        <div className="flex items-center text-[#F59E0B] bg-[#FFFBEB] px-4 py-1.5 rounded-full border border-[#FEF3C7]">
+                            <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="ml-1.5 text-xs font-black text-[#B45309]">4.8</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* メニューリスト */}
-                <div className="mypage-menu bg-white rounded-xl shadow-sm overflow-hidden">
-                    <MenuButton label="プロフィール編集" onClick={handleEditClick} />
-                    <MenuButton 
-                        label={userInfo.isDriver ? "マイドライブ履歴" : "マイリクエスト"} 
-                        onClick={handleActivityClick} 
-                    />
-                    <MenuButton label="アプリ設定" onClick={handleSettingsClick} />
-                    <MenuButton label="ヘルプ・お問い合わせ" onClick={() => router.push('/help')} />
+                {/* メニューリスト (丸みを帯びたグループ) */}
+                <div className="mt-10 space-y-4">
+                    <p className="px-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Activity</p>
+                    <div className="bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-50 overflow-hidden">
+                        <MenuItem label="マイリクエスト" icon="file-text" />
+                        <MenuItem label="プロフィール詳細" icon="user" isLast />
+                    </div>
+
+                    <p className="px-6 pt-4 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">General</p>
+                    <div className="bg-white rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.02)] border border-slate-50 overflow-hidden">
+                        <MenuItem label="お支払い情報" icon="credit-card" />
+                        <MenuItem label="アプリ設定" icon="settings" />
+                        <MenuItem label="ヘルプ・サポート" icon="help-circle" isLast />
+                    </div>
                 </div>
 
-                {/* ログアウトボタン（任意追加） */}
-                <button 
-                    className="w-full mt-8 py-3 text-red-500 font-medium border border-red-200 rounded-xl hover:bg-red-50"
-                    onClick={() => { /* ログアウト処理 */ }}
-                >
+                {/* ログアウトボタン */}
+                <button className="w-full mt-12 py-5 bg-white text-[#EF4444] font-black rounded-[2.5rem] border border-red-50 shadow-sm active:scale-[0.98] transition-all duration-200">
                     ログアウト
                 </button>
-            </div>
+            </main>
         </div>
     );
 }
 
-// サブコンポーネント: メニュー項目
-function MenuButton({ label, onClick }: { label: string; onClick: () => void }) {
+// メニュー項目のサブコンポーネント
+function MenuItem({ label, icon, isLast = false }: { label: string; icon: string; isLast?: boolean }) {
     return (
-        <button
-            type="button"
-            className="w-full flex justify-between items-center p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
-            onClick={onClick}
-        >
-            <span className="text-gray-700 font-medium">{label}</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="lightgray" strokeWidth="2">
-                <path d="M9 18l6-6-6-6" />
+        <button className={`w-full flex items-center justify-between px-8 py-6 hover:bg-slate-50 transition-colors ${!isLast ? 'border-b border-slate-50' : ''}`}>
+            <span className="text-[15px] font-bold text-slate-700">{label}</span>
+            <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
             </svg>
         </button>
     );
 }
-
-export default MyPage;
 // % End
