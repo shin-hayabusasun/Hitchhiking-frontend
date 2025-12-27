@@ -13,7 +13,7 @@ export function LogoutPage() {
 
 	
 
-	return (
+
 		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
   {/* ★ スマホ本体を模したコンテナ */}
   <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl overflow-hidden flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white">
@@ -61,6 +61,7 @@ export function LogoutPage() {
 </div>
   </div>
 </div>
+
 	);
 }
 

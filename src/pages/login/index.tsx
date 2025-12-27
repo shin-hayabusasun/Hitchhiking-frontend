@@ -77,6 +77,7 @@ export function LoginPage() {
 		router.push('/login/Regist');
 	}
 
+
   return (
    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
   
@@ -187,6 +188,7 @@ export function LoginPage() {
       </div>
     </div>
   );
+
 }
 
 export default LoginPage;
