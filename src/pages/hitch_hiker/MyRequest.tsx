@@ -1,401 +1,208 @@
-// % Start(Assistant)
-// マイリクエスト画面 - 同乗者が申請したリクエストの一覧と状態を表示
-// % End
+// % Start(田所櫂人)
+// マイリクエスト画面: 同乗者が申請したドライブの一覧と状況を確認・管理する
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { TitleHeader } from '@/components/TitleHeader'; // 共通コンポーネントを使用
 
+// 設計書 Table 6 (applications) および Table 4 (recruitments) に基づく型定義
 interface Request {
-	id: string;
-	driveId: string;
-	driverName: string;
-	origin: string;
-	destination: string;
-	date: string;
-	time: string;
-	status: 'pending' | 'approved' | 'rejected' | 'completed';
-	fee: number;
+    id: string;          // application_id
+    driveId: string;     // recruitment_id
+    driverName: string;
+    origin: string;
+    destination: string;
+    date: string;
+    time: string;
+    status: number;      // 1: 申請中, 2: 承認, 3: 否認, 4: 完了 (独自拡張)
+    fee: number;         // fare
 }
 
 export const MyRequestPage: React.FC = () => {
-	const router = useRouter();
-	const [requests, setRequests] = useState<Request[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>('');
-	const [activeTab, setActiveTab] = useState<string>('pending');
+    const router = useRouter();
+    const [requests, setRequests] = useState<Request[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
+    const [activeTab, setActiveTab] = useState<number>(1); // デフォルトは「申請中(1)」
 
-	useEffect(() => {
-		fetchMyRequests();
-	}, [activeTab]);
+    // タブ切り替え時にデータを再取得
+    useEffect(() => {
+        fetchMyRequests();
+    }, [activeTab]);
 
-	const fetchMyRequests = async () => {
-		setLoading(true);
-		setError('');
-		
-		try {
-			const response = await fetch(`/api/hitchhiker/my-requests?status=${activeTab}`, {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-			});
-			const data = await response.json();
+    /**
+     * 申請一覧取得処理
+     */
+    const fetchMyRequests = async () => {
+        setLoading(true);
+        setError('');
+        
+        try {
+            // クエリパラメータでステータスをフィルタリング
+            const response = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
+            
+            if (!response.ok) throw new Error('データ取得に失敗しました');
+            
+            const data = await response.json();
+            // APIレスポンスが直接配列で来るか、successプロパティを持つかに対応
+            setRequests(data.data || data);
+        } catch (err) {
+            setError('リクエスト情報の取得に失敗しました。');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-			if (response.ok && data.success) {
-				setRequests(data.data);
-			} else {
-				setError(data.error || 'リクエスト情報の取得に失敗しました。');
-			}
-		} catch (err) {
-			setError('ネットワークエラーが発生しました。');
-		} finally {
-			setLoading(false);
-		}
-	};
+    /**
+     * 申請キャンセル処理
+     */
+    const handleCancelRequest = async (requestId: string) => {
+        if (!confirm('この申請をキャンセルしますか？')) return;
 
-	const handleCancelRequest = async (requestId: string) => {
-		if (!confirm('この申請をキャンセルしますか？')) return;
+        try {
+            const response = await fetch(`/api/hitchhiker/requests/${requestId}`, {
+                method: 'DELETE', // 一般的な削除メソッド
+                credentials: 'include',
+            });
 
-		try {
-			const response = await fetch(`/api/hitchhiker/requests/${requestId}/cancel`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-			});
-			const data = await response.json();
+            if (response.ok) {
+                alert('申請をキャンセルしました。');
+                fetchMyRequests();
+            } else {
+                alert('キャンセルに失敗しました。');
+            }
+        } catch (err) {
+            alert('ネットワークエラーが発生しました。');
+        }
+    };
 
-			if (response.ok && data.success) {
-				alert('申請をキャンセルしました。');
-				fetchMyRequests();
-			} else {
-				alert(data.error || 'キャンセルに失敗しました。');
-			}
-		} catch (err) {
-			alert('ネットワークエラーが発生しました。');
-		}
-	};
+    // --- ヘルパー関数 ---
 
-	const getStatusText = (status: string) => {
-		switch (status) {
-			case 'pending': return '承認待ち';
-			case 'approved': return '承認済み';
-			case 'rejected': return '拒否';
-			case 'completed': return '完了';
-			default: return status;
-		}
-	};
+    const getStatusDisplay = (status: number) => {
+        switch (status) {
+            case 1: return { text: '承認待ち', color: '#FFA500' };
+            case 2: return { text: '承認済み', color: '#4CAF50' };
+            case 3: return { text: '否認', color: '#F44336' };
+            case 4: return { text: '完了', color: '#2196F3' };
+            default: return { text: '不明', color: '#999' };
+        }
+    };
 
-	const getStatusColor = (status: string) => {
-		switch (status) {
-			case 'pending': return '#FFA500';
-			case 'approved': return '#4CAF50';
-			case 'rejected': return '#F44336';
-			case 'completed': return '#2196F3';
-			default: return '#999';
-		}
-	};
+    return (
+        <div className="bg-gray-50 min-h-screen">
+            <Head>
+                <title>マイリクエスト | G4 ヒッチハイク</title>
+            </Head>
 
-	return (
-		<>
-			<Head>
-				<title>マイリクエスト | ヒッチハイクマッチング</title>
-			</Head>
+            {/* 共通ヘッダーコンポーネントがある場合 */}
+            <TitleHeader title="マイリクエスト" onBack={() => router.push('/home')} />
 
-			<div style={styles.container}>
-				<header style={styles.header}>
-					<button onClick={() => router.back()} style={styles.backButton}>
-						← 戻る
-					</button>
-					<h1 style={styles.title}>マイリクエスト</h1>
-					<div style={{ width: '50px' }}></div>
-				</header>
+            {/* タブナビゲーション */}
+            <div className="flex bg-white border-b sticky top-0 z-10">
+                {[
+                    { id: 1, label: '承認待ち' },
+                    { id: 2, label: '承認済み' },
+                    { id: 4, label: '完了' }
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 py-4 text-sm font-bold transition-colors ${
+                            activeTab === tab.id 
+                            ? 'text-green-600 border-b-2 border-green-600' 
+                            : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
 
-				{/* タブ */}
-				<div style={styles.tabs}>
-					<button
-						style={{
-							...styles.tab,
-							...(activeTab === 'pending' ? styles.activeTab : {}),
-						}}
-						onClick={() => setActiveTab('pending')}
-					>
-						承認待ち
-					</button>
-					<button
-						style={{
-							...styles.tab,
-							...(activeTab === 'approved' ? styles.activeTab : {}),
-						}}
-						onClick={() => setActiveTab('approved')}
-					>
-						承認済み
-					</button>
-					<button
-						style={{
-							...styles.tab,
-							...(activeTab === 'completed' ? styles.activeTab : {}),
-						}}
-						onClick={() => setActiveTab('completed')}
-					>
-						完了
-					</button>
-				</div>
+            <main className="p-4">
+                {error && <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center">{error}</div>}
 
-				<main style={styles.main}>
-					{error && <div style={styles.error}>{error}</div>}
+                {loading ? (
+                    <div className="flex justify-center p-10 text-gray-400">読み込み中...</div>
+                ) : requests.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400">
+                        <p>該当するリクエストはありません。</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {requests.map((request) => {
+                            const statusInfo = getStatusDisplay(request.status);
+                            return (
+                                <div key={request.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                                    <div className="p-4 border-b flex justify-between items-center bg-gray-50/50">
+                                        <span 
+                                            className="text-white text-xs px-3 py-1 rounded-full font-bold"
+                                            style={{ backgroundColor: statusInfo.color }}
+                                        >
+                                            {statusInfo.text}
+                                        </span>
+                                        <span className="text-gray-400 text-xs">{request.date}</span>
+                                    </div>
 
-					{loading ? (
-						<div style={styles.loading}>読み込み中...</div>
-					) : requests.length === 0 ? (
-						<div style={styles.empty}>
-							<p>該当するリクエストがありません。</p>
-						</div>
-					) : (
-						<div style={styles.requestList}>
-							{requests.map((request) => (
-								<div key={request.id} style={styles.requestCard}>
-									<div style={styles.cardHeader}>
-										<span
-											style={{
-												...styles.statusBadge,
-												backgroundColor: getStatusColor(request.status),
-											}}
-										>
-											{getStatusText(request.status)}
-										</span>
-										<span style={styles.date}>{request.date}</span>
-									</div>
+                                    <div className="p-4">
+                                        <div className="flex items-center space-x-3 mb-4">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                                <div className="w-0.5 h-6 bg-gray-200 my-1"></div>
+                                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                            </div>
+                                            <div className="flex-1 text-sm font-medium space-y-4">
+                                                <p>{request.origin}</p>
+                                                <p>{request.destination}</p>
+                                            </div>
+                                        </div>
 
-									<div style={styles.cardBody}>
-										<div style={styles.route}>
-											<div style={styles.routePoint}>
-												<div style={styles.originDot}></div>
-												<span>{request.origin}</span>
-											</div>
-											<div style={styles.routeLine}></div>
-											<div style={styles.routePoint}>
-												<div style={styles.destinationDot}></div>
-												<span>{request.destination}</span>
-											</div>
-										</div>
+                                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg">
+                                            <p><strong>運転者:</strong> {request.driverName}</p>
+                                            <p><strong>出発:</strong> {request.time}</p>
+                                            <p className="col-span-2"><strong>料金:</strong> ¥{request.fee.toLocaleString()}</p>
+                                        </div>
+                                    </div>
 
-										<div style={styles.info}>
-											<p style={styles.infoRow}>
-												<strong>運転者:</strong> {request.driverName}
-											</p>
-											<p style={styles.infoRow}>
-												<strong>出発時刻:</strong> {request.time}
-											</p>
-											<p style={styles.infoRow}>
-												<strong>料金:</strong> ¥{request.fee.toLocaleString()}
-											</p>
-										</div>
-									</div>
-
-									<div style={styles.cardFooter}>
-										<button
-											onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)}
-											style={styles.detailButton}
-										>
-											詳細を見る
-										</button>
-										{request.status === 'pending' && (
-											<button
-												onClick={() => handleCancelRequest(request.id)}
-												style={styles.cancelButton}
-											>
-												キャンセル
-											</button>
-										)}
-										{request.status === 'completed' && (
-											<button
-												onClick={() => router.push(`/hitch_hiker/review/${request.driveId}`)}
-												style={styles.reviewButton}
-											>
-												レビューする
-											</button>
-										)}
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</main>
-			</div>
-		</>
-	);
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-	container: {
-		minHeight: '100vh',
-		backgroundColor: '#f5f5f5',
-	},
-	header: {
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		padding: '16px',
-		backgroundColor: '#fff',
-		borderBottom: '1px solid #ddd',
-		position: 'sticky' as 'sticky',
-		top: 0,
-		zIndex: 10,
-	},
-	backButton: {
-		fontSize: '16px',
-		background: 'none',
-		border: 'none',
-		cursor: 'pointer',
-		color: '#333',
-	},
-	title: {
-		fontSize: '20px',
-		fontWeight: 'bold',
-		margin: 0,
-	},
-	tabs: {
-		display: 'flex',
-		backgroundColor: '#fff',
-		borderBottom: '1px solid #ddd',
-	},
-	tab: {
-		flex: 1,
-		padding: '12px',
-		fontSize: '14px',
-		background: 'none',
-		border: 'none',
-		cursor: 'pointer',
-		color: '#666',
-		borderBottom: '2px solid transparent',
-	},
-	activeTab: {
-		color: '#4CAF50',
-		borderBottom: '2px solid #4CAF50',
-		fontWeight: 'bold',
-	},
-	main: {
-		padding: '16px',
-	},
-	error: {
-		backgroundColor: '#ffebee',
-		color: '#c62828',
-		padding: '12px',
-		borderRadius: '4px',
-		marginBottom: '16px',
-	},
-	loading: {
-		textAlign: 'center' as 'center',
-		padding: '40px',
-		color: '#666',
-	},
-	empty: {
-		textAlign: 'center' as 'center',
-		padding: '40px',
-		color: '#999',
-	},
-	requestList: {
-		display: 'flex',
-		flexDirection: 'column' as 'column',
-		gap: '16px',
-	},
-	requestCard: {
-		backgroundColor: '#fff',
-		borderRadius: '8px',
-		padding: '16px',
-		boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-	},
-	cardHeader: {
-		display: 'flex',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: '12px',
-	},
-	statusBadge: {
-		display: 'inline-block',
-		padding: '4px 12px',
-		borderRadius: '12px',
-		fontSize: '12px',
-		fontWeight: 'bold',
-		color: '#fff',
-	},
-	date: {
-		fontSize: '14px',
-		color: '#666',
-	},
-	cardBody: {
-		marginBottom: '12px',
-	},
-	route: {
-		display: 'flex',
-		alignItems: 'center',
-		marginBottom: '12px',
-	},
-	routePoint: {
-		display: 'flex',
-		alignItems: 'center',
-		gap: '8px',
-	},
-	originDot: {
-		width: '12px',
-		height: '12px',
-		borderRadius: '50%',
-		backgroundColor: '#4CAF50',
-	},
-	destinationDot: {
-		width: '12px',
-		height: '12px',
-		borderRadius: '50%',
-		backgroundColor: '#F44336',
-	},
-	routeLine: {
-		flex: 1,
-		height: '2px',
-		backgroundColor: '#ddd',
-		margin: '0 8px',
-	},
-	info: {
-		fontSize: '14px',
-		color: '#333',
-	},
-	infoRow: {
-		margin: '4px 0',
-	},
-	cardFooter: {
-		display: 'flex',
-		gap: '8px',
-	},
-	detailButton: {
-		flex: 1,
-		padding: '10px',
-		backgroundColor: '#2196F3',
-		color: '#fff',
-		border: 'none',
-		borderRadius: '4px',
-		cursor: 'pointer',
-		fontSize: '14px',
-	},
-	cancelButton: {
-		flex: 1,
-		padding: '10px',
-		backgroundColor: '#F44336',
-		color: '#fff',
-		border: 'none',
-		borderRadius: '4px',
-		cursor: 'pointer',
-		fontSize: '14px',
-	},
-	reviewButton: {
-		flex: 1,
-		padding: '10px',
-		backgroundColor: '#FF9800',
-		color: '#fff',
-		border: 'none',
-		borderRadius: '4px',
-		cursor: 'pointer',
-		fontSize: '14px',
-	},
+                                    <div className="p-4 bg-white flex gap-2">
+                                        <button
+                                            onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)}
+                                            className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors"
+                                        >
+                                            詳細を表示
+                                        </button>
+                                        
+                                        {request.status === 1 && (
+                                            <button
+                                                onClick={() => handleCancelRequest(request.id)}
+                                                className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100"
+                                            >
+                                                キャンセル
+                                            </button>
+                                        )}
+                                        
+                                        {request.status === 4 && (
+                                            <button
+                                                onClick={() => router.push(`/hitch_hiker/review/${request.driveId}`)}
+                                                className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-lg text-sm font-bold hover:bg-orange-100"
+                                            >
+                                                レビュー
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </main>
+        </div>
+    );
 };
 
 export default MyRequestPage;
-
+// % End
