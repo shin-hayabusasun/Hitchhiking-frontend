@@ -11,6 +11,7 @@ export function LogoutPage() {
 		router.push('/login');
 	}
 
+
 	
 
 
@@ -61,6 +62,7 @@ export function LogoutPage() {
 </div>
   </div>
 </div>
+
 
 	);
 }

@@ -83,6 +83,7 @@ export function LoginPage() {
   
   {/* ★ スマホ本体を模したコンテナ：aspect-[9/19] で比率を固定 */}
   <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl overflow-hidden flex flex-col font-sans bg-white  border-[8px] relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white">
+
         {/* 上部余白とヘッダー */}
         <div className="flex flex-col items-center pt-12 pb-8">
           <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-4 shadow-md">
@@ -99,23 +100,29 @@ export function LoginPage() {
         </div>
 
         {/* ログインカード（画像のような角の丸みが大きいデザイン） */}
+
         <div className="flex-1 bg-white rounded-t-[1rem] shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] px-8 pt-10 pb-12 pr-8 pl-8 ml-8 mr-8">
           <h2 className="text-xl font-bold text-gray-800 mb-2">ログイン</h2>
           <p className="text-gray-400 text-[13px] mb-8 leading-relaxed">メールアドレスとパスワードを入力してください</p>
 
+
           {/* デモアカウントセクション (1, 2) */}
           <div className="bg-blue-50 rounded-2xl p-4 mb-8 border border-blue-100">
             <div className="text-[11px] mb-3 leading-tight">
+
               <p className="text-blue-800 font-bold mb-1">デモアカウント</p>
               <p className="text-blue-700">一般: user@test.com / password123</p>
               <p className="text-purple-700">管理者: admin@rideshare.jp / admin123</p>
+
             </div>
             
             <div className="flex gap-2">
               {/* ① 一般ユーザーボタン */}
               <button 
                 type="button"
+
                 onClick={() => { setEmail(''); setPassword(''); setIsUser(1); }}
+
                 className="flex-1 bg-white border border-gray-200 py-2.5 rounded-xl text-gray-700 text-[11px] font-bold shadow-sm active:bg-gray-50 transition-colors"
               >
                 一般ユーザーで入力
@@ -123,7 +130,9 @@ export function LoginPage() {
               {/* ② 管理者ボタン */}
               <button 
                 type="button"
+
                 onClick={() => { setEmail(''); setPassword(''); setIsUser(0); }}
+
                 className="flex-1 bg-white border border-gray-200 py-2.5 rounded-xl text-purple-600 text-[11px] font-bold shadow-sm active:bg-gray-50 transition-colors"
               >
                 管理者で入力
@@ -133,6 +142,7 @@ export function LoginPage() {
 
           <form className="space-y-6">
             {/* ③ メールアドレス */}
+
 			<div>
 			  <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">メールアドレス</label>
 			  <input
@@ -143,6 +153,7 @@ export function LoginPage() {
 				placeholder="example@email.com"
 			  />
 			</div>
+
 
             {/* ④ パスワード */}
             <div>
@@ -172,6 +183,8 @@ export function LoginPage() {
           {/* フッターリンク */}
           <div className="mt-10 flex flex-col items-center space-y-8">
 
+
+
             <div className="w-full border-t border-gray-100 pt-8 text-center">
               <span className="text-gray-400 text-[13px]">アカウントをお持ちでない場合 </span>
               {/* ⑥ 新規登録 */}
@@ -188,6 +201,8 @@ export function LoginPage() {
       </div>
     </div>
   );
+
+
 
 }
 
