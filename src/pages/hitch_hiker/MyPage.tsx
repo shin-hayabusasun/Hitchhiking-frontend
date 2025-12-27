@@ -2,7 +2,7 @@
 
 
 // マイページ画面: 外部設計書 4.3.5 に基づくUI刷新とセッション管理の統合
- d61e1f7 (a)
+
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -57,7 +57,7 @@ export const MyPage: React.FC = () => {
     return (
 
         <div className="min-h-screen bg-[#F8F9FA] font-sans text-slate-700">
- d61e1f7 (a)
+
             <Head>
                 <title>マイページ | G4</title>
             </Head>
@@ -69,7 +69,7 @@ export const MyPage: React.FC = () => {
                     <span className="text-xl">←</span>
                 </button>
                 <h1 className="text-lg font-bold">マイページ</h1>
- d61e1f7 (a)
+
                 <button 
                     onClick={() => router.push('/settings/profile')}
                     className="text-sm font-medium text-slate-600 px-2"
@@ -167,5 +167,5 @@ export const MyPage: React.FC = () => {
 };
 
 export default MyPage;
- 2fa6a17 (a)
+
 // % End
