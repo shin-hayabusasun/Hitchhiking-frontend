@@ -11,9 +11,9 @@ export function LogoutPage() {
 	}
 
 	return (
-		<div className="logout-page">
-			<div className="logout-container">
-				<div className="logout-icon">
+		<div className="min-h-screen bg-gradient-to-b from-sky-200 to-white flex items-center justify-center p-8">
+			<div className="w-full max-w-md bg-white/90 rounded-lg shadow-md p-8 text-center">
+				<div className="logout-icon mb-4 flex justify-center">
 					<svg
 						width="80"
 						height="80"
@@ -27,15 +27,15 @@ export function LogoutPage() {
 						<line x1="21" y1="12" x2="9" y2="12" />
 					</svg>
 				</div>
-				<h1 className="logout-title">ログアウトしました</h1>
-				<p className="logout-message">
+				<h1 className="text-2xl font-semibold mb-2">ログアウトしました</h1>
+				<p className="text-sm text-gray-600 mb-6">
 					ご利用ありがとうございました。
 					<br />
 					またのご利用をお待ちしております。
 				</p>
 				<button
 					type="button"
-					className="btn btn-primary"
+					className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
 					onClick={handleLoginClick}
 				>
 					ログイン画面へ
