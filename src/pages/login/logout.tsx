@@ -11,7 +11,7 @@ export function LogoutPage() {
 	}
 
 	return (
-		<div className="logout-page">
+		<div className="logout-page ">
 			<div className="logout-container">
 				<div className="logout-icon">
 					<svg

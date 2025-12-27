@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* % Start(AI Assistant) */
 /* グローバルスタイル: アプリケーション全体で使用される基本スタイル */
 
