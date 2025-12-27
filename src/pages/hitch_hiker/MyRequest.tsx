@@ -1,154 +1,96 @@
 // % Start(田所櫂人)
-// マイリクエスト画面: セッションエラーハンドリングの強化とUI表示ロジックの適正化
+// マイリクエスト画面: 自分の投稿したリクエスト一覧を表示する
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { TitleHeader } from '@/components/TitleHeader';
 
-interface Request {
+// 以前作成した検索カードコンポーネントを再利用、または同様のスタイルで実装
+interface RequestItem {
     id: string;
-    driveId: string;
-    driverName: string;
-    origin: string;
+    departure: string;
     destination: string;
-    date: string;
-    time: string;
-    status: number;
+    departureTime: string;
     fee: number;
+    status: '回答待ち' | '承認済み' | '完了';
 }
 
 export const MyRequestPage: React.FC = () => {
     const router = useRouter();
-    const [requests, setRequests] = useState<Request[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
-    const [activeTab, setActiveTab] = useState<number>(1);
 
-    const fetchMyRequests = useCallback(async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const response = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // セッション維持に必須
-            });
-
-            // セッション切れのハンドリング
-            if (response.status === 401) {
-                router.push('/login?callback=/hitch_hiker/MyRequest');
-                return;
-            }
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || '取得失敗');
-            }
-
-            const data = await response.json();
-            // レスポンスが { data: [...] } か [...] かを判定
-            const result = Array.isArray(data) ? data : (data.data || []);
-            setRequests(result);
-        } catch (err) {
-            console.error(err);
-            setError('リクエスト情報の取得に失敗しました。再ログインをお試しください。');
-        } finally {
-            setLoading(false);
+    // ダミーデータ: 本来はAPIから取得
+    const requests: RequestItem[] = [
+        {
+            id: 'req_001',
+            departure: '松山市駅',
+            destination: '道後温泉',
+            departureTime: '2025/12/30 14:00',
+            fee: 500,
+            status: '回答待ち'
         }
-    }, [activeTab, router]);
-
-    useEffect(() => {
-        fetchMyRequests();
-    }, [fetchMyRequests]);
+    ];
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans text-slate-900">
+        <div className="min-h-screen bg-[#F8F9FA] font-sans">
             <Head>
-                <title>マイリクエスト | G4</title>
+                <title>マイリクエスト</title>
             </Head>
 
-            <TitleHeader title="マイリクエスト" onBack={() => router.push('/home')} />
+            {/* ヘッダー: マイページと統一 */}
+            <header className="bg-white px-6 py-4 flex items-center border-b border-slate-100 sticky top-0 z-50">
+                <button onClick={() => router.back()} className="text-slate-600 text-xl mr-4">←</button>
+                <h1 className="text-[17px] font-bold text-slate-800">マイリクエスト</h1>
+            </header>
 
-            {/* タブナビゲーション */}
-            <div className="sticky top-0 z-30 bg-[#F8FAFC]/80 backdrop-blur-md px-6 py-4">
-                <nav className="flex p-1 bg-slate-200/50 rounded-[1.5rem]">
-                    {[
-                        { id: 1, label: '承認待ち' },
-                        { id: 2, label: '進行中' },
-                        { id: 4, label: '履歴' }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 py-3 text-xs font-black rounded-[1.2rem] transition-all duration-300 ${
-                                activeTab === tab.id 
-                                ? 'bg-white text-slate-900 shadow-sm' 
-                                : 'text-slate-500'
-                            }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </nav>
-            </div>
-
-            <main className="max-w-md mx-auto px-6">
-                {/* 1. ローディング中 */}
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32">
-                        <div className="animate-spin h-8 w-8 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading</p>
+            <main className="max-w-md mx-auto p-4 space-y-4">
+                {requests.length === 0 ? (
+                    <div className="text-center py-20 text-slate-400 text-sm">
+                        投稿したリクエストはありません
                     </div>
                 ) : (
-                    <>
-                        {/* 2. エラー発生時のみ表示 */}
-                        {error ? (
-                            <div className="mt-4 bg-red-50 text-red-500 p-5 rounded-[2rem] text-xs font-bold border border-red-100 flex items-center gap-3">
-                                <span>⚠️</span> {error}
+                    requests.map((req) => (
+                        <div key={req.id} className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-50">
+                            <div className="flex justify-between items-center mb-4">
+                                <span className={`text-[10px] font-black px-3 py-1 rounded-full ${
+                                    req.status === '承認済み' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
+                                }`}>
+                                    {req.status}
+                                </span>
+                                <span className="text-[11px] text-slate-300 font-bold">{req.id}</span>
                             </div>
-                        ) : (
-                            <>
-                                {/* 3. データが空の場合 */}
-                                {requests.length === 0 ? (
-                                    <div className="text-center py-40">
-                                        <span className="text-5xl block mb-6 grayscale opacity-50">📂</span>
-                                        <p className="text-slate-400 text-sm font-bold tracking-tight">該当するリクエストはありません</p>
-                                    </div>
-                                ) : (
-                                    /* 4. データがある場合 */
-                                    <div className="space-y-8 mt-4">
-                                        {requests.map((request) => (
-                                            <div key={request.id} className="bg-white rounded-[3rem] shadow-[0_15px_45px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                                {/* ...カードの中身（前回の実装と同じ）... */}
-                                                <div className="p-8">
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <span className="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-full text-slate-500 uppercase tracking-widest">Request ID: {request.id.slice(0,8)}</span>
-                                                        <p className="text-[11px] font-bold text-slate-300">{request.date}</p>
-                                                    </div>
-                                                    <div className="flex gap-4 items-center">
-                                                        <div className="flex-1">
-                                                            <p className="text-lg font-black text-slate-800">{request.origin} → {request.destination}</p>
-                                                            <p className="text-xs font-bold text-slate-400 mt-1">Driver: {request.driverName}</p>
-                                                        </div>
-                                                        <div className="text-right text-blue-600 font-black">
-                                                            ¥{request.fee.toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                    <button 
-                                                        onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)}
-                                                        className="w-full mt-6 py-4 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black shadow-lg shadow-slate-200"
-                                                    >
-                                                        詳細を確認
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </>
+
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-2.5 h-2.5 rounded-full border-2 border-slate-900"></div>
+                                    <div className="w-[1px] h-8 bg-slate-100 my-1"></div>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold text-slate-800">{req.departure}</p>
+                                    <div className="h-4"></div>
+                                    <p className="text-sm font-bold text-slate-800">{req.destination}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-50">
+                                <div>
+                                    <p className="text-[9px] text-slate-400 font-black uppercase">Departure Time</p>
+                                    <p className="text-xs font-bold text-slate-600">{req.departureTime}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[9px] text-slate-400 font-black uppercase">Offer Fee</p>
+                                    <p className="text-xs font-black text-blue-600">¥{req.fee.toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={() => router.push(`/hitch_hiker/RequestDetail/${req.id}`)}
+                                className="w-full mt-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold active:scale-[0.98] transition-all"
+                            >
+                                詳細を確認する
+                            </button>
+                        </div>
+                    ))
                 )}
             </main>
         </div>
