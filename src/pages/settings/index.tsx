@@ -206,8 +206,9 @@ export function SettingsPage() {
 
 					<button
 						type="button"
-						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-red-100 
-						flex items-center justify-between hover:bg-gray-50 transition-colors"
+						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-red-100
+						flex items-center justify-center gap-2 text-red-600 
+						font-bold hover:bg-red-50 transition-colors"
 						onClick={handleLogoutClick}
 					>
 						<div className="menu-icon">
