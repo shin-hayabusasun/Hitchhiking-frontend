@@ -134,4 +134,3 @@ export function PointHistoryPage() {
 export default PointHistoryPage;
 
 // % End
-

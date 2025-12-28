@@ -107,7 +107,8 @@ export function SettingsPage() {
 				<div className="settings-menu">
 					<button
 						type="button"
-						className="menu-item"
+						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-gray-100 
+						flex items-center justify-between hover:bg-gray-50 transition-colors"
 						onClick={handleIdentityClick}
 					>
 						<div className="menu-icon">
@@ -139,7 +140,8 @@ export function SettingsPage() {
 
 					<button
 						type="button"
-						className="menu-item"
+						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-gray-100 
+						flex items-center justify-between hover:bg-gray-50 transition-colors"
 						onClick={handleNotificationsClick}
 					>
 						<div className="menu-icon">
@@ -171,7 +173,8 @@ export function SettingsPage() {
 
 					<button
 						type="button"
-						className="menu-item"
+						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-gray-100 
+						flex items-center justify-between hover:bg-gray-50 transition-colors"
 						onClick={handlePaymentClick}
 					>
 						<div className="menu-icon">
@@ -203,7 +206,9 @@ export function SettingsPage() {
 
 					<button
 						type="button"
-						className="menu-item menu-item-danger"
+						className="w-full bg-white p-4 rounded-2xl shadow-sm border border-red-100
+						flex items-center justify-center gap-2 text-red-600 
+						font-bold hover:bg-red-50 transition-colors"
 						onClick={handleLogoutClick}
 					>
 						<div className="menu-icon">
