@@ -1,6 +1,7 @@
 // % Start(稗田隼也)
 // ログアウト完了画面: ログアウトが完了したことを示す画面のUI
 
+import React from 'react';
 import { useRouter } from 'next/router';
 
 export function LogoutPage() {
@@ -66,20 +67,6 @@ export function LogoutPage() {
 </div>
 
   </div>
-
-  {/* ログアウト完了メッセージ */}
-  <h2 className="text-red-500 text-2xl font-bold text-center mb-auto">
-    ログアウト完了
-  </h2>
-
-  {/* ログイン画面へボタン */}
-  <button
-    type="button"
-    className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all"
-    onClick={handleLoginClick}
-  >
-    ログイン画面へ
-  </button>
 </div>
 
 
