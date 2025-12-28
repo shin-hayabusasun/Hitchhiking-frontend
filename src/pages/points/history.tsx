@@ -175,33 +175,4 @@ export default function PointHistoryPage() {
           </div>
         )}
 
-        {/* ローディング表示 */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
-            <p className="text-gray-500 text-sm">読み込み中...</p>
-          </div>
-        ) : (
-          /* メインコンテンツ（タブとリスト） */
-          <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="all">すべて</TabsTrigger>
-              <TabsTrigger value="earned">獲得</TabsTrigger>
-              <TabsTrigger value="spent">利用</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all">
-              <TransactionList items={getFilteredTransactions('all')} />
-            </TabsContent>
-            <TabsContent value="earned">
-              <TransactionList items={getFilteredTransactions('earned')} />
-            </TabsContent>
-            <TabsContent value="spent">
-              <TransactionList items={getFilteredTransactions('spent')} />
-            </TabsContent>
-          </Tabs>
-        )}
-      </main>
-    </div>
-  );
-}
+// % End
