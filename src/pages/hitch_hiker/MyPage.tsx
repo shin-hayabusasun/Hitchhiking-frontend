@@ -63,7 +63,6 @@ export default function MyPage() {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] pb-32 font-sans text-slate-900">
- 2fa6a17 (a)
             <Head>
                 <title>マイページ | G4</title>
             </Head>
@@ -141,12 +140,11 @@ export default function MyPage() {
                     className="w-full mt-12 py-5 text-red-400 text-[12px] font-black tracking-widest uppercase hover:text-red-600 transition-colors"
                 >
                     Sign Out
- 2fa6a17 (a)
                 </button>
             </main>
         </div>
     );
-
+}
 
 // メニュー項目のサブコンポーネント
 function MenuItem({ label, icon, isLast = false }: { label: string; icon: string; isLast?: boolean }) {

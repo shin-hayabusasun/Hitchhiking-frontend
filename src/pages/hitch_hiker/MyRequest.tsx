@@ -1,5 +1,5 @@
 // % Start(田所櫂人)
-<<<<<<< HEAD
+
 
 
 
@@ -7,20 +7,15 @@
 
 import React, { useState, useEffect } from 'react';
 
-=======
-// マイリクエスト画面: セッションエラーハンドリングの強化とUI表示ロジックの適正化
 
-import React, { useState, useEffect, useCallback } from 'react';
->>>>>>> 2676871 (a)
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { TitleHeader } from '@/components/TitleHeader';
 
-<<<<<<< HEAD
+
 
 // 設計書 Table 6 (applications) および Table 4 (recruitments) に基づく型定義
-=======
->>>>>>> 2676871 (a)
+
 interface Request {
     id: string;
     driveId: string;
@@ -29,14 +24,11 @@ interface Request {
     destination: string;
     date: string;
     time: string;
-<<<<<<< HEAD
+
     status: number;      // 1: 申請中, 2: 承認, 3: 否認, 4: 完了 (独自拡張)
     fee: number;         // fare
 
-=======
-    status: number;
-    fee: number;
->>>>>>> 2676871 (a)
+
 }
 
 export const MyRequestPage: React.FC = () => {
