@@ -82,7 +82,10 @@ export function ProductManagementPage() {
 				<div className="actions">
 					<button
 						type="button"
-						className="btn btn-primary"
+						// className="btn btn-primary"
+						// className="bg-blue-500 text-white px-4 py-2 rounded"
+						className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all"
+    
 						onClick={handleCreateClick}
 					>
 						新規登録
