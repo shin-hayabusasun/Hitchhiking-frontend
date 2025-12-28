@@ -1,5 +1,7 @@
 // % Start(田所櫂人)
-// 募集管理画面: 外部設計書 4.1.5 に基づき、ステータス管理と通知機能を強化したモダンUI
+
+
+// 募集管理画面: 同乗者が投稿したヒッチハイク募集の一覧表示および管理を行う
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -215,10 +217,13 @@ export const RecruitmentManagementPage: React.FC = () => {
                         ))}
                     </div>
                 )}
+
             </main>
         </div>
     );
 };
 
+
 export default RecruitmentManagementPage;
+
 // % End

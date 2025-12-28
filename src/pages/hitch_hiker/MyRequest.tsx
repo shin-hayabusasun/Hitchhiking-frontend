@@ -1,5 +1,6 @@
 // % Start(田所櫂人)
-// マイリクエスト画面: セッションエラーハンドリングの強化とUI表示ロジックの適正化
+
+// マイリクエスト画面: 同乗者が申請したドライブの一覧と状況を確認・管理する
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -13,12 +14,11 @@ interface Request {
     origin: string;
     destination: string;
     date: string;
-    time: string;
     status: number;
     fee: number;
 }
 
-export const MyRequestPage: React.FC = () => {
+const MyRequestPage: React.FC = () => {
     const router = useRouter();
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -29,37 +29,35 @@ export const MyRequestPage: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // セッション維持に必須
-            });
-
-            // セッション切れのハンドリング
-            if (response.status === 401) {
+            const res = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, { credentials: 'include' });
+            if (res.status === 401) {
                 router.push('/login?callback=/hitch_hiker/MyRequest');
                 return;
             }
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || '取得失敗');
-            }
-
-            const data = await response.json();
-            // レスポンスが { data: [...] } か [...] かを判定
-            const result = Array.isArray(data) ? data : (data.data || []);
-            setRequests(result);
-        } catch (err) {
-            console.error(err);
-            setError('リクエスト情報の取得に失敗しました。再ログインをお試しください。');
+            if (!res.ok) throw new Error('取得失敗');
+            const data = await res.json().catch(() => ({}));
+            const list = Array.isArray(data) ? data : data.data || [];
+            setRequests(list);
+        } catch (e) {
+            console.error(e);
+            setError('リクエスト情報の取得に失敗しました');
         } finally {
             setLoading(false);
         }
     }, [activeTab, router]);
 
-    useEffect(() => {
-        fetchMyRequests();
+    useEffect(() => { fetchMyRequests(); }, [fetchMyRequests]);
+
+    const handleCancelRequest = useCallback(async (id: string) => {
+        if (!confirm('本当にキャンセルしますか？')) return;
+        try {
+            const res = await fetch(`/api/hitchhiker/requests/${id}`, { method: 'DELETE', credentials: 'include' });
+            if (!res.ok) throw new Error('キャンセル失敗');
+            await fetchMyRequests();
+        } catch (e) {
+            console.error(e);
+            alert('キャンセルに失敗しました');
+        }
     }, [fetchMyRequests]);
 
     return (
@@ -70,7 +68,6 @@ export const MyRequestPage: React.FC = () => {
 
             <TitleHeader title="マイリクエスト" onBack={() => router.push('/home')} />
 
-            {/* タブナビゲーション */}
             <div className="sticky top-0 z-30 bg-[#F8FAFC]/80 backdrop-blur-md px-6 py-4">
                 <nav className="flex p-1 bg-slate-200/50 rounded-[1.5rem]">
                     {[
@@ -82,19 +79,14 @@ export const MyRequestPage: React.FC = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex-1 py-3 text-xs font-black rounded-[1.2rem] transition-all duration-300 ${
-                                activeTab === tab.id 
-                                ? 'bg-white text-slate-900 shadow-sm' 
-                                : 'text-slate-500'
+                                activeTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
                             }`}
-                        >
-                            {tab.label}
-                        </button>
+                        >{tab.label}</button>
                     ))}
                 </nav>
             </div>
 
             <main className="max-w-md mx-auto px-6">
-                {/* 1. ローディング中 */}
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-32">
                         <div className="animate-spin h-8 w-8 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
@@ -102,25 +94,21 @@ export const MyRequestPage: React.FC = () => {
                     </div>
                 ) : (
                     <>
-                        {/* 2. エラー発生時のみ表示 */}
                         {error ? (
                             <div className="mt-4 bg-red-50 text-red-500 p-5 rounded-[2rem] text-xs font-bold border border-red-100 flex items-center gap-3">
                                 <span>⚠️</span> {error}
                             </div>
                         ) : (
                             <>
-                                {/* 3. データが空の場合 */}
                                 {requests.length === 0 ? (
                                     <div className="text-center py-40">
                                         <span className="text-5xl block mb-6 grayscale opacity-50">📂</span>
                                         <p className="text-slate-400 text-sm font-bold tracking-tight">該当するリクエストはありません</p>
                                     </div>
                                 ) : (
-                                    /* 4. データがある場合 */
                                     <div className="space-y-8 mt-4">
                                         {requests.map((request) => (
                                             <div key={request.id} className="bg-white rounded-[3rem] shadow-[0_15px_45px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                                {/* ...カードの中身（前回の実装と同じ）... */}
                                                 <div className="p-8">
                                                     <div className="flex justify-between items-center mb-4">
                                                         <span className="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-full text-slate-500 uppercase tracking-widest">Request ID: {request.id.slice(0,8)}</span>
@@ -131,16 +119,21 @@ export const MyRequestPage: React.FC = () => {
                                                             <p className="text-lg font-black text-slate-800">{request.origin} → {request.destination}</p>
                                                             <p className="text-xs font-bold text-slate-400 mt-1">Driver: {request.driverName}</p>
                                                         </div>
-                                                        <div className="text-right text-blue-600 font-black">
-                                                            ¥{request.fee.toLocaleString()}
-                                                        </div>
+                                                        <div className="text-right text-blue-600 font-black">¥{request.fee.toLocaleString()}</div>
                                                     </div>
-                                                    <button 
-                                                        onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)}
-                                                        className="w-full mt-6 py-4 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black shadow-lg shadow-slate-200"
-                                                    >
-                                                        詳細を確認
-                                                    </button>
+                                                    <button onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)} className="w-full mt-6 py-4 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black shadow-lg shadow-slate-200">詳細を確認</button>
+                                                </div>
+
+                                                <div className="p-4 bg-white flex gap-2">
+                                                    <button onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">詳細を表示</button>
+
+                                                    {request.status === 1 && (
+                                                        <button onClick={() => handleCancelRequest(request.id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100">キャンセル</button>
+                                                    )}
+
+                                                    {request.status === 4 && (
+                                                        <button onClick={() => router.push(`/hitch_hiker/review/${request.driveId}`)} className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-lg text-sm font-bold hover:bg-orange-100">レビュー</button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -156,4 +149,6 @@ export const MyRequestPage: React.FC = () => {
 };
 
 export default MyRequestPage;
+
 // % End
+// % Start(田所櫂人)
