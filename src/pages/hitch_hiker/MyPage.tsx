@@ -1,162 +1,79 @@
-// % Start(田所櫂人)
-
-
-// 外部設計書 4.3.5 マイページ画面のUI再現
-
-
-// マイページ: セッション維持の安定化と、外部設計書 4.2.1 に基づくプロフィールUIの刷新
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { TitleHeader } from '@/components/TitleHeader';
+import { ArrowLeft, ChevronRight, ShieldCheck } from 'lucide-react';
 
+// 本来はAPIから取得するユーザーデータの構造例
+const userData = {
+  name: "読み込み中...", // ここを空にするか初期値にする
+  initial: "山",
+  rating: 0.0,
+  usageCount: 0,
+  joinDate: "----/--",
+  bio: "",
+  hobbies: "",
+  purpose: ""
+};
 
+const MyPage = () => {
+  const router = useRouter();
 
-export default function MyPage() {
-    const router = useRouter();
-    const [user, setUser] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
+  return (
+    <div className="min-h-screen bg-gray-50 pb-10">
+      <div className="bg-white p-4 flex items-center justify-between border-b">
+        <button onClick={() => router.back()} className="p-2"><ArrowLeft className="w-6 h-6" /></button>
+        <h1 className="text-lg font-bold text-gray-800">マイページ</h1>
+        <button className="text-blue-600 font-medium">編集</button>
+      </div>
 
-    // セッション有効性を確認しながらデータを取得する関数
-    const fetchUserProfile = useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('/api/user/profile', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // Cookie（セッション）を送信
-            });
+      <div className="p-4 space-y-4">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex flex-col items-center">
+          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <span className="text-3xl font-bold text-blue-600">{userData.initial}</span>
+          </div>
+          <h2 className="text-xl font-bold mb-1">{userData.name}</h2>
+          <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full mb-6">
+            <ShieldCheck className="w-4 h-4 text-blue-600 mr-1" />
+            <span className="text-xs text-blue-700 font-bold">本人確認済み</span>
+          </div>
 
-            if (response.status === 401) {
-                // セッションが切れている場合はログイン画面へ強制遷移
-                console.warn('Session expired. Redirecting to login...');
-                router.push('/login?callback=/mypage');
-                return;
-            }
-
-            if (!response.ok) throw new Error('Profile fetch failed');
-
-            const data = await response.json();
-            setUser(data.data || data);
-        } catch (err) {
-            setError('プロフィールの読み込みに失敗しました。再ログインをお試しください。');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [router]);
-
-    useEffect(() => {
-        fetchUserProfile();
-    }, [fetchUserProfile]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
-                <div className="animate-spin h-10 w-10 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Authenticating...</p>
+          <div className="w-full flex justify-around border-t pt-6">
+            <div className="text-center">
+              <div className="font-bold text-lg">{userData.usageCount}</div>
+              <div className="text-gray-400 text-xs">利用回数</div>
             </div>
-        );
-    }
+            <div className="text-center">
+              <div className="font-bold text-lg">★ {userData.rating}</div>
+              <div className="text-gray-400 text-xs">評価</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-lg text-xs pt-1.5">{userData.joinDate}〜</div>
+              <div className="text-gray-400 text-xs">登録日</div>
+            </div>
+          </div>
 
-    return (
-        <div className="min-h-screen bg-[#F8FAFC] pb-32 font-sans text-slate-900">
-            <Head>
-                <title>マイページ | G4</title>
-            </Head>
-
-
-            <TitleHeader title="マイページ" onBack={() => router.push('/home')} />
-
-            <main className="max-w-md mx-auto px-6 pt-8">
-                {/* プロフィールカード */}
-                <div className="bg-white rounded-[3.5rem] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.04)] border border-white mb-10 text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-slate-50 to-white -z-10"></div>
-                    
-                    <div className="w-28 h-28 bg-slate-100 rounded-[2.5rem] mx-auto mb-6 border-4 border-white shadow-sm flex items-center justify-center text-4xl overflow-hidden">
-                        {user?.avatarUrl ? <img src={user.avatarUrl} alt="avatar" /> : '👤'}
-                    </div>
-
-                    <h2 className="text-2xl font-black text-slate-800 mb-1">{user?.name || 'Guest User'}</h2>
-                    <p className="text-xs font-bold text-slate-400 mb-6">{user?.email}</p>
-
-                    <div className="flex justify-center gap-4">
-                        <button 
-                            onClick={() => router.push('/settings/profile')}
-                            className="px-6 py-2.5 bg-slate-900 text-white rounded-full text-[11px] font-black shadow-lg shadow-slate-200 active:scale-95 transition-all"
-                        >
-                            編集する
-                        </button>
-                    </div>
-                </div>
-
-                {/* ポイント・統計セクション */}
-                <div className="grid grid-cols-2 gap-4 mb-10">
-                    <div className="bg-blue-600 rounded-[2.5rem] p-6 text-white shadow-xl shadow-blue-100">
-                        <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Current Points</p>
-                        <p className="text-2xl font-black">{user?.points?.toLocaleString() || 0} <span className="text-xs uppercase">pt</span></p>
-                    </div>
-                    <button 
-                        onClick={() => router.push('/points/history')}
-                        className="bg-white rounded-[2.5rem] p-6 border border-slate-100 flex flex-col justify-center active:scale-95 transition-all shadow-sm"
-                    >
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">History</p>
-                        <p className="text-sm font-black text-slate-700">ポイント履歴 →</p>
-                    </button>
-                </div>
-
-                {/* メニューリスト */}
-                <div className="space-y-3">
-                    {[
-                        { label: '募集管理', icon: '📋', path: '/hitch_hiker/RecruitmentManagement' },
-                        { label: 'マイリクエスト', icon: '✉️', path: '/hitch_hiker/MyRequest' },
-                        { label: 'ポイント交換', icon: '🎁', path: '/points/exchange' },
-                        { label: '設定・ヘルプ', icon: '⚙️', path: '/settings' },
-                    ].map((item) => (
-                        <button
-                            key={item.label}
-                            onClick={() => router.push(item.path)}
-                            className="w-full bg-white p-6 rounded-[2rem] flex items-center justify-between group active:bg-slate-50 transition-all border border-transparent hover:border-slate-100 shadow-sm"
-                        >
-                            <div className="flex items-center gap-4">
-                                <span className="text-xl">{item.icon}</span>
-                                <span className="text-[14px] font-bold text-slate-700">{item.label}</span>
-                            </div>
-                            <span className="text-slate-300 group-hover:translate-x-1 transition-transform">→</span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* ログアウト */}
-                <button 
-                    onClick={async () => {
-                        if(confirm('ログアウトしますか？')) {
-                            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                            router.push('/login');
-                        }
-                    }}
-                    className="w-full mt-12 py-5 text-red-400 text-[12px] font-black tracking-widest uppercase hover:text-red-600 transition-colors"
-                >
-                    Sign Out
-                </button>
-            </main>
+          <button onClick={() => router.push('/hitch_hiker/MyRequest')} className="w-full mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+            <div className="flex items-center">
+              <div className="bg-blue-100 p-2 rounded-xl mr-3"><ShieldCheck className="w-5 h-5 text-blue-600" /></div>
+              <span className="font-bold">マイリクエスト</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-300" />
+          </button>
         </div>
-    );
-}
 
-// メニュー項目のサブコンポーネント
-function MenuItem({ label, icon, isLast = false }: { label: string; icon: string; isLast?: boolean }) {
-    return (
-        <button className={`w-full flex items-center justify-between px-8 py-6 hover:bg-slate-50 transition-colors ${!isLast ? 'border-b border-slate-50' : ''}`}>
-            <span className="text-[15px] font-bold text-slate-700">{label}</span>
-            <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    );
-}
+        {/* 項目名だけ残し、中身はデータの有無で表示を切り替えられるように */}
+        {[
+          { label: '自己紹介', content: userData.bio || "未設定" },
+          { label: '趣味', content: userData.hobbies || "未設定" },
+          { label: '主な利用目的', content: userData.purpose || "未設定" }
+        ].map((item, idx) => (
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-gray-500 text-sm font-bold mb-3">{item.label}</h3>
+            <p className="text-gray-800 font-medium">{item.content}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
-
-// % End
+export default MyPage;
