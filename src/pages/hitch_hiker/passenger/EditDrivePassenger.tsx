@@ -1,229 +1,144 @@
 // % Start(AI Assistant)
-// 同乗者側募集編集画面。既存募集の編集・削除を行う。
-
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { TitleHeader } from '@/components/TitleHeader';
+import { ArrowLeft, Trash2, Save, Calendar, Clock, MapPin } from 'lucide-react';
 
-export function EditDrivePassengerPage() {
-	const router = useRouter();
-	const { id } = router.query;
-	const [formData, setFormData] = useState({
-		departure: '',
-		destination: '',
-		date: '',
-		time: '',
-		details: '',
-	});
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState('');
-
-	useEffect(() => {
-		if (id) {
-			async function fetchDriveData() {
-				try {
-					const response = await fetch(`/api/passenger/requests/${id}`, {
-						method: 'GET',
-						credentials: 'include',
-					});
-					const data = await response.json();
-					if (response.ok) {
-						setFormData({
-							departure: data.departure || '',
-							destination: data.destination || '',
-							date: data.date || '',
-							time: data.time || '',
-							details: data.details || '',
-						});
-					}
-				} catch (err) {
-					setError('データの取得に失敗しました');
-				} finally {
-					setLoading(false);
-				}
-			}
-			fetchDriveData();
-		}
-	}, [id]);
-
-	async function handleSave() {
-		setError('');
-
-		if (!formData.departure || !formData.destination || !formData.date || !formData.time) {
-			setError('全ての必須項目を入力してください');
-			return;
-		}
-
-		try {
-			const response = await fetch(`/api/passenger/requests/${id}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify(formData),
-			});
-
-			if (response.ok) {
-				alert('募集を更新しました');
-				router.push('/hitch_hiker/Search');
-			} else {
-				setError('更新に失敗しました');
-			}
-		} catch (err) {
-			setError('更新に失敗しました');
-		}
-	}
-
-	async function handleDelete() {
-		if (!confirm('この募集を削除してもよろしいですか？')) {
-			return;
-		}
-
-		try {
-			const response = await fetch(`/api/passenger/requests/${id}`, {
-				method: 'DELETE',
-				credentials: 'include',
-			});
-
-			if (response.ok) {
-				alert('募集を削除しました');
-				router.push('/hitch_hiker/Search');
-			} else {
-				setError('削除に失敗しました');
-			}
-		} catch (err) {
-			setError('削除に失敗しました');
-		}
-	}
-
-	if (loading) {
-		return (
-			<div className="min-h-screen bg-gray-100">
-				<TitleHeader title="募集編集" />
-				<main className="p-8 text-center">
-					<p>読み込み中...</p>
-				</main>
-			</div>
-		);
-	}
-
-	return (
-		<div className="min-h-screen bg-gray-100">
-			<TitleHeader title="募集編集" backPath="/hitch_hiker/Search" />
-			<main className="p-8">
-				<div className="bg-white p-6 rounded-lg shadow-md">
-					<div className="flex justify-between items-center mb-6">
-						<h2 className="text-2xl font-bold">募集内容を編集</h2>
-						<button
-							onClick={handleDelete}
-							className="text-red-500 hover:text-red-700"
-							title="削除"
-						>
-							🗑️ 削除
-						</button>
-					</div>
-
-					<div className="space-y-4">
-						<div>
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								出発地 *
-							</label>
-							<input
-								type="text"
-								className="shadow border rounded w-full py-2 px-3"
-								value={formData.departure}
-								onChange={(e) =>
-									setFormData({ ...formData, departure: e.target.value })
-								}
-								required
-							/>
-						</div>
-
-						<div>
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								目的地 *
-							</label>
-							<input
-								type="text"
-								className="shadow border rounded w-full py-2 px-3"
-								value={formData.destination}
-								onChange={(e) =>
-									setFormData({ ...formData, destination: e.target.value })
-								}
-								required
-							/>
-						</div>
-
-						<div className="grid grid-cols-2 gap-4">
-							<div>
-								<label className="block text-gray-700 text-sm font-bold mb-2">
-									希望日 *
-								</label>
-								<input
-									type="date"
-									className="shadow border rounded w-full py-2 px-3"
-									value={formData.date}
-									onChange={(e) =>
-										setFormData({ ...formData, date: e.target.value })
-									}
-									required
-								/>
-							</div>
-							<div>
-								<label className="block text-gray-700 text-sm font-bold mb-2">
-									希望時間 *
-								</label>
-								<input
-									type="time"
-									className="shadow border rounded w-full py-2 px-3"
-									value={formData.time}
-									onChange={(e) =>
-										setFormData({ ...formData, time: e.target.value })
-									}
-									required
-								/>
-							</div>
-						</div>
-
-						<div>
-							<label className="block text-gray-700 text-sm font-bold mb-2">
-								詳細情報
-							</label>
-							<textarea
-								rows={4}
-								className="shadow border rounded w-full py-2 px-3"
-								value={formData.details}
-								onChange={(e) =>
-									setFormData({ ...formData, details: e.target.value })
-								}
-							></textarea>
-						</div>
-					</div>
-
-					{error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-
-					<div className="mt-8 flex justify-end space-x-4">
-						<button
-							onClick={() => router.back()}
-							className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded"
-						>
-							キャンセル
-						</button>
-						<button
-							onClick={handleSave}
-							className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded"
-						>
-							変更を保存
-						</button>
-					</div>
-				</div>
-			</main>
-		</div>
-	);
+interface EditFormData {
+  departure: string;
+  destination: string;
+  date: string;
+  time: string;
+  capacity: number;
+  fee: number;
+  message: string;
 }
 
+const EditDrivePassengerPage: React.FC = () => {
+  const router = useRouter();
+  // 初期値（実際はAPIから取得）
+  const [formData, setFormData] = useState<EditFormData>({
+    departure: '高知駅',
+    destination: '高知工科大学',
+    date: '2025-12-25',
+    time: '09:00',
+    capacity: 2,
+    fee: 1200,
+    message: '大きな荷物があります。',
+  });
+
+  const handleSave = (): void => {
+    alert('変更を保存しました');
+    router.back();
+  };
+
+  const handleDelete = (): void => {
+    if (confirm('この募集を削除してもよろしいですか？')) {
+      alert('削除しました');
+      router.back();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
+      <div className="w-full max-w-[390px] aspect-[9/19] bg-[#F8FAFC] shadow-2xl flex flex-col border-[8px] border-white relative ring-1 ring-gray-200 overflow-hidden rounded-[3rem]">
+        
+        {/* ヘッダー：削除ボタン付き */}
+        <div className="bg-white p-4 flex items-center justify-between border-b border-gray-100 pt-10 sticky top-0 z-10">
+          <button onClick={() => router.back()} className="text-gray-500 p-2"><ArrowLeft className="w-6 h-6" /></button>
+          <h1 className="text-lg font-black text-gray-800">募集内容の編集</h1>
+          <button onClick={handleDelete} className="text-red-400 p-2 hover:bg-red-50 rounded-full transition-colors">
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-28 scrollbar-hide">
+          {/* 現在の状態表示カード */}
+          <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50 space-y-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
+              <h2 className="font-black text-gray-700">ルート・日時の変更</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="relative">
+                <MapPin className="absolute left-4 top-3.5 w-4 h-4 text-green-500" />
+                <input 
+                  className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 text-sm font-bold" 
+                  value={formData.departure}
+                  onChange={(e) => setFormData({...formData, departure: e.target.value})}
+                />
+              </div>
+              <div className="relative">
+                <MapPin className="absolute left-4 top-3.5 w-4 h-4 text-red-500" />
+                <input 
+                  className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 text-sm font-bold" 
+                  value={formData.destination}
+                  onChange={(e) => setFormData({...formData, destination: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-2">
+              <div className="flex-1 relative">
+                <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <input 
+                  type="date" 
+                  className="w-full bg-gray-50 border-none rounded-xl py-2.5 pl-9 text-[11px] font-bold" 
+                  value={formData.date}
+                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                />
+              </div>
+              <div className="flex-1 relative">
+                <Clock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <input 
+                  type="time" 
+                  className="w-full bg-gray-50 border-none rounded-xl py-2.5 pl-9 text-[11px] font-bold" 
+                  value={formData.time}
+                  onChange={(e) => setFormData({...formData, time: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 条件設定カード */}
+          <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50 space-y-4">
+            <h2 className="text-[11px] font-black text-gray-400 ml-1 uppercase">人数・予算の変更</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-[10px] text-gray-400 ml-1 font-bold italic">PASSENGERS</label>
+                <input 
+                  type="number" 
+                  className="w-full bg-gray-50 border-none rounded-xl py-3 text-center font-black text-blue-600" 
+                  value={formData.capacity}
+                  onChange={(e) => setFormData({...formData, capacity: Number(e.target.value)})}
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-400 ml-1 font-bold italic">BUDGET (¥)</label>
+                <input 
+                  type="number" 
+                  className="w-full bg-gray-50 border-none rounded-xl py-3 text-center font-black text-green-600" 
+                  value={formData.fee}
+                  onChange={(e) => setFormData({...formData, fee: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 下部固定ボタン */}
+        <div className="absolute bottom-0 w-full p-6 bg-white border-t border-gray-50">
+          <button 
+            onClick={handleSave} 
+            className="w-full bg-gray-900 text-white py-4 rounded-[1.5rem] font-black text-[15px] flex items-center justify-center shadow-lg active:scale-95 transition-all"
+          >
+            <Save className="w-5 h-5 mr-2" /> 変更を保存する
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default EditDrivePassengerPage;
-
 // % End
-

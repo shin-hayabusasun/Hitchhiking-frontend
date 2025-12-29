@@ -44,7 +44,7 @@ export function LoginPage() {
 		setLoading(true);
 
 		try {
-			const response = await fetch('/api/user/login', {
+			const response = await fetch('http://localhost:8000/api/user/login', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ export function LoginPage() {
 
 			const data = await response.json();
 
-			if (response.ok && data.ok) {
+			if (data.ok) {
 				// セッション情報を保存（cookieに自動保存される）
 				// ホーム画面へ遷移
 				router.push('/');
@@ -80,10 +80,8 @@ export function LoginPage() {
 
   return (
    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-  
-  {/* ★ スマホ本体を模したコンテナ：aspect-[9/19] で比率を固定 */}
-  <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl overflow-hidden flex flex-col font-sans bg-white  border-[8px] relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white">
 
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
 
 
         {/* 上部余白とヘッダー */}
