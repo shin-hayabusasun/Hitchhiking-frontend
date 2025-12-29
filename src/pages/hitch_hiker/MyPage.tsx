@@ -1,48 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, ChevronRight, ShieldCheck } from 'lucide-react';
-
-const userData = {
-  name: "山田 太郎",
-  initial: "山",
-  rating: 4.7,
-  usageCount: 12,
-  joinDate: "2024-01",
-  bio: "よろしくお願いします！",
-  hobbies: "旅行、写真、カフェ巡り",
-  purpose: "通勤・出張"
-};
+import { ArrowLeft, ShieldCheck, ChevronRight, Home, ShoppingBag, Search, FileText, Bell } from 'lucide-react';
 
 const MyPage = () => {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // APIフェッチ想定
+    setUser({ name: "山田 太郎", rating: 4.8, count: 15 });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* ★ 最新のスマホ枠コードを適用 */}
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto scrollbar-hide">
+      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-hidden">
         
-        {/* Header (stickyを使いたい場合は、枠自体がスクロールするので工夫が必要ですが、まずはシンプルに配置します) */}
-        <div className="bg-white/80 backdrop-blur-sm p-4 flex items-center justify-between border-b pt-8">
-          <button onClick={() => router.back()} className="p-2"><ArrowLeft className="w-6 h-6" /></button>
-          <h1 className="text-lg font-bold text-gray-800">マイページ</h1>
-          <button className="text-blue-600 font-medium text-sm">編集</button>
+        <div className="p-4 flex items-center justify-between pt-10">
+          <button onClick={() => router.back()}><ArrowLeft className="w-6 h-6" /></button>
+          <h1 className="text-lg font-bold">マイページ</h1>
+          <div className="w-6" />
         </div>
 
-        <div className="p-4 space-y-4 pb-10">
-          <div className="bg-white/90 rounded-3xl shadow-sm border border-white/50 p-8 flex flex-col items-center">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-4 text-3xl font-bold text-blue-600">{userData.initial}</div>
-            <h2 className="text-xl font-bold mb-1">{userData.name}</h2>
-            <div className="flex items-center bg-blue-50 px-3 py-1 rounded-full mb-6 text-[10px] text-blue-700 font-bold">本人確認済み</div>
-            <div className="w-full flex justify-around border-t pt-6 text-center">
-              <div><div className="font-bold text-lg">{userData.usageCount}</div><div className="text-gray-400 text-[10px]">利用回数</div></div>
-              <div><div className="font-bold text-lg">★ {userData.rating}</div><div className="text-gray-400 text-[10px]">評価</div></div>
-              <div><div className="font-bold text-lg text-xs pt-1.5">{userData.joinDate}〜</div><div className="text-gray-400 text-[10px]">登録日</div></div>
-            </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 pb-24 scrollbar-hide">
+          <div className="bg-white/90 rounded-[3rem] p-8 flex flex-col items-center shadow-sm">
+            <div className="w-24 h-24 bg-blue-100 rounded-full mb-4 flex items-center justify-center text-2xl font-bold text-blue-600">{user?.name[0]}</div>
+            <h2 className="text-xl font-bold">{user?.name}</h2>
+            <div className="flex items-center text-blue-600 text-[10px] font-bold mt-2 bg-blue-50 px-3 py-1 rounded-full"><ShieldCheck className="w-3 h-3 mr-1" />本人確認済み</div>
           </div>
-          <button onClick={() => router.push('/hitch_hiker/MyRequest')} className="w-full flex items-center justify-between p-4 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all">
-            <span className="font-bold text-sm">マイリクエスト</span>
-            <ChevronRight className="w-5 h-5 opacity-50" />
+
+          <button onClick={() => router.push('/hitch_hiker/MyRequest')} className="w-full bg-blue-600 text-white p-5 rounded-3xl flex justify-between items-center shadow-lg shadow-blue-200">
+            <span className="font-bold">マイリクエスト</span>
+            <ChevronRight />
           </button>
+        </div>
+
+        {/* Bottom Nav */}
+        <div className="absolute bottom-0 w-full bg-white border-t flex justify-around py-3 px-2">
+          <div className="flex flex-col items-center text-blue-600"><Home className="w-5 h-5" /><span className="text-[8px] font-bold">ホーム</span></div>
+          {/* ... 他のアイコン ... */}
         </div>
       </div>
     </div>
