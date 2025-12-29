@@ -59,7 +59,7 @@ export function LoginPage() {
 
 			const data = await response.json();
 
-			if (response.ok && data.ok) {
+			if (data.ok) {
 				// セッション情報を保存（cookieに自動保存される）
 				// ホーム画面へ遷移
 				router.push('/');
