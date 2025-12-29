@@ -1,67 +1,56 @@
-// % Start(田所櫂人)
 import React from 'react';
+import { MapPin, Calendar, Users, MessageCircle, Edit3, Trash2 } from 'lucide-react';
 
-// 設計書の入力項目に基づいた型定義
-interface RecruitmentCardProps {
-    state: string;           // 募集状態
-    start: string;           // 出発地
-    end: string;             // 目的地
-    date: string;            // 日付
-    money: number;           // 料金
-    people: number;          // 人数
-    registrationdate: string; // 登録日
-    onEdit: () => void;      // 編集ボタン
-    onDelete: () => void;    // 削除ボタン
+interface RecruitmentManagementCardProps {
+  item: {
+    id: number;
+    status: string;
+    statusText: string;
+    partner?: string;
+    from: string;
+    to: string;
+    date: string;
+    people: string;
+    price: string;
+    applicantCount: number;
+  };
 }
 
-const RecruitmentManagementCard: React.FC<RecruitmentCardProps> = (props) => {
-    return (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-4">
-            <div className="flex justify-between items-start mb-3">
-                <span className="bg-blue-50 text-blue-600 text-[11px] font-bold px-2 py-1 rounded">
-                    {props.state}
-                </span>
-                <span className="text-[11px] text-slate-400 font-medium">登録日: {props.registrationdate}</span>
-            </div>
-            
-            <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400 w-12 font-bold">経路</span>
-                    <span className="text-sm font-bold text-slate-700">{props.start} → {props.end}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400 w-12 font-bold">日時</span>
-                    <span className="text-sm text-slate-600 font-medium">{props.date}</span>
-                </div>
-                <div className="flex gap-4">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 w-12 font-bold">料金</span>
-                        <span className="text-sm text-slate-600 font-bold">{props.money.toLocaleString()}円</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 w-12 font-bold">人数</span>
-                        <span className="text-sm text-slate-600 font-medium">{props.people}人</span>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex gap-2 border-t border-slate-50 pt-4 mt-2">
-                <button 
-                    onClick={props.onEdit} 
-                    className="flex-1 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors"
-                >
-                    編集
-                </button>
-                <button 
-                    onClick={props.onDelete} 
-                    className="flex-1 py-2 bg-red-50 text-red-500 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors"
-                >
-                    削除
-                </button>
-            </div>
+const RecruitmentManagementCard: React.FC<RecruitmentManagementCardProps> = ({ item }) => {
+  return (
+    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-4">
+        <span className={`text-xs font-bold px-3 py-1 rounded-full ${item.status === 'OPEN' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
+          {item.statusText}
+        </span>
+        <span className="text-xs font-bold text-gray-400">
+          {item.status === 'MATCHED' ? `${item.partner}さんと成立` : `${item.applicantCount}件の申請`}
+        </span>
+      </div>
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center text-sm font-bold text-gray-700"><MapPin className="w-4 h-4 mr-2 text-green-500" /> {item.from}</div>
+        <div className="flex items-center text-sm font-bold text-gray-700"><MapPin className="w-4 h-4 mr-2 text-red-500" /> {item.to}</div>
+        <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
+          <div className="flex items-center text-xs text-gray-500"><Calendar className="w-4 h-4 mr-1" /> {item.date}</div>
+          <div className="flex items-center text-xs text-gray-500"><Users className="w-4 h-4 mr-1" /> {item.people}名</div>
+          <div className="text-green-600 font-bold text-lg">¥{item.price} <span className="text-[10px] text-gray-400 font-normal">/人</span></div>
         </div>
-    );
+      </div>
+      
+      <div className="flex space-x-2">
+        {item.status === 'OPEN' ? (
+          <>
+            <button className="flex-1 border border-gray-200 py-3 rounded-2xl flex items-center justify-center font-bold text-gray-600 hover:bg-gray-50"><Edit3 className="w-4 h-4 mr-2" /> 編集</button>
+            <button className="flex-1 border border-red-100 py-3 rounded-2xl flex items-center justify-center font-bold text-red-500 hover:bg-red-50"><Trash2 className="w-4 h-4 mr-2" /> 削除</button>
+          </>
+        ) : (
+          <button className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center shadow-lg shadow-blue-100 active:scale-95 transition-all">
+            <MessageCircle className="w-5 h-5 mr-2" /> 運転者とチャットする
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default RecruitmentManagementCard;
-// % End
