@@ -1,154 +1,114 @@
-// % Start(田所櫂人)
-
-// マイリクエスト画面: 同乗者が申請したドライブの一覧と状況を確認・管理する
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
-import { TitleHeader } from '@/components/TitleHeader';
+import { ArrowLeft, MapPin, Calendar, Eye, MessageCircle, Star } from 'lucide-react';
 
-interface Request {
-    id: string;
-    driveId: string;
-    driverName: string;
-    origin: string;
-    destination: string;
-    date: string;
-    status: number;
-    fee: number;
-}
-
-const MyRequestPage: React.FC = () => {
-    const router = useRouter();
-    const [requests, setRequests] = useState<Request[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string>('');
-    const [activeTab, setActiveTab] = useState<number>(1);
-
-    const fetchMyRequests = useCallback(async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const res = await fetch(`/api/hitchhiker/requests?status=${activeTab}`, { credentials: 'include' });
-            if (res.status === 401) {
-                router.push('/login?callback=/hitch_hiker/MyRequest');
-                return;
-            }
-            if (!res.ok) throw new Error('取得失敗');
-            const data = await res.json().catch(() => ({}));
-            const list = Array.isArray(data) ? data : data.data || [];
-            setRequests(list);
-        } catch (e) {
-            console.error(e);
-            setError('リクエスト情報の取得に失敗しました');
-        } finally {
-            setLoading(false);
-        }
-    }, [activeTab, router]);
-
-    useEffect(() => { fetchMyRequests(); }, [fetchMyRequests]);
-
-    const handleCancelRequest = useCallback(async (id: string) => {
-        if (!confirm('本当にキャンセルしますか？')) return;
-        try {
-            const res = await fetch(`/api/hitchhiker/requests/${id}`, { method: 'DELETE', credentials: 'include' });
-            if (!res.ok) throw new Error('キャンセル失敗');
-            await fetchMyRequests();
-        } catch (e) {
-            console.error(e);
-            alert('キャンセルに失敗しました');
-        }
-    }, [fetchMyRequests]);
-
-    return (
-        <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans text-slate-900">
-            <Head>
-                <title>マイリクエスト | G4</title>
-            </Head>
-
-            <TitleHeader title="マイリクエスト" onBack={() => router.push('/home')} />
-
-            <div className="sticky top-0 z-30 bg-[#F8FAFC]/80 backdrop-blur-md px-6 py-4">
-                <nav className="flex p-1 bg-slate-200/50 rounded-[1.5rem]">
-                    {[
-                        { id: 1, label: '承認待ち' },
-                        { id: 2, label: '進行中' },
-                        { id: 4, label: '履歴' }
-                    ].map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 py-3 text-xs font-black rounded-[1.2rem] transition-all duration-300 ${
-                                activeTab === tab.id ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
-                            }`}
-                        >{tab.label}</button>
-                    ))}
-                </nav>
-            </div>
-
-            <main className="max-w-md mx-auto px-6">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-32">
-                        <div className="animate-spin h-8 w-8 border-[3px] border-slate-900 rounded-full border-t-transparent mb-4"></div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading</p>
-                    </div>
-                ) : (
-                    <>
-                        {error ? (
-                            <div className="mt-4 bg-red-50 text-red-500 p-5 rounded-[2rem] text-xs font-bold border border-red-100 flex items-center gap-3">
-                                <span>⚠️</span> {error}
-                            </div>
-                        ) : (
-                            <>
-                                {requests.length === 0 ? (
-                                    <div className="text-center py-40">
-                                        <span className="text-5xl block mb-6 grayscale opacity-50">📂</span>
-                                        <p className="text-slate-400 text-sm font-bold tracking-tight">該当するリクエストはありません</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-8 mt-4">
-                                        {requests.map((request) => (
-                                            <div key={request.id} className="bg-white rounded-[3rem] shadow-[0_15px_45px_rgba(0,0,0,0.03)] border border-white overflow-hidden">
-                                                <div className="p-8">
-                                                    <div className="flex justify-between items-center mb-4">
-                                                        <span className="text-[10px] font-black px-3 py-1 bg-slate-100 rounded-full text-slate-500 uppercase tracking-widest">Request ID: {request.id.slice(0,8)}</span>
-                                                        <p className="text-[11px] font-bold text-slate-300">{request.date}</p>
-                                                    </div>
-                                                    <div className="flex gap-4 items-center">
-                                                        <div className="flex-1">
-                                                            <p className="text-lg font-black text-slate-800">{request.origin} → {request.destination}</p>
-                                                            <p className="text-xs font-bold text-slate-400 mt-1">Driver: {request.driverName}</p>
-                                                        </div>
-                                                        <div className="text-right text-blue-600 font-black">¥{request.fee.toLocaleString()}</div>
-                                                    </div>
-                                                    <button onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)} className="w-full mt-6 py-4 bg-slate-900 text-white rounded-[1.5rem] text-[11px] font-black shadow-lg shadow-slate-200">詳細を確認</button>
-                                                </div>
-
-                                                <div className="p-4 bg-white flex gap-2">
-                                                    <button onClick={() => router.push(`/hitch_hiker/DriveDetail/${request.driveId}`)} className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors">詳細を表示</button>
-
-                                                    {request.status === 1 && (
-                                                        <button onClick={() => handleCancelRequest(request.id)} className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100">キャンセル</button>
-                                                    )}
-
-                                                    {request.status === 4 && (
-                                                        <button onClick={() => router.push(`/hitch_hiker/review/${request.driveId}`)} className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-lg text-sm font-bold hover:bg-orange-100">レビュー</button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </>
-                )}
-            </main>
-        </div>
-    );
+// 将来的にAPIから取得するデータの構造
+const dummyRequests = {
+  requesting: [
+    { id: 1, name: '田中 太郎', rate: '4.8 (45回)', from: '東京駅', to: '横浜駅', date: '2025-11-05 09:00', price: '800', applied: '2025-11-03' },
+  ],
+  approved: [
+    { id: 3, name: '鈴木 一郎', rate: '4.7 (32回)', from: '品川駅', to: '羽田空港', date: '2025-11-07 06:00', price: '1200', approvedDate: '2025-11-03' }
+  ],
+  completed: [
+    { id: 4, name: '高橋 美咲', rate: '4.8 (56回)', from: '新宿駅', to: '箱根', date: '2025-11-01 08:00', price: '2500', doneDate: '2025-11-01', reviewed: false },
+  ]
 };
 
-export default MyRequestPage;
+const MyRequest = () => {
+  const router = useRouter();
+  const [tab, setTab] = useState<'requesting' | 'approved' | 'completed'>('requesting');
 
-// % End
-// % Start(田所櫂人)
+  // 表示するデータの選択
+  const currentItems = dummyRequests[tab] || [];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white p-4 flex items-center border-b sticky top-0 z-10">
+        <button onClick={() => router.back()} className="p-2 mr-2"><ArrowLeft className="w-6 h-6" /></button>
+        <h1 className="text-lg font-bold">マイリクエスト</h1>
+      </div>
+
+      <div className="p-4">
+        <div className="bg-gray-200 p-1 rounded-2xl flex">
+          {['requesting', 'approved', 'completed'].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t as any)}
+              className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
+                tab === t ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500'
+              }`}
+            >
+              {t === 'requesting' ? '申請中' : t === 'approved' ? '承認済み' : '完了'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 space-y-4 pb-20">
+        {currentItems.length === 0 ? (
+          <div className="text-center py-20 text-gray-400 font-medium">リクエストはありません</div>
+        ) : (
+          currentItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+              <div className="flex justify-between items-center mb-4">
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                  tab === 'requesting' ? 'bg-yellow-50 text-yellow-600' :
+                  tab === 'approved' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {tab === 'requesting' ? '● 承認待ち' : tab === 'approved' ? '✓ 承認済み' : '✓ 完了'}
+                </span>
+                <span className="text-[10px] text-gray-400">
+                  日付: {item.applied || item.approvedDate || item.doneDate}
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
+                  {item.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-bold text-gray-800">{item.name}</div>
+                  <div className="text-xs text-gray-400 flex items-center">
+                    <Star className="w-3 h-3 text-yellow-400 mr-1 fill-yellow-400" /> {item.rate}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-2 text-green-500" /> <span>{item.from}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 mr-2 text-red-500" /> <span>{item.to}</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-600 pt-1">
+                  <Calendar className="w-4 h-4 mr-2" /> <span>{item.date}</span>
+                  <span className="ml-auto text-green-600 font-bold text-lg">¥{item.price}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <button className="w-full flex items-center justify-center border border-gray-200 py-3 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-50">
+                  <Eye className="w-4 h-4 mr-2" /> 詳細を見る
+                </button>
+                {(tab === 'requesting' || tab === 'approved') && (
+                  <button className="w-full bg-blue-600 text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center shadow-md shadow-blue-100">
+                    <MessageCircle className="w-4 h-4 mr-2" /> チャットする
+                  </button>
+                )}
+                {tab === 'completed' && !item.reviewed && (
+                  <button className="w-full bg-orange-500 text-white py-3 rounded-2xl text-sm font-bold flex items-center justify-center">
+                    <Star className="w-4 h-4 mr-2" /> レビューを書く
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MyRequest;
