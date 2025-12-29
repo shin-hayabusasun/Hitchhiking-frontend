@@ -12,13 +12,13 @@ export function HomePage() {
 	useEffect(() => {
 		async function checkSession() {
 			try {
-				const response = await fetch('/api/user/IsLogin', {
+				const response = await fetch('http://localhost:8000/api/user/IsLogin', {
 					method: 'GET',
 					credentials: 'include',
 				});
 				const data = await response.json();
 				
-				if (!response.ok || !data.ok) {
+				if (!response.ok ) {
 					// ログインしていない場合はログイン画面へ
 					router.push('/login');
 				} else {
