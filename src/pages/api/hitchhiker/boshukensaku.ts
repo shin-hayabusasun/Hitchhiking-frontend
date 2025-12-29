@@ -1,54 +1,69 @@
 // % Start(AI Assistant)
-// モックAPI: 募集検索
+// モックAPI: 募集検索 (配列を直接返す形に修正)
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-	if (req.method !== 'GET') {
-		return res.status(405).json({ message: 'Method not allowed' });
-	}
+    if (req.method !== 'GET') {
+        return res.status(405).json({ message: 'Method not allowed' });
+    }
 
-	// モックデータ
-	const mockDrives = [
-		{
-			id: '1',
-			driverName: '山田太郎',
-			departure: '東京駅',
-			destination: '横浜駅',
-			departureTime: new Date(Date.now() + 86400000).toISOString(),
-			fee: 1000,
-			capacity: 4,
-			currentPassengers: 2,
-			matchingScore: 85,
-		},
-		{
-			id: '2',
-			driverName: '佐藤花子',
-			departure: '新宿駅',
-			destination: '渋谷駅',
-			departureTime: new Date(Date.now() + 172800000).toISOString(),
-			fee: 500,
-			capacity: 3,
-			currentPassengers: 1,
-			matchingScore: 92,
-		},
-		{
-			id: '3',
-			driverName: '鈴木一郎',
-			departure: '品川駅',
-			destination: '川崎駅',
-			departureTime: new Date(Date.now() + 259200000).toISOString(),
-			fee: 800,
-			capacity: 4,
-			currentPassengers: 0,
-			matchingScore: 78,
-		},
-	];
+    const mockDrives = [
+        {
+            id: '1',
+            name: '田中 太郎',
+            start: '東京駅',
+            end: '横浜駅',
+            date: '2025-11-05 09:00',
+            money: 800,
+            people: 2,
+            match: 95,
+            carinfo: 'トヨタ プリウス',
+            state: '募集中',
+            car_jouken: [
+                { jouken_name: '禁煙' },
+                { jouken_name: 'ペット不可' },
+                { jouken_name: '音楽OK' }
+            ],
+        },
+        {
+            id: '2',
+            name: '佐藤 花子',
+            start: '新宿駅',
+            end: '八王子駅',
+            date: '2025-11-06 18:30',
+            money: 1200,
+            people: 3,
+            match: 88,
+            carinfo: 'ホンダ N-BOX',
+            state: '募集中',
+            car_jouken: [
+                { jouken_name: '禁煙' },
+                { jouken_name: '女性限定' }
+            ],
+        },
+        {
+            id: '3',
+            name: '鈴木 一郎',
+            start: '品川駅',
+            end: '静岡駅',
+            date: '2025-11-10 07:00',
+            money: 3500,
+            people: 4,
+            match: 72,
+            carinfo: '日産 セレナ',
+            state: '残りわずか',
+            car_jouken: [
+                { jouken_name: '飲食可' },
+                { jouken_name: '荷物多めOK' }
+            ],
+        },
+    ];
 
-	return res.status(200).json({
-		card: mockDrives,
-	});
+    // 配列をそのままレスポンスとして返却
+    return res.status(200).json(mockDrives);
 }
 
 // % End
 
+// % End
