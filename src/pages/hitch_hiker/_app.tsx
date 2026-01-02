@@ -1,9 +1,6 @@
-import type { AppProps } from 'next/app'
-import 'leaflet/dist/leaflet.css'
-import '../styles/globals.css'
-
 // pages/_app.tsx
 import { useState } from "react";
+import type { AppProps } from "next/app";
 
 export type TimeRange = {
   start: string;
