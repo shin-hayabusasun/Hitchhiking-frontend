@@ -5,15 +5,19 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { applicationApi } from '@/lib/api';
 import { DriverHeader } from '@/components/driver/DriverHeader';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { RequestCard } from '@/components/driver/RequestCard';
+import { Plus } from 'lucide-react';
 
 interface Request {
 	id: string;
-	driveId: string;
-	passengerId: string;
-	passengerName: string;
-	message?: string;
-	createdAt: string;
+    passengerName: string;
+    matchingRate: number;
+    rating: number;
+    reviewCount: number;
+    departure: string;
+    destination: string;
+    departureTime: string;
+    createdAt: string;
 }
 
 export function DriverRequestsPage() {
@@ -38,47 +42,82 @@ export function DriverRequestsPage() {
 
 	// 申請一覧取得
 	useEffect(() => {
-		async function fetchRequests() {
-			try {
-				const response = await applicationApi.getRequests('pending');
-				setRequests(response.requests || []);
-			} catch (err) {
-				setError('申請情報の取得に失敗しました');
-			} finally {
-				setLoading(false);
-			}
-		}
+        async function fetchRequests() {
+            try {
+                const response = await fetch('/api/driver/requests?status=pending', {
+                    method: 'GET',
+                    credentials: 'include', // セッション情報を含める
+                });
+                const data = await response.json();
+                
+                // APIが { requests: [...] } の形式で返すことを想定
+                setRequests(data.requests || []);
+            } catch (err) {
+                setError('申請情報の取得に失敗しました');
+            } finally {
+                setLoading(false);
+            }
+        }
 
-		fetchRequests();
-	}, []);
+        fetchRequests();
+    }, []);
+
+	// async function handleApprove(id: string) {
+	// 	if (!confirm('この申請を承認しますか？')) {
+	// 		return;
+	// 	}
+
+	// 	try {
+	// 		await applicationApi.approveApplication(id);
+	// 		setRequests(requests.filter((req) => req.id !== id));
+	// 		alert('承認しました');
+	// 	} catch (err) {
+	// 		alert('承認に失敗しました');
+	// 	}
+	// }
+
+	// async function handleReject(id: string) {
+	// 	if (!confirm('この申請を拒否しますか？')) {
+	// 		return;
+	// 	}
+
+	// 	try {
+	// 		await applicationApi.rejectApplication(id);
+	// 		setRequests(requests.filter((req) => req.id !== id));
+	// 		alert('拒否しました');
+	// 	} catch (err) {
+	// 		alert('拒否に失敗しました');
+	// 	}
+	// }
 
 	async function handleApprove(id: string) {
-		if (!confirm('この申請を承認しますか？')) {
-			return;
-		}
+        if (!confirm('この申請を承認しますか？')) return;
+        try {
+            await fetch(`/api/applications/${id}/approve`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+            setRequests(requests.filter((req) => req.id !== id));
+            alert('承認しました');
+        } catch (err) {
+            alert('承認に失敗しました');
+        }
+    }
 
-		try {
-			await applicationApi.approveApplication(id);
-			setRequests(requests.filter((req) => req.id !== id));
-			alert('承認しました');
-		} catch (err) {
-			alert('承認に失敗しました');
-		}
-	}
-
-	async function handleReject(id: string) {
-		if (!confirm('この申請を拒否しますか？')) {
-			return;
-		}
-
-		try {
-			await applicationApi.rejectApplication(id);
-			setRequests(requests.filter((req) => req.id !== id));
-			alert('拒否しました');
-		} catch (err) {
-			alert('拒否に失敗しました');
-		}
-	}
+    // 拒否処理
+    async function handleReject(id: string) {
+        if (!confirm('この申請を拒否しますか？')) return;
+        try {
+            await fetch(`/api/applications/${id}/reject`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+            setRequests(requests.filter((req) => req.id !== id));
+            alert('拒否しました');
+        } catch (err) {
+            alert('拒否に失敗しました');
+        }
+    }
 
 	function handleCreateClick() {
 		router.push('/driver/drives/create');
@@ -125,62 +164,40 @@ export function DriverRequestsPage() {
 
 
 					{loading && (
-						<div className="loading-container">
-							<div className="loading-spinner"></div>
-						</div>
-					)}
+                        <div className="flex justify-center py-10">
+                            <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
+                        </div>
+                    )}
 
-					{error && <div className="error-message">{error}</div>}
+                    {error && <div className="text-red-500 text-center text-sm font-bold p-4 bg-white rounded-xl mb-4">{error}</div>}
 
-					{!loading && !error && requests.length === 0 && (
-						<div className="empty-state">
-							<p>現在、申請はありません</p>
-						</div>
-					)}
-
-					{!loading && !error && requests.length > 0 && (
-						<div className="requests-list">
-							{requests.map((request) => {
-								return (
-									<div key={request.id} className="request-card">
-										<div className="request-header">
-											<h3>{request.passengerName}</h3>
-											<span className="request-date">
-												{new Date(
-													request.createdAt
-												).toLocaleDateString('ja-JP')}
-											</span>
-										</div>
-										{request.message && (
-											<div className="request-message">
-												<p>{request.message}</p>
-											</div>
-										)}
-										<div className="request-actions">
-											<button
-												type="button"
-												className="btn btn-danger"
-												onClick={() => {
-													handleReject(request.id);
-												}}
-											>
-												拒否
-											</button>
-											<button
-												type="button"
-												className="btn btn-primary"
-												onClick={() => {
-													handleApprove(request.id);
-												}}
-											>
-												承認
-											</button>
-										</div>
-									</div>
-								);
-							})}
-						</div>
-					)}
+                    {/* ★ map関数によるカードの展開表示部分 */}
+                    {!loading && !error && (
+                        <div className="space-y-4">
+                            {requests.length > 0 ? (
+                                requests.map((request) => (
+                                    <RequestCard
+                                        key={request.id}
+                                        id={request.id}
+                                        passengerName={request.passengerName}
+                                        matchingRate={request.matchingRate}
+                                        rating={request.rating}
+                                        reviewCount={request.reviewCount}
+                                        departure={request.departure}
+                                        destination={request.destination}
+                                        departureTime={request.departureTime}
+                                        createdAt={request.createdAt}
+                                        onApprove={handleApprove}
+                                        onReject={handleReject}
+                                    />
+                                ))
+                            ) : (
+                                <div className="text-center py-20 text-gray-500 text-sm font-bold bg-white/50 rounded-3xl backdrop-blur-sm">
+                                    <p>現在、申請はありません</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 				</main>
 				<div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
 					<button
