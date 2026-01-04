@@ -11,50 +11,39 @@ const RecruitmentManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 画像イメージに合わせたダミーデータ
-        const data = [
-          { 
-            id: 1, 
-            status: 'OPEN', 
-            statusText: '募集中', 
-            appliedDate: '2025.12.21', 
-            userName: '田所 櫂人',
-            rating: '4.9',
-            reviews: '12',
-            from: '高知駅', 
-            to: '高知工科大学', 
-            date: '12-25 09:00', 
-            people: '2', 
-            price: '1200' 
+        setLoading(true);
+        // FastAPIのバックエンドからデータを取得
+        const response = await fetch('http://localhost:8000/api/hitchhiker/my_recruitments', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          { 
-            id: 2, 
-            status: 'MATCHED', 
-            statusText: 'マッチ済み', 
-            appliedDate: '2025.12.20', 
-            userName: '山田 太郎',
-            rating: '4.7',
-            reviews: '5',
-            from: 'はりまや橋', 
-            to: '桂浜', 
-            date: '12-28 14:00', 
-            people: '1', 
-            price: '800' 
-          }
-        ];
-        setRecruitments(data);
+          // クッキー（session_id）を含める
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('データの取得に失敗しました');
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          // APIから返ってきた data 配列をステートにセット
+          setRecruitments(result.data);
+        }
       } catch (error) {
         console.error("API Error:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* スマホ本体コンテナ */}
       <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-[#E0F2FE] overflow-hidden rounded-[3rem]">
         
         {/* ヘッダー */}
@@ -79,38 +68,35 @@ const RecruitmentManagement = () => {
         <div className="flex-1 overflow-y-auto p-4 pb-32 scrollbar-hide">
           {loading ? (
             <div className="flex justify-center py-20 text-gray-400 text-sm">読み込み中...</div>
-          ) : (
+          ) : recruitments.length > 0 ? (
             recruitments.map((item: any) => (
-              <RecruitmentManagementCard key={item.id} item={item} />
+              /* APIのレスポンス項目名(from_location等)をCard側が受け取れるように調整 */
+              <RecruitmentManagementCard 
+                key={item.id} 
+                item={{
+                  ...item,
+                  from: item.from_location, // APIの名称をCard側の期待する名称に変換
+                  to: item.to_location
+                }} 
+              />
             ))
+          ) : (
+            <div className="flex justify-center py-20 text-gray-400 text-sm">募集データがありません</div>
           )}
         </div>
 
         {/* 画面最下部の固定ボタン */}
         <div className="absolute bottom-24 w-full px-6 z-40">
-          <button className="w-full bg-[#2563EB] text-white py-4 rounded-2xl font-bold flex items-center justify-center shadow-xl shadow-blue-300 active:scale-95 transition-all">
+          <button 
+            onClick={() => router.push('/hitch_hiker/passenger/CreateDrivePassenger')} 
+            className="w-full bg-[#2563EB] text-white py-4 rounded-2xl font-bold flex items-center justify-center shadow-xl shadow-blue-300 active:scale-95 transition-all"
+          >
             <Plus className="w-5 h-5 mr-2" /> 新しい募集を作成
           </button>
         </div>
 
         {/* 下部ナビゲーション */}
-        <div className="absolute bottom-0 w-full bg-white border-t flex justify-around py-3 px-2 z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-          <div onClick={() => router.push('/')} className="flex flex-col items-center text-gray-400 cursor-pointer">
-            <Home className="w-5 h-5" /><span className="text-[9px] mt-1 font-bold">ホーム</span>
-          </div>
-          <div className="flex flex-col items-center text-gray-400 cursor-pointer">
-            <ShoppingBag className="w-5 h-5" /><span className="text-[9px] mt-1 font-bold">ひろば</span>
-          </div>
-          <div className="flex flex-col items-center text-gray-400 cursor-pointer">
-            <Search className="w-5 h-5" /><span className="text-[9px] mt-1 font-bold">募集検索</span>
-          </div>
-          <div className="flex flex-col items-center text-[#2563EB] cursor-pointer">
-            <FileText className="w-5 h-5" /><span className="text-[9px] mt-1 font-bold">募集管理</span>
-          </div>
-          <div className="flex flex-col items-center text-gray-400 cursor-pointer">
-            <Bell className="w-5 h-5" /><span className="text-[9px] mt-1 font-bold">通知</span>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 // % Start(AI Assistant)
+//DBはメッセージがない
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, Calendar, Clock, Users, Check, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Users, Check, AlertCircle, Loader2 } from 'lucide-react';
 
 // 型定義
 interface FormData {
@@ -16,6 +17,7 @@ interface FormData {
 
 const CreateDrivePassengerPage: React.FC = () => {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     departure: '',
     destination: '',
@@ -26,15 +28,50 @@ const CreateDrivePassengerPage: React.FC = () => {
     message: '',
   });
 
-  const handleCreate = (): void => {
-    // バリデーション等のロジックをここに
-    alert('募集を作成しました');
-    router.push('/hitch_hiker/RecruitmentManagement');
+  // APIリクエスト処理
+  const handleCreate = async (): Promise<void> => {
+    // 簡易バリデーション
+    if (!formData.departure || !formData.destination || !formData.departureDate || !formData.departureTime) {
+      alert('必須項目を入力してください');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // FastAPIのバックエンドを叩く
+      const response = await fetch('http://localhost:8000/api/hitchhiker/regist_recruitment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // クッキー（セッションID）を送信
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '募集の作成に失敗しました');
+      }
+
+      const result = await response.json();
+
+      if (result.ok) {
+        
+        // 募集管理画面（または詳細画面）へ遷移
+        router.push('/hitch_hiker/RecruitmentManagement');
+      }
+    } catch (error: any) {
+      console.error('Submit Error:', error);
+      alert(error.message || '通信エラーが発生しました');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans text-gray-800">
-      {/* スマホ外枠コンテナ */}
       <div className="w-full max-w-[390px] aspect-[9/19] bg-[#F8FAFC] shadow-2xl flex flex-col border-[8px] border-white relative ring-1 ring-gray-200 overflow-hidden rounded-[3rem]">
         
         {/* ヘッダー */}
@@ -47,22 +84,19 @@ const CreateDrivePassengerPage: React.FC = () => {
 
         {/* フォームエリア */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-24 scrollbar-hide">
-          {/* 説明テキスト */}
           <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex items-start space-x-3">
             <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
             <p className="text-[12px] text-blue-700 leading-relaxed font-medium">
-              運転者に向けて同乗希望を募集します。希望するルートや日時を入力してください。
+              入力された地点から経路を自動計算します。住所や駅名を入力してください。
             </p>
           </div>
 
-          {/* ルート情報セクション */}
+          {/* ルート情報 */}
           <section className="space-y-4">
             <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">ルート情報</h2>
             <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-50 space-y-4">
               <div>
-                <label className="text-[11px] font-bold text-gray-500 ml-1">
-                  出発地 <span className="text-red-500 ml-1">※自宅付近は避けてください</span>
-                </label>
+                <label className="text-[11px] font-bold text-gray-500 ml-1">出発地</label>
                 <div className="relative mt-1.5">
                   <span className="absolute inset-y-0 left-4 flex items-center text-lg">📍</span>
                   <input 
@@ -90,7 +124,7 @@ const CreateDrivePassengerPage: React.FC = () => {
             </div>
           </section>
 
-          {/* 日時セクション */}
+          {/* 希望日時 */}
           <section className="space-y-4">
             <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">希望日時</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -115,7 +149,7 @@ const CreateDrivePassengerPage: React.FC = () => {
             </div>
           </section>
 
-          {/* 詳細セクション */}
+          {/* 詳細設定 */}
           <section className="space-y-4">
             <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">詳細設定</h2>
             <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50 space-y-5">
@@ -160,9 +194,15 @@ const CreateDrivePassengerPage: React.FC = () => {
         <div className="absolute bottom-0 w-full p-6 bg-white/80 backdrop-blur-md border-t border-gray-50 z-20">
           <button 
             onClick={handleCreate} 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-[1.5rem] font-black text-[15px] flex items-center justify-center shadow-xl shadow-blue-200 active:scale-95 transition-all"
+            disabled={isSubmitting}
+            className={`w-full ${isSubmitting ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white py-4 rounded-[1.5rem] font-black text-[15px] flex items-center justify-center shadow-xl shadow-blue-200 active:scale-95 transition-all`}
           >
-            <Check className="w-5 h-5 mr-2 stroke-[3px]" /> 募集を公開する
+            {isSubmitting ? (
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+              <Check className="w-5 h-5 mr-2 stroke-[3px]" />
+            )}
+            {isSubmitting ? '送信中...' : '募集を公開する'}
           </button>
         </div>
       </div>
