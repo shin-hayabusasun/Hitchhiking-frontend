@@ -1,68 +1,72 @@
-// % Start(Assistant)
-// マイリクエスト一覧取得APIのモック
-// % End
-
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-	if (req.method === 'GET') {
-		const { status } = req.query;
+  if (req.method === 'GET') {
+    // すべてのデータ定義
+    const allData = [
+      {
+        id: 1,
+        name: '田中 太郎',
+        rating: 4.8,
+        reviews: 45,
+        from: '東京駅',
+        to: '横浜駅',
+        date: '2025-11-03',
+        time: '2025-11-05 09:00',
+        price: 800,
+        status: 'pending',
+      },
+      {
+        id: 2,
+        name: '佐藤 花子',
+        rating: 4.9,
+        reviews: 78,
+        from: '渋谷駅',
+        to: '新宿駅',
+        date: '2025-11-03',
+        time: '2025-11-06 14:30',
+        price: 500,
+        status: 'pending',
+      },
+      {
+        id: 3,
+        name: '鈴木 一郎',
+        rating: 4.7,
+        reviews: 32,
+        from: '品川駅',
+        to: '羽田空港',
+        date: '2025-11-03',
+        time: '2025-11-07 06:00',
+        price: 1200,
+        status: 'approved',
+      },
+      {
+        id: 4,
+        name: '高橋 美咲',
+        rating: 4.8,
+        reviews: 56,
+        from: '新宿駅',
+        to: '箱根',
+        date: '2025-11-01',
+        time: '2025-11-01 08:00',
+        price: 2500,
+        status: 'completed',
+      },
+    ];
 
-		const allRequests = [
-			{
-				id: 'req1',
-				driveId: 'd1',
-				driverName: '田中太郎',
-				origin: '東京駅',
-				destination: '大阪駅',
-				date: '2024-01-15',
-				time: '10:00',
-				status: 'pending',
-				fee: 5000,
-			},
-			{
-				id: 'req2',
-				driveId: 'd2',
-				driverName: '佐藤花子',
-				origin: '名古屋駅',
-				destination: '福岡駅',
-				date: '2024-01-20',
-				time: '14:30',
-				status: 'approved',
-				fee: 8000,
-			},
-			{
-				id: 'req3',
-				driveId: 'd3',
-				driverName: '鈴木一郎',
-				origin: '仙台駅',
-				destination: '札幌駅',
-				date: '2023-12-10',
-				time: '09:00',
-				status: 'completed',
-				fee: 12000,
-			},
-			{
-				id: 'req4',
-				driveId: 'd4',
-				driverName: '高橋二郎',
-				origin: '京都駅',
-				destination: '広島駅',
-				date: '2024-01-05',
-				time: '11:00',
-				status: 'rejected',
-				fee: 6000,
-			},
-		];
+    // ステータスごとに振り分けてレスポンスを作成
+    const responseData = {
+      requesting: allData.filter(item => item.status === 'pending'),
+      approved: allData.filter(item => item.status === 'approved'),
+      completed: allData.filter(item => item.status === 'completed'),
+    };
 
-		const filteredRequests = status
-			? allRequests.filter((req) => req.status === status)
-			: allRequests;
-
-		res.status(200).json({ success: true, data: filteredRequests });
-	} else {
-		res.setHeader('Allow', ['GET']);
-		res.status(405).end(`Method ${req.method} Not Allowed`);
-	}
+    res.status(200).json({ 
+      success: true, 
+      data: responseData 
+    });
+  } else {
+    res.setHeader('Allow', ['GET']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 }
-
