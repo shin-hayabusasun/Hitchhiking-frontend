@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { applicationApi } from '@/lib/api';
 import { DriverHeader } from '@/components/driver/DriverHeader';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 interface Request {
 	id: string;
@@ -20,63 +21,20 @@ export function DriverRequestsPage() {
 
 	const currentPath = router.pathname; // 現在のURLを取得
 
-  // どのページがどのパスに対応するか定義
-  const tabs = [
-    { name: 'マイドライブ', path: '/driver/drives' },
-    { name: '申請確認', path: '/driver/requests' },
-    { name: '近くの募集', path: '/driver/nearby' },
-    { name: '募集検索', path: '/driver/search' },
-  ];
-  const styles = {
-		container: {
-			maxWidth: '448px', // max-w-md と同じ幅
-			margin: '0 auto',  // mx-auto (中央寄せ)
-			padding: '1rem',   // px-4 pt-4 相当
-			width: '100%',
-		},
-		tabsList: {
-			display: 'grid',
-			gridTemplateColumns: 'repeat(4, 1fr)', // 4等分
-			gap: '4px',
-			backgroundColor: '#f3f4f6', // 薄いグレー背景
-			padding: '4px',
-			borderRadius: '8px',
-			marginBottom: '1rem',
-		},
-		buttonBase: {
-			position: 'relative' as const,
-			display: 'flex',
-			alignItems: 'center',
-			justifyContent: 'center',
-			fontSize: '12px', // フォントサイズを明示
-			padding: '8px 4px',
-			borderRadius: '6px',
-			border: 'none',
-			cursor: 'pointer',
-			width: '100%',
-			fontWeight: 500,
-			textDecoration: 'none',
-			transition: 'all 0.2s',
-			lineHeight: '1.5', // 高さを確保
-		},
-		// アクティブ時のスタイル
-		active: {
-			backgroundColor: '#ffffff', // 白背景
-			color: '#000000',           // ★文字色を黒に固定
-			boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-		},
-		// 非アクティブ時のスタイル
-		inactive: {
-			backgroundColor: 'transparent',
-			color: '#6b7280',           // ★文字色をグレーに固定
-		},
-	};
+	// どのページがどのパスに対応するか定義
+	const tabs = [
+		{ name: 'マイドライブ', path: '/driver/drives' },
+		{ name: '申請確認', path: '/driver/requests' },
+		{ name: '近くの募集', path: '/driver/nearby' },
+		{ name: '募集検索', path: '/driver/search' },
+	];
+
 
 	const [requests, setRequests] = useState<Request[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
-	
-	
+
+
 
 	// 申請一覧取得
 	useEffect(() => {
@@ -122,6 +80,10 @@ export function DriverRequestsPage() {
 		}
 	}
 
+	function handleCreateClick() {
+		router.push('/driver/drives/create');
+	}
+
 	// function handleTabClick(tab: string) {
 	// 	if (tab === 'drives') {
 	// 		router.push('/driver/drives');
@@ -133,90 +95,102 @@ export function DriverRequestsPage() {
 	// }
 
 	return (
-		<div className="driver-requests-page">
-			<DriverHeader title="申請確認" />
-
-			<div style={styles.container}>
-				<div style={styles.tabsList}>
-					{tabs.map((tab) => {
-						const isActive = currentPath === tab.path;
-
-						// スタイルを結合 (基本 + アクティブ/非アクティブ)
-						const currentButtonStyle = {
-							...styles.buttonBase,
-							...(isActive ? styles.active : styles.inactive)
-						};
-
-						return (
-							<button
-								key={tab.id}
-								type="button"
-								style={currentButtonStyle}
-								onClick={() => router.push(tab.path)}
-							>
-								{tab.name}
-							</button>
-						);
-					})}
+		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+			<div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+				<div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
+					<DriverHeader title="申請確認" />
 				</div>
 
-				{loading && (
-					<div className="loading-container">
-						<div className="loading-spinner"></div>
-					</div>
-				)}
+				<main className="flex-1 p-4 pb-10">
 
-				{error && <div className="error-message">{error}</div>}
-
-				{!loading && !error && requests.length === 0 && (
-					<div className="empty-state">
-						<p>現在、申請はありません</p>
-					</div>
-				)}
-
-				{!loading && !error && requests.length > 0 && (
-					<div className="requests-list">
-						{requests.map((request) => {
+					{/* タブメニュー（スマホ用にフォントサイズ調整） */}
+					<div className="grid grid-cols-4 gap-1 bg-gray-200/50 p-1 rounded-xl mb-6 backdrop-blur-sm">
+						{tabs.map((tab) => {
+							const isActive = currentPath === tab.path;
 							return (
-								<div key={request.id} className="request-card">
-									<div className="request-header">
-										<h3>{request.passengerName}</h3>
-										<span className="request-date">
-											{new Date(
-												request.createdAt
-											).toLocaleDateString('ja-JP')}
-										</span>
-									</div>
-									{request.message && (
-										<div className="request-message">
-											<p>{request.message}</p>
-										</div>
-									)}
-									<div className="request-actions">
-										<button
-											type="button"
-											className="btn btn-danger"
-											onClick={() => {
-												handleReject(request.id);
-											}}
-										>
-											拒否
-										</button>
-										<button
-											type="button"
-											className="btn btn-primary"
-											onClick={() => {
-												handleApprove(request.id);
-											}}
-										>
-											承認
-										</button>
-									</div>
-								</div>
+								<button
+									key={tab.id}
+									type="button"
+									className={`py-2 text-[10px] font-bold rounded-lg transition-all duration-200 ${isActive
+										? 'bg-white text-black shadow-sm'
+										: 'text-gray-500 hover:text-gray-700'
+										}`}
+									onClick={() => router.push(tab.path)}
+								>
+									{tab.name}
+								</button>
 							);
 						})}
 					</div>
-				)}
+
+
+					{loading && (
+						<div className="loading-container">
+							<div className="loading-spinner"></div>
+						</div>
+					)}
+
+					{error && <div className="error-message">{error}</div>}
+
+					{!loading && !error && requests.length === 0 && (
+						<div className="empty-state">
+							<p>現在、申請はありません</p>
+						</div>
+					)}
+
+					{!loading && !error && requests.length > 0 && (
+						<div className="requests-list">
+							{requests.map((request) => {
+								return (
+									<div key={request.id} className="request-card">
+										<div className="request-header">
+											<h3>{request.passengerName}</h3>
+											<span className="request-date">
+												{new Date(
+													request.createdAt
+												).toLocaleDateString('ja-JP')}
+											</span>
+										</div>
+										{request.message && (
+											<div className="request-message">
+												<p>{request.message}</p>
+											</div>
+										)}
+										<div className="request-actions">
+											<button
+												type="button"
+												className="btn btn-danger"
+												onClick={() => {
+													handleReject(request.id);
+												}}
+											>
+												拒否
+											</button>
+											<button
+												type="button"
+												className="btn btn-primary"
+												onClick={() => {
+													handleApprove(request.id);
+												}}
+											>
+												承認
+											</button>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					)}
+				</main>
+				<div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
+					<button
+						type="button"
+						className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+						onClick={handleCreateClick}
+					>
+						<Plus size={20} /> ドライブを作成
+					</button>
+				</div>
 			</div>
 		</div>
 	);
