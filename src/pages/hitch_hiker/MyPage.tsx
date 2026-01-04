@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { ArrowLeft, ShieldCheck, ChevronRight, MapPin } from 'lucide-react';
+import { ArrowLeft, ChevronRight, MapPin } from 'lucide-react';
 
 const MyPage = () => {
   const router = useRouter();
@@ -11,7 +11,8 @@ const MyPage = () => {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/hitchhiker/mypage', {
+        // バックエンドが別ポート（8000）で動いている場合は、環境に合わせてパスを調整してください
+        const response = await fetch('http://localhost:8000/api/hitchhiker/mypage', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -24,10 +25,9 @@ const MyPage = () => {
         
         const data = await response.json();
         
-        setUser({
-          ...data,
-          name: "山田 太郎",
-        });
+        // APIから返ってきたデータをそのままセット（data.nameが含まれている想定）
+        setUser(data);
+
       } catch (error) {
         console.error("Fetching error:", error);
       }
@@ -54,8 +54,6 @@ const MyPage = () => {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-lg font-bold text-gray-700">マイページ</h1>
-          
-          {/* 編集ボタンの修正箇所 */}
           <button 
             onClick={() => router.push('/hitch_hiker/EditMyPage')}
             className="text-sm font-bold text-gray-500 hover:text-[#3B82F6] transition-colors"
@@ -67,9 +65,12 @@ const MyPage = () => {
         <div className="p-4 space-y-4 pb-24">
           {/* メインプロフィールカード */}
           <div className="bg-white rounded-[2rem] p-8 flex flex-col items-center shadow-sm border border-gray-100/50">
+            {/* 名前の最初の1文字をアイコンにする */}
             <div className="w-24 h-24 bg-[#E0EDFF] rounded-full mb-4 flex items-center justify-center text-3xl font-bold text-[#3B82F6] shadow-inner">
-              {user?.name?.[0]}
+              {user?.name?.[0] || "?"}
             </div>
+            
+            {/* APIから取得した名前を表示 */}
             <h2 className="text-xl font-extrabold text-gray-800 mb-2">{user?.name}</h2>
             
             <div className="w-full grid grid-cols-3 border-t border-gray-100 mt-8 pt-6 mb-2">
@@ -106,7 +107,7 @@ const MyPage = () => {
           <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100/50">
             <h3 className="text-[13px] font-bold text-gray-500 mb-2">自己紹介</h3>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {user?.bio}
+              {user?.bio || "自己紹介が未設定です。"}
             </p>
           </div>
         </div>
