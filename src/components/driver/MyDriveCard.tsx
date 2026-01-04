@@ -15,6 +15,7 @@ interface MyDriveCardProps {
 	status: string;
 	onEdit?: () => void;
 	onDelete?: () => void;
+    onDetail?: () => void;
 }
 
 export function MyDriveCard({
@@ -28,6 +29,7 @@ export function MyDriveCard({
 	status,
 	onEdit,
 	onDelete,
+    onDetail,
 }: MyDriveCardProps) {
 	const router = useRouter();
 
@@ -40,6 +42,14 @@ export function MyDriveCard({
 			onEdit();
 		} else {
 			router.push(`/driver/drives/edit/${id}`);
+		}
+	}
+
+    function handleDetailClick() {
+		if (onDetail) {
+			onDetail();
+		} else {
+			router.push(`/driver/drives/detail/${id}`);
 		}
 	}
 
@@ -224,7 +234,7 @@ return (
             {/* 詳細情報 */}
             <div className="flex items-center justify-between text-[12px] text-gray-500 mb-4 pb-4 border-b border-gray-50 px-1">
                 <div className="flex items-center gap-1"><Calendar size={14} className="text-gray-300" /><span>{formattedDate}</span></div>
-                <div className="flex items-center gap-1 font-bold text-green-600 text-sm"><span>¥{fee.toLocaleString()}</span><span className="text-[10px] font-normal text-gray-400">/人</span></div>
+                <div className="flex items-center gap-1 font-bold text-green-600 text-sm"><span>¥{fee.toLocaleString()}</span><span className="text-[10px] font-normal text-gray-400"></span></div>
                 <div className="flex items-center gap-1"><Users size={14} className="text-gray-300" /><span>{currentPassengers}/{capacity}名</span></div>
             </div>
 
@@ -245,7 +255,7 @@ return (
                 </div>
             )}
 
-            <button onClick={() => router.push(`/driver/drives/${id}`)} className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center gap-1">
+            <button onClick={handleDetailClick} className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-100 transition-all active:scale-[0.98] flex items-center justify-center gap-1">
                 詳細を見る <ChevronRight size={16} />
             </button>
         </div>

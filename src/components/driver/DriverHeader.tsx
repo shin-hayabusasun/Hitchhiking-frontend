@@ -2,13 +2,16 @@
 // 運転者用ヘッダーコンポーネント: 運転者用のヘッダー（タイトル、通知、マイページアイコン）
 
 import { useRouter } from 'next/router';
+import { Bell, User, ChevronLeft } from 'lucide-react';
 
 interface DriverHeaderProps {
-	title?: string;
-	showNotification?: boolean;
-	showMyPage?: boolean;
-	showBackButton?: boolean;
+    title?: string;
+    showNotification?: boolean;
+    showMyPage?: boolean;
+    showBackButton?: boolean;
+    backPath?: string;
 }
+
 
 // export function DriverHeader({
 // 	title = '運転者として利用',
@@ -84,134 +87,135 @@ interface DriverHeaderProps {
 
 
 
+
+
 export function DriverHeader({
     title = '運転者として利用',
     showNotification = true,
     showMyPage = true,
-    showBackButton = true,
+    showBackButton = true, 
+    backPath,
 }: DriverHeaderProps) {
     const router = useRouter();
 
-    // --- ボタンの動作 ---
-    const handleBackClick = () => router.back();
-    const handleNotificationClick = () => router.push('/notifications');
-    const handleMyPageClick = () => router.push('/driver/mypage');
-
-    // --- スタイル定義（ここがデザインの正体です） ---
-    const styles = {
-        header: {
-            backgroundColor: 'white',
-            position: 'sticky' as const, // 上に固定
-            top: 0,
-            zIndex: 10,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)', // 薄い影
-            width: '100%',
-        },
-        container: {
-            maxWidth: '28rem', // max-w-md 相当
-            margin: '0 auto',  // 中央寄せ
-            padding: '0.75rem 1rem', // px-4 py-3 相当
-        },
-        flexRow: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-        },
-        leftGroup: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px', // gap-3
-        },
-        rightGroup: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px', // gap-2
-        },
-        title: {
-            color: '#16a34a', // text-green-600 相当
-            fontSize: '1.125rem',
-            fontWeight: 'bold',
-            margin: 0,
-        },
-        button: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            borderRadius: '9999px', // 丸くする
-            color: '#4b5563', // text-gray-600
-            position: 'relative' as const,
-        },
-        badge: {
-            position: 'absolute' as const,
-            top: '4px',
-            right: '4px',
-            width: '8px',
-            height: '8px',
-            backgroundColor: '#ef4444', // bg-red-500
-            borderRadius: '50%',
+    const handleBackClick = () => {
+        if (backPath) {
+            router.push(backPath);
+        } else {
+            router.back();
         }
     };
 
+    const handleNotificationClick = () => router.push('/notifications');
+    const handleMyPageClick = () => router.push('/driver/mypage');
+
+    // return (
+    //     <header style={styles.header}>
+    //         <div style={styles.container}>
+    //             <div style={styles.flexRow}>
+
+    //                 {/* 左側（戻る + タイトル） */}
+    //                 <div style={styles.leftGroup}>
+    //                     {showBackButton && (
+    //                         <button
+    //                             type="button"
+    //                             onClick={handleBackClick}
+    //                             style={styles.button}
+    //                             aria-label="戻る"
+    //                         >
+    //                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    //                                 <path d="m12 19-7-7 7-7" />
+    //                                 <path d="M19 12H5" />
+    //                             </svg>
+    //                         </button>
+    //                     )}
+    //                     <h1 style={styles.title}>{title}</h1>
+    //                 </div>
+
+    //                 {/* 右側（マイページ + 通知） */}
+    //                 <div style={styles.rightGroup}>
+    //                     {showMyPage && (
+    //                         <button
+    //                             type="button"
+    //                             onClick={handleMyPageClick}
+    //                             style={styles.button}
+    //                             aria-label="マイページ"
+    //                         >
+    //                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    //                                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    //                                 <circle cx="12" cy="7" r="4" />
+    //                             </svg>
+    //                         </button>
+    //                     )}
+
+    //                     {showNotification && (
+    //                         <button
+    //                             type="button"
+    //                             onClick={handleNotificationClick}
+    //                             style={styles.button}
+    //                             aria-label="通知"
+    //                         >
+    //                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    //                                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    //                                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    //                             </svg>
+    //                             <span style={styles.badge} />
+    //                         </button>
+    //                     )}
+    //                 </div>
+
+    //             </div>
+    //         </div>
+    //     </header>
+    // );
     return (
-        <header style={styles.header}>
-            <div style={styles.container}>
-                <div style={styles.flexRow}>
-                    
-                    {/* 左側（戻る + タイトル） */}
-                    <div style={styles.leftGroup}>
-                        {showBackButton && (
-                            <button
-                                type="button"
-                                onClick={handleBackClick}
-                                style={styles.button}
-                                aria-label="戻る"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m12 19-7-7 7-7"/>
-                                    <path d="M19 12H5"/>
-                                </svg>
-                            </button>
-                        )}
-                        <h1 style={styles.title}>{title}</h1>
-                    </div>
-
-                    {/* 右側（マイページ + 通知） */}
-                    <div style={styles.rightGroup}>
-                        {showMyPage && (
-                            <button
-                                type="button"
-                                onClick={handleMyPageClick}
-                                style={styles.button}
-                                aria-label="マイページ"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
-                            </button>
-                        )}
-
-                        {showNotification && (
-                            <button
-                                type="button"
-                                onClick={handleNotificationClick}
-                                style={styles.button}
-                                aria-label="通知"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-                                </svg>
-                                <span style={styles.badge} />
-                            </button>
-                        )}
-                    </div>
-
+        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
+            <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+                
+                {/* 左側：戻るボタン + タイトル */}
+                <div className="flex items-center gap-2">
+                    {showBackButton && (
+                        <button
+                            type="button"
+                            onClick={handleBackClick}
+                            className="p-1 -ml-1 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="戻る"
+                        >
+                            <ChevronLeft size={24} strokeWidth={2.5} />
+                        </button>
+                    )}
+                    <h1 className="text-lg font-bold text-green-600 truncate max-w-[200px]">
+                        {title}
+                    </h1>
                 </div>
+
+                {/* 右側：マイページ + 通知 */}
+                <div className="flex items-center gap-1">
+                    {showMyPage && (
+                        <button
+                            type="button"
+                            onClick={handleMyPageClick}
+                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-all"
+                            aria-label="マイページ"
+                        >
+                            <User size={22} />
+                        </button>
+                    )}
+
+                    {showNotification && (
+                        <button
+                            type="button"
+                            onClick={handleNotificationClick}
+                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-all relative"
+                            aria-label="通知"
+                        >
+                            <Bell size={22} />
+                            {/* 通知バッジ */}
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                        </button>
+                    )}
+                </div>
+
             </div>
         </header>
     );

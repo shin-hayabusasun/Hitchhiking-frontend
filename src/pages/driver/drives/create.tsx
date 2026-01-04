@@ -75,6 +75,7 @@ export function CreateDrivePage() {
 					noSmoking: formData.noSmoking,
 					petAllowed: formData.petAllowed,
 					musicAllowed: formData.musicAllowed,
+					foodAllowed: data.drive.vehicleRules?.foodAllowed ?? false,
 				},
 			});
 
@@ -290,8 +291,8 @@ export function CreateDrivePage() {
 	// );
 	return (
 		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-			{/* スマホ用コンテナ */}
-			<div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gray-50 overflow-y-auto rounded-[3rem]">
+
+			<div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
 
 				{/* ヘッダー */}
 				<div className="bg-white shadow-sm sticky top-0 z-10 p-4 flex items-center gap-3">
@@ -401,26 +402,24 @@ export function CreateDrivePage() {
 						/>
 					</div>
 
-					{/* 車両ルールカード */}
-					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4 pb-6">
+					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
 						<p className="text-xs font-bold text-gray-400 uppercase tracking-wider">車両ルール</p>
-
 						<div className="space-y-3">
-							{/* ルール行: 禁煙 */}
+							{/* 禁煙設定 */}
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
 									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Car size={16} /></div>
-									<span className="text-sm font-medium">禁煙</span>
+									<span className="text-sm font-medium text-gray-700">禁煙</span>
 								</div>
 								<input
 									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5"
+									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
 									checked={formData.noSmoking}
 									onChange={(e) => setFormData({ ...formData, noSmoking: e.target.checked })}
 								/>
 							</div>
 
-							{/* ルール行: ペット可 */}
+							{/* ペット設定 */}
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
 									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Dog size={16} /></div>
@@ -428,13 +427,27 @@ export function CreateDrivePage() {
 								</div>
 								<input
 									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5"
+									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
 									checked={formData.petAllowed}
 									onChange={(e) => setFormData({ ...formData, petAllowed: e.target.checked })}
 								/>
 							</div>
 
-							{/* ルール行: 音楽可 */}
+							{/* 飲食設定 */}
+							<div className="flex items-center justify-between">
+								<div className="flex items-center gap-3">
+									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Utensils size={16} /></div>
+									<span className="text-sm font-medium text-gray-700">飲食OK</span>
+								</div>
+								<input
+									type="checkbox"
+									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
+									checked={formData.foodAllowed}
+									onChange={(e) => setFormData({ ...formData, foodAllowed: e.target.checked })}
+								/>
+							</div>
+
+							{/* 音楽設定 */}
 							<div className="flex items-center justify-between">
 								<div className="flex items-center gap-3">
 									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Music size={16} /></div>
@@ -442,13 +455,15 @@ export function CreateDrivePage() {
 								</div>
 								<input
 									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5"
+									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
 									checked={formData.musicAllowed}
 									onChange={(e) => setFormData({ ...formData, musicAllowed: e.target.checked })}
 								/>
 							</div>
 						</div>
 					</div>
+
+					
 
 					{error && <div className="text-red-500 text-xs text-center font-bold">{error}</div>}
 
@@ -463,7 +478,7 @@ export function CreateDrivePage() {
 					<div className="h-10" /> {/* 余白 */}
 				</form>
 			</div>
-		</div>
+		</div >
 	);
 }
 

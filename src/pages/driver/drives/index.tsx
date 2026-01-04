@@ -84,7 +84,7 @@ export function DriverDrivesPage() {
 				</div>
 
 				<main className="flex-1 p-4 pb-10">
-					
+
 					{/* タブメニュー（スマホ用にフォントサイズ調整） */}
 					<div className="grid grid-cols-4 gap-1 bg-gray-200/50 p-1 rounded-xl mb-6 backdrop-blur-sm">
 						{tabs.map((tab) => {
@@ -94,8 +94,8 @@ export function DriverDrivesPage() {
 									key={tab.id}
 									type="button"
 									className={`py-2 text-[10px] font-bold rounded-lg transition-all duration-200 ${isActive
-											? 'bg-white text-black shadow-sm'
-											: 'text-gray-500 hover:text-gray-700'
+										? 'bg-white text-black shadow-sm'
+										: 'text-gray-500 hover:text-gray-700'
 										}`}
 									onClick={() => router.push(tab.path)}
 								>
@@ -105,7 +105,7 @@ export function DriverDrivesPage() {
 						})}
 					</div>
 
-					<div className="drives-actions">
+					{/* <div className="drives-actions">
 						<button
 							type="button"
 							className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-100 mb-6 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
@@ -113,7 +113,7 @@ export function DriverDrivesPage() {
 						>
 							<Plus size={20} /> ドライブを作成
 						</button>
-					</div>
+					</div> */}
 
 					{loading && (
 						<div className="loading-container">
@@ -152,7 +152,17 @@ export function DriverDrivesPage() {
 							})}
 						</div>
 					)}
+					<div className="h-20" />
 				</main>
+				<div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
+					<button
+						type="button"
+						className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+						onClick={handleCreateClick}
+					>
+						<Plus size={20} /> ドライブを作成
+					</button>
+				</div>
 			</div>
 		</div>
 	);

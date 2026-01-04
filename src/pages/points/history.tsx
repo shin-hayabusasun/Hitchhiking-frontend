@@ -1,178 +1,171 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  ArrowLeft, 
-  Coins, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Loader2,
-  AlertCircle
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Package,
+  Truck,
+  CheckCircle,
 } from 'lucide-react';
 
-interface PointTransaction {
-  id: string;
-  type: string; // 'earned' | 'spent'
-  amount: number;
-  description: string;
+type Status = 'all' | 'preparing' | 'shipped' | 'delivered';
+
+type PointHistory = {
+  id: number;
+  title: string;
   date: string;
-}
+  point: number;
+  type: 'earn' | 'use';
+  status?: 'preparing' | 'shipped' | 'delivered';
+};
+
+const histories: PointHistory[] = [
+  {
+    id: 1,
+    title: 'ドライブ完了',
+    date: '2025-01-15',
+    point: 500,
+    type: 'earn',
+  },
+  {
+    id: 2,
+    title: 'ギフト券交換',
+    date: '2025-01-12',
+    point: -1000,
+    type: 'use',
+    status: 'preparing',
+  },
+  {
+    id: 3,
+    title: 'マグカップ交換',
+    date: '2025-01-10',
+    point: -800,
+    type: 'use',
+    status: 'shipped',
+  },
+  {
+    id: 4,
+    title: 'レビュー投稿',
+    date: '2025-01-08',
+    point: 200,
+    type: 'earn',
+  },
+  {
+    id: 5,
+    title: 'Tシャツ交換',
+    date: '2025-01-05',
+    point: -1500,
+    type: 'use',
+    status: 'delivered',
+  },
+];
 
 export default function PointHistoryPage() {
   const router = useRouter();
-  const [transactions, setTransactions] = useState<PointTransaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  // Tabsコンポーネントが状態を持つため、filter stateはTabsのvalueと同期させます
-  const [currentTab, setCurrentTab] = useState('all');
+  const [tab, setTab] = useState<Status>('all');
 
-  useEffect(() => {
-    async function fetchHistory() {
-      try {
-        const response = await fetch('/api/point/history', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          // credentials: 'include', // 必要に応じて有効化
-        });
-        
-        // エラーハンドリングの強化
-        if (!response.ok) {
-          throw new Error('データの取得に失敗しました');
-        }
-
-        const data = await response.json();
-        if (data.transactions) {
-          setTransactions(data.transactions);
-        }
-      } catch (err) {
-        setError('履歴の取得に失敗しました');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchHistory();
-  }, []);
-
-  // フィルタリングロジック
-  const getFilteredTransactions = (tabValue: string) => {
-    return transactions.filter((t) => {
-      if (tabValue === 'all') return true;
-      if (tabValue === 'earned') return t.type === 'earned';
-      if (tabValue === 'spent') return t.type === 'spent';
-      return true;
-    });
-  };
-
-  // タイプに応じたバッジとアイコンのスタイル定義
-  const getTypeStyles = (type: string) => {
-    if (type === 'earned') {
-      return {
-        badge: "bg-green-100 text-green-700 border-0 hover:bg-green-100",
-        iconBg: "bg-green-50",
-        iconColor: "text-green-600",
-        amountColor: "text-green-600",
-        Icon: ArrowUpRight,
-        label: "獲得"
-      };
-    } else {
-      return {
-        badge: "bg-red-100 text-red-700 border-0 hover:bg-red-100",
-        iconBg: "bg-red-50",
-        iconColor: "text-red-600",
-        amountColor: "text-red-600",
-        Icon: ArrowDownLeft,
-        label: "利用"
-      };
-    }
-  };
-
-  // トランザクションリストのレンダリング用コンポーネント
-  const TransactionList = ({ items }: { items: PointTransaction[] }) => {
-    if (items.length === 0) {
-      return (
-        <Card className="border-0 shadow-sm mt-4">
-          <CardContent className="p-8 text-center">
-            <Coins className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-600 text-sm">履歴がありません</p>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return (
-      <div className="space-y-3 mt-4">
-        {items.map((t) => {
-          const styles = getTypeStyles(t.type);
-          const TypeIcon = styles.Icon;
-
-          return (
-            <Card key={t.id} className="border-0 shadow-sm">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* アイコン */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${styles.iconBg}`}>
-                    <TypeIcon className={`w-5 h-5 ${styles.iconColor}`} />
-                  </div>
-                  
-                  {/* 詳細情報 */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-medium text-gray-800">{t.description}</p>
-                      <Badge className={`${styles.badge} text-[10px] px-1.5 py-0`}>
-                        {styles.label}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-500">{t.date}</p>
-                  </div>
-                </div>
-
-                {/* ポイント数 */}
-                <div className={`text-lg font-bold whitespace-nowrap ${styles.amountColor}`}>
-                  {t.type === 'earned' ? '+' : '-'}
-                  {t.amount.toLocaleString()} P
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    );
-  };
+  const filtered = histories.filter((h) => {
+    if (tab === 'all') return true;
+    return h.status === tab;
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* ヘッダー */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => router.back()}
-              className="text-gray-600 hover:bg-gray-100"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-lg font-semibold text-gray-800">ポイント履歴</h1>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      {/* スマホ外枠 */}
+      <div
+        className="w-full max-w-[390px] aspect-[9/19]
+        bg-gray-100 shadow-2xl border-[8px] border-white
+        ring-1 ring-gray-200 overflow-y-auto"
+      >
+        {/* ヘッダー */}
+        <header className="bg-white px-4 py-3 flex items-center gap-3 border-b">
+          <button onClick={() => router.back()}>
+            <ArrowLeft />
+          </button>
+          <h1 className="font-bold text-lg">ポイント履歴</h1>
+        </header>
+
+        {/* タブ */}
+        <div className="px-3 py-3 bg-white border-b">
+          <div className="flex bg-gray-200 rounded-full text-xs font-medium overflow-hidden">
+            {[
+              { key: 'all', label: 'すべて' },
+              { key: 'preparing', label: '準備中' },
+              { key: 'shipped', label: '発送済み' },
+              { key: 'delivered', label: '配達済み' },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key as Status)}
+                className={`flex-1 py-2 ${
+                  tab === t.key
+                    ? 'bg-white text-blue-600 font-bold'
+                    : 'text-gray-500'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
+
+        {/* 履歴一覧 */}
+        <main className="p-4 space-y-3">
+          {filtered.length === 0 ? (
+            <p className="text-center text-gray-500 text-sm py-10">
+              該当する履歴がありません
+            </p>
+          ) : (
+            filtered.map((h) => (
+              <div
+                key={h.id}
+                className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center"
+              >
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">{h.title}</p>
+                  <p className="text-xs text-gray-400">{h.date}</p>
+
+                  {h.status && (
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      {h.status === 'preparing' && (
+                        <>
+                          <Package size={12} /> 準備中
+                        </>
+                      )}
+                      {h.status === 'shipped' && (
+                        <>
+                          <Truck size={12} /> 発送済み
+                        </>
+                      )}
+                      {h.status === 'delivered' && (
+                        <>
+                          <CheckCircle size={12} /> 配達済み
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={`flex items-center gap-1 font-bold ${
+                    h.type === 'earn'
+                      ? 'text-green-600'
+                      : 'text-red-500'
+                  }`}
+                >
+                  {h.type === 'earn' ? (
+                    <ArrowUpRight size={16} />
+                  ) : (
+                    <ArrowDownLeft size={16} />
+                  )}
+                  {Math.abs(h.point)} pt
+                </div>
+              </div>
+            ))
+          )}
+        </main>
       </div>
-
-      <main className="max-w-md mx-auto p-4">
-        {/* エラー表示 */}
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
-
-// % End
+    </div>
+  );
+}
