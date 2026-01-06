@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import { Calendar, Users, MessageCircle, MapPin, ChevronRight } from 'lucide-react';
 
 interface MyDriveCardProps {
-	id: string;
+	id: number;
 	departure: string;
 	destination: string;
 	departureTime: string;
