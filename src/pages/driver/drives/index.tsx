@@ -8,7 +8,7 @@ import { MyDriveCard } from '@/components/driver/MyDriveCard';
 import { Plus } from 'lucide-react';
 
 interface Drive {
-	id: string;
+	id: number;
 	departure: string;
 	destination: string;
 	departureTime: string;
@@ -39,7 +39,7 @@ export function DriverDrivesPage() {
 	useEffect(() => {
 		async function fetchDrives() {
 			try {
-				const response = await fetch('/api/driver/drives', {
+				const response = await fetch('http://localhost:8000/api/driver/drives', {
 					method: 'GET',
 					credentials: 'include',
 				});
