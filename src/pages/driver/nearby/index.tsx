@@ -4,18 +4,24 @@
 import { useEffect, useState } from 'react';
 import { DriverHeader } from '@/components/driver/DriverHeader';
 import { useRouter } from 'next/router';
-import { Plus, ArrowLeft} from 'lucide-react';
+import { RecruitmentCard } from '@/components/driver/RecruitmentCard';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 interface PassengerRequest {
-	id: string;
-	passengerName: string;
-	departure: string;
-	destination: string;
-	date: string;
-	time: string;
-	budget: number;
-	distance: number;
+    id: string;
+    passengerName: string;
+    departure: string;
+    destination: string;
+    date: string;
+    time: string;
+    budget: number;
+    distance: number;
+    // 将来APIに追加される予定のフィールド（オプショナルにしておく）
+    rating?: number;
+    reviewCount?: number;
+    matchingScore?: number;
 }
+
 
 export function DriverNearbyPage() {
 	const router = useRouter();
@@ -146,7 +152,7 @@ export function DriverNearbyPage() {
 					</div>
 					{error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-					{requests.length === 0 ? (
+					{/* {requests.length === 0 ? (
 						<p className="text-center text-gray-600">
 							近くに募集はありません
 						</p>
@@ -177,6 +183,34 @@ export function DriverNearbyPage() {
 									</p>
 								</div>
 							))}
+						</div>
+					)} */}
+					{!loading && !error && (
+						<div className="space-y-4">
+							{requests.length > 0 ? (
+								requests.map((request) => (
+									<RecruitmentCard
+										key={request.id}
+										id={request.id}
+										passengerName={request.passengerName}
+										rating={request.rating} // APIにあれば使う
+										reviewCount={request.reviewCount} // APIにあれば使う
+										departure={request.departure}
+										destination={request.destination}
+										date={request.date}
+										time={request.time}
+										budget={request.budget}
+										distance={request.distance} // 距離を表示
+										matchingScore={request.matchingScore} // あれば表示
+										onClick={() => router.push(`/driver/search/${request.id}`)}
+									/>
+								))
+							) : (
+								<div className="text-center py-20 text-gray-500 text-sm font-bold">
+									<p>近くに募集はありません</p>
+									<p className="text-xs mt-2 font-normal">エリアを変えて検索してみてください</p>
+								</div>
+							)}
 						</div>
 					)}
 				</main>
