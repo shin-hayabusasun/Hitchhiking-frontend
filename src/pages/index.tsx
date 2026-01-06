@@ -34,7 +34,7 @@ export function HomePage() {
 
 	async function handleLogout() {
 		try {
-			await fetch('/api/user/logout', {
+			await fetch('http://localhost:8000/api/user/logout', {
 				method: 'GET',
 				credentials: 'include',
 			});
