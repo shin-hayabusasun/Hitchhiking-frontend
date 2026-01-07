@@ -51,9 +51,9 @@ export function CompletePage() {
                         {/* 3. 本人確認審査の案内ボックス（画像の下部ボックス） */}
                         <div className="w-full bg-blue-50/50 rounded-2xl p-5 mb-10 border border-blue-100/30">
                             <p className="text-[12px] text-gray-500 text-center leading-relaxed font-medium">
-                                本人確認書類の審査には1〜3営業日かかります。<br />
+                                本人確認書類の審査終了後に利用できます<br />
                                 <span className="block mt-2">
-                                    審査完了後、登録いただいたメールアドレスに通知が届きます。
+                                    会員登録特典として100ポイントを付与しました!
                                 </span>
                             </p>
                         </div>
