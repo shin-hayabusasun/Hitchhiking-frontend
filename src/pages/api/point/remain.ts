@@ -11,10 +11,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 	// モックデータ
 	return res.status(200).json({
 		totalBalance: 15000,
-		breakdown: {
-			earned: 20000,
-			spent: 5000,
-		},
+		sales: 5000,
 	});
 }
 
