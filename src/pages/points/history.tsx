@@ -38,36 +38,50 @@ export default function PointHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch('/api/points/orders');
-        if (!response.ok) throw new Error('Fetch failed');
-        
-        const data = await response.json();
-        
-        // APIのデータをコンポーネントの形式に変換
-        const mappedOrders: PointHistory[] = data.orders.map((order: OrderFromAPI) => ({
-          id: order.id,
-          title: order.productName,
-          date: order.orderDate,
-          point: -order.points, // 使用ポイントなのでマイナスに
-          type: 'use',
-          // APIの 'pending' を 'preparing' にマッピング
-          status: order.status === 'pending' ? 'preparing' : order.status,
-        }));
+useEffect(() => {
+  const fetchOrders = async () => {
+    try {
+      // 1. URLをバックエンドの絶対パスに変更し、credentialsを追加
+      const response = await fetch('http://localhost:8000/api/points/orders', {
+        method: 'GET',
+        credentials: 'include', // クッキー(session_id)を送信するために必須
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-        setHistories(mappedOrders);
-      } catch (err) {
-        console.error(err);
-        setError(true);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.warn("ログインしていないため履歴を取得できません");
+          return;
+        }
+        throw new Error('Fetch failed');
       }
-    };
+      
+      const data = await response.json();
+      
+      // 2. APIのレスポンス（OrderItemResponse）をフロントの型（PointHistory）に変換
+      const mappedOrders: PointHistory[] = data.orders.map((order: any) => ({
+        id: order.id,
+        title: order.productName,
+        date: order.orderDate,
+        point: -order.points, // 使用ポイントなのでマイナスに
+        type: 'use',
+        // FastAPI側の "pending" をフロント側の表示用 "preparing" に変換
+        status: order.status === 'pending' ? 'preparing' : order.status,
+      }));
 
-    fetchOrders();
-  }, []);
+      setHistories(mappedOrders);
+    } catch (err) {
+      console.error('注文履歴の取得に失敗しました:', err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchOrders();
+}, []);
 
   const filtered = histories.filter((h) => {
     if (tab === 'all') return true;

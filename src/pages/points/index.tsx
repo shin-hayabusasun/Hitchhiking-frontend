@@ -11,8 +11,9 @@ export default function PointsHomePage() {
   useEffect(() => {
     const fetchPoints = async () => {
       try {
-        const response = await fetch('/api/point/remain', {
+        const response = await fetch('http://localhost:8000/api/point/remain', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         });
         if (response.ok) {
