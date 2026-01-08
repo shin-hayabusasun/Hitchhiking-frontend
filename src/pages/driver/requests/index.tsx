@@ -44,7 +44,7 @@ export function DriverRequestsPage() {
 	useEffect(() => {
         async function fetchRequests() {
             try {
-                const response = await fetch('http://localhost:8000//api/driver/requests?status=pending', {
+                const response = await fetch('http://localhost:8000/api/driver/requests?status=pending', {
                     method: 'GET',
                     credentials: 'include', // セッション情報を含める
                 });

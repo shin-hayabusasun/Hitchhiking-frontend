@@ -4,6 +4,13 @@
 import { useRouter } from 'next/router';
 import { Calendar, Users, MessageCircle, MapPin, ChevronRight } from 'lucide-react';
 
+// ★追加: 型定義
+interface Passenger {
+    userId: number;
+    name: string;
+    passengerCount: number;
+}
+
 interface MyDriveCardProps {
 	id: number;
 	departure: string;
@@ -13,6 +20,7 @@ interface MyDriveCardProps {
 	capacity: number;
 	currentPassengers: number;
 	status: string;
+    approvedPassengers?: Passenger[]; // ★追加: 任意の配列として受け取る
 	onEdit?: () => void;
 	onDelete?: () => void;
     onDetail?: () => void;
@@ -27,6 +35,7 @@ export function MyDriveCard({
 	capacity,
 	currentPassengers,
 	status,
+    approvedPassengers = [], // デフォルト値
 	onEdit,
 	onDelete,
     onDetail,
@@ -238,19 +247,30 @@ return (
                 <div className="flex items-center gap-1"><Users size={14} className="text-gray-300" /><span>{currentPassengers}/{capacity}名</span></div>
             </div>
 
-            {/* 同乗者情報（確定時のみ表示） */}
-            {status === 'matched' && (
+            {/* ★修正: 同乗者情報（確定済みかつ同乗者がいる場合のみ表示） */}
+            {status === 'matched' && approvedPassengers.length > 0 && (
                 <div className="mb-4">
                     <p className="text-[10px] font-bold text-gray-400 mb-2 ml-1 uppercase">承認済み同乗者</p>
-                    <div className="flex items-center justify-between bg-gray-50/50 p-3 rounded-xl border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-sm">山</div>
-                            <div>
-                                <div className="text-xs font-bold text-gray-700">山田 太郎</div>
-                                <div className="text-[10px] text-gray-400 font-medium">2名で同乗</div>
+                    
+                    {/* 同乗者のリストを展開して表示 */}
+                    <div className="space-y-2">
+                        {approvedPassengers.map((passenger) => (
+                            <div key={passenger.userId} className="flex items-center justify-between bg-gray-50/50 p-3 rounded-xl border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    {/* アイコンのイニシャルを表示 */}
+                                    <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-sm">
+                                        {passenger.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-gray-700">{passenger.name}</div>
+                                        <div className="text-[10px] text-gray-400 font-medium">{passenger.passengerCount}名で同乗</div>
+                                    </div>
+                                </div>
+                                <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
+                                    <MessageCircle size={18} />
+                                </button>
                             </div>
-                        </div>
-                        <button className="p-2 text-blue-500"><MessageCircle size={18} /></button>
+                        ))}
                     </div>
                 </div>
             )}
