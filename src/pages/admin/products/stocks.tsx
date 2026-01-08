@@ -105,8 +105,8 @@ export function StockManagementPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             {/* スマホ枠 */}
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white rounded-[3rem] overflow-hidden">
-                
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+            
                 <div className="bg-white/50 backdrop-blur-sm z-10 relative">
                     <TitleHeader title="在庫管理" backPath="/admin/dashboard" />
                 </div>
