@@ -154,8 +154,8 @@ export function HomePage() {
     </svg>
   </div>
   <div>
-    <div className="font-bold text-gray-800 text-sm">ポイント</div>
-    <div className="text-[10px] text-gray-400">ポイント確認と商品交換</div>
+    <div className="font-bold text-gray-800 text-sm">売上・ポイント</div>
+    <div className="text-[10px] text-gray-400">売上・ポイント確認と商品交換</div>
   </div>
 </button>
 
