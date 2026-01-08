@@ -9,7 +9,7 @@ import { RequestCard } from '@/components/driver/RequestCard';
 import { Plus } from 'lucide-react';
 
 interface Request {
-	id: string;
+	id: number;
     passengerName: string;
     matchingRate: number;
     rating: number;
@@ -44,7 +44,7 @@ export function DriverRequestsPage() {
 	useEffect(() => {
         async function fetchRequests() {
             try {
-                const response = await fetch('/api/driver/requests?status=pending', {
+                const response = await fetch('http://localhost:8000/api/driver/requests?status=pending', {
                     method: 'GET',
                     credentials: 'include', // セッション情報を含める
                 });
@@ -90,10 +90,10 @@ export function DriverRequestsPage() {
 	// 	}
 	// }
 
-	async function handleApprove(id: string) {
+	async function handleApprove(id: number) {
         if (!confirm('この申請を承認しますか？')) return;
         try {
-            await fetch(`/api/applications/${id}/approve`, {
+            await fetch('http://localhost:8000/api/applications/${id}/approve', {
                 method: 'POST',
                 credentials: 'include',
             });
@@ -105,10 +105,10 @@ export function DriverRequestsPage() {
     }
 
     // 拒否処理
-    async function handleReject(id: string) {
+    async function handleReject(id: number) {
         if (!confirm('この申請を拒否しますか？')) return;
         try {
-            await fetch(`/api/applications/${id}/reject`, {
+            await fetch('http://localhost:8000/api/applications/${id}/reject', {
                 method: 'POST',
                 credentials: 'include',
             });

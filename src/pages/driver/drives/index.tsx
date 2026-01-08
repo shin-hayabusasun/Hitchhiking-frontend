@@ -7,6 +7,12 @@ import { DriverHeader } from '@/components/driver/DriverHeader';
 import { MyDriveCard } from '@/components/driver/MyDriveCard';
 import { Plus } from 'lucide-react';
 
+interface Passenger {
+    userId: number;
+    name: string;
+    passengerCount: number;
+}
+
 interface Drive {
 	id: number;
 	departure: string;
@@ -16,6 +22,7 @@ interface Drive {
 	capacity: number;
 	currentPassengers: number;
 	status: string;
+	approvedPassengers: Passenger[]; // ★追加
 }
 
 export function DriverDrivesPage() {
@@ -144,6 +151,7 @@ export function DriverDrivesPage() {
 										capacity={drive.capacity}
 										currentPassengers={drive.currentPassengers}
 										status={drive.status}
+										approvedPassengers={drive.approvedPassengers} // ★追加: プロパティを渡す
 										onDelete={() => {
 											handleDelete(drive.id);
 										}}

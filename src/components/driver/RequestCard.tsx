@@ -1,7 +1,7 @@
 import { Star, Heart, MapPin } from 'lucide-react';
 
 interface RequestCardProps {
-    id: string;
+    id: number;
     passengerName: string;
     rating: number;
     reviewCount: number;
@@ -9,8 +9,8 @@ interface RequestCardProps {
     departure: string;
     destination: string;
     departureTime: string;
-    onApprove: (id: string) => void;
-    onReject: (id: string) => void;
+    onApprove: (id: number) => void;
+    onReject: (id: number) => void;
 }
 
 export function RequestCard({
