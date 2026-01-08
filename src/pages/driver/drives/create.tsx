@@ -1,488 +1,182 @@
-// % Start(小松暉)
-// 新規ドライブ作成画面: ルートや条件を設定して募集を開始する新規ドライブ作成画面
-
-import { useState } from 'react';
+// % Start(AI Assistant)
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { driveApi } from '@/lib/api';
-import { TitleHeader } from '@/components/TitleHeader';
-import {
-	ArrowLeft, MapPin, Calendar, Clock, Users,
-	DollarSign, Car, Check, Music, Dog, Utensils
-} from 'lucide-react';
+import { ArrowLeft, Check, MapPin, Calendar, Clock, Users, DollarSign, Cigarette, Dog, Utensils, Music, Loader2 } from 'lucide-react';
 
-export function CreateDrivePage() {
-	const router = useRouter();
-	const [formData, setFormData] = useState({
-		departure: '',
-		destination: '',
-		departureDate: '',
-		departureTime: '',
-		capacity: 1,
-		fee: 0,
-		message: '',
-		noSmoking: false,
-		petAllowed: false,
-		musicAllowed: false,
-		foodAllowed: false, // 追加分
-	});
-	const [error, setError] = useState('');
-	const [loading, setLoading] = useState(false);
+const CreateDrivePage: React.FC = () => {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    departure: '東京駅',
+    destination: '横浜駅',
+    departureDate: '',
+    departureTime: '',
+    capacity: 3,
+    fee: 1000,
+    message: '',
+    noSmoking: true,
+    petAllowed: false,
+    foodAllowed: true,
+    musicAllowed: true,
+  });
 
-	function validateForm() {
-		if (!formData.departure) {
-			setError('出発地を入力してください');
-			return false;
-		}
-		if (!formData.destination) {
-			setError('目的地を入力してください');
-			return false;
-		}
-		if (!formData.departureDate || !formData.departureTime) {
-			setError('出発日時を入力してください');
-			return false;
-		}
-		if (formData.capacity < 1) {
-			setError('定員は1人以上で設定してください');
-			return false;
-		}
-		if (formData.fee < 0) {
-			setError('料金は0円以上で設定してください');
-			return false;
-		}
-		return true;
-	}
+  const handleCreate = async () => {
+    if (!formData.departureDate || !formData.departureTime) {
+      alert('出発日時を入力してください');
+      return;
+    }
 
-	async function handleSaveClick() {
-		setError('');
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/driver/regist_drive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...formData,
+          vehiclerules: {
+            noSmoking: formData.noSmoking,
+            petAllowed: formData.petAllowed,
+            foodAllowed: formData.foodAllowed,
+            musicAllowed: formData.musicAllowed,
+          }
+        }),
+      });
 
-		if (!validateForm()) {
-			return;
-		}
+      const result = await response.json();
+      if (response.ok && result.ok) {
+        alert("ドライブを公開しました！");
+        router.push('/driver/drives/management'); // 成功後の遷移先
+      } else {
+        alert(result.detail || 'エラーが発生しました');
+      }
+    } catch (error) {
+      alert('サーバーとの通信に失敗しました');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-		setLoading(true);
+  return (
+    <div className="min-h-screen bg-[#F8F9FA] pb-10 font-sans text-slate-700">
+      {/* ヘッダー */}
+      <header className="bg-white border-b border-slate-100 p-4 flex items-center sticky top-0 z-10">
+        <button onClick={() => router.back()} className="p-2 hover:bg-slate-50 rounded-full transition-colors">
+          <ArrowLeft className="w-5 h-5 text-slate-400" />
+        </button>
+        <h1 className="flex-1 text-center font-bold text-[#10B981]">ドライブを作成</h1>
+        <div className="w-9" />
+      </header>
 
-		try {
-			const departuretime = `${formData.departureDate}T${formData.departureTime}:00`;
+      <div className="max-w-md mx-auto p-4 space-y-4">
+        {/* ルート設定 */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-tight">ルート情報</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">出発地 <span className="text-red-500 font-black ml-1">注意：自宅付近にしないでください</span></label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
+                <MapPin className="w-4 h-4 text-slate-300 mr-3" />
+                <input type="text" className="bg-transparent w-full text-sm outline-none" value={formData.departure} onChange={e => setFormData({...formData, departure: e.target.value})} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">目的地</label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
+                <MapPin className="w-4 h-4 text-blue-500 mr-3" />
+                <input type="text" className="bg-transparent w-full text-sm outline-none" value={formData.destination} onChange={e => setFormData({...formData, destination: e.target.value})} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-			await driveApi.createDrive({
-				departure: formData.departure,
-				destination: formData.destination,
-				departuretime,
-				capacity: formData.capacity,
-				fee: formData.fee,
-				message: formData.message,
-				vehiclerules: {
-					noSmoking: formData.noSmoking,
-					petAllowed: formData.petAllowed,
-					musicAllowed: formData.musicAllowed,
-					foodAllowed: data.drive.vehicleRules?.foodAllowed ?? false,
-				},
-			});
+        {/* 日時設定 */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <h2 className="text-xs font-bold text-slate-400 uppercase">日時</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">出発日</label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <Calendar className="w-4 h-4 text-slate-300 mr-3" />
+                <input type="date" className="bg-transparent w-full text-sm outline-none" value={formData.departureDate} onChange={e => setFormData({...formData, departureDate: e.target.value})} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">出発時刻</label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <Clock className="w-4 h-4 text-slate-300 mr-3" />
+                <input type="time" className="bg-transparent w-full text-sm outline-none" value={formData.departureTime} onChange={e => setFormData({...formData, departureTime: e.target.value})} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-			alert('ドライブを作成しました');
-			router.push('/driver/drives');
-		} catch (err) {
-			setError('ドライブの作成に失敗しました');
-		} finally {
-			setLoading(false);
-		}
-	}
+        {/* 金額・定員 */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <h2 className="text-xs font-bold text-slate-400 uppercase">詳細情報</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">同乗可能人数</label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <Users className="w-4 h-4 text-slate-300 mr-3" />
+                <input type="number" className="bg-transparent w-full text-sm outline-none" value={formData.capacity} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-slate-500 block mb-1">料金 (円/人)</label>
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <DollarSign className="w-4 h-4 text-slate-300 mr-3" />
+                <input type="number" className="bg-transparent w-full text-sm outline-none" value={formData.fee} onChange={e => setFormData({...formData, fee: Number(e.target.value)})} />
+              </div>
+            </div>
+          </div>
+          <textarea 
+            className="w-full bg-slate-50 rounded-xl p-4 text-sm min-h-[100px] outline-none border border-transparent focus:border-slate-100" 
+            placeholder="ドライブの詳細や注意事項を記載してください"
+            value={formData.message}
+            onChange={e => setFormData({...formData, message: e.target.value})}
+          />
+        </div>
 
-	function handleBack() {
-		router.push('/driver/drives');
-	}
+        {/* 車内ルール (黒いトグルスイッチ) */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <h2 className="text-xs font-bold text-slate-400 uppercase">車両ルール</h2>
+          <div className="divide-y divide-slate-50">
+            <ToggleRow icon={<Cigarette className="w-4 h-4" />} label="禁煙" desc="車内での喫煙を禁止" active={formData.noSmoking} onClick={() => setFormData({...formData, noSmoking: !formData.noSmoking})} />
+            <ToggleRow icon={<Dog className="w-4 h-4" />} label="ペット可" desc="ペット同乗を許可" active={formData.petAllowed} onClick={() => setFormData({...formData, petAllowed: !formData.petAllowed})} />
+            <ToggleRow icon={<Utensils className="w-4 h-4" />} label="飲食OK" desc="車内での飲食を許可" active={formData.foodAllowed} onClick={() => setFormData({...formData, foodAllowed: !formData.foodAllowed})} />
+            <ToggleRow icon={<Music className="w-4 h-4" />} label="音楽OK" desc="音楽再生を許可" active={formData.musicAllowed} onClick={() => setFormData({...formData, musicAllowed: !formData.musicAllowed})} />
+          </div>
+        </div>
 
-	// return (
-	// 	<div className="create-drive-page">
-	// 		<TitleHeader title="ドライブ作成" />
+        {/* 送信ボタン */}
+        <button 
+          onClick={handleCreate}
+          disabled={isSubmitting}
+          className="w-full bg-[#10B981] hover:bg-emerald-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:bg-slate-300"
+        >
+          {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5 stroke-[3px]" />}
+          ドライブを作成
+        </button>
+      </div>
+    </div>
+  );
+};
 
-	// 		<div className="create-drive-container">
-	// 			<div className="form-group">
-	// 				<label htmlFor="departure" className="form-label">
-	// 					出発地
-	// 				</label>
-	// 				<input
-	// 					type="text"
-	// 					id="departure"
-	// 					className="form-input"
-	// 					value={formData.departure}
-	// 					onChange={(e) => {
-	// 						setFormData({
-	// 							...formData,
-	// 							departure: e.target.value,
-	// 						});
-	// 					}}
-	// 					placeholder="例: 東京駅"
-	// 				/>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label htmlFor="destination" className="form-label">
-	// 					目的地
-	// 				</label>
-	// 				<input
-	// 					type="text"
-	// 					id="destination"
-	// 					className="form-input"
-	// 					value={formData.destination}
-	// 					onChange={(e) => {
-	// 						setFormData({
-	// 							...formData,
-	// 							destination: e.target.value,
-	// 						});
-	// 					}}
-	// 					placeholder="例: 新宿駅"
-	// 				/>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label className="form-label">出発日時</label>
-	// 				<div className="datetime-input-group">
-	// 					<input
-	// 						type="date"
-	// 						className="form-input"
-	// 						value={formData.departureDate}
-	// 						onChange={(e) => {
-	// 							setFormData({
-	// 								...formData,
-	// 								departureDate: e.target.value,
-	// 							});
-	// 						}}
-	// 					/>
-	// 					<input
-	// 						type="time"
-	// 						className="form-input"
-	// 						value={formData.departureTime}
-	// 						onChange={(e) => {
-	// 							setFormData({
-	// 								...formData,
-	// 								departureTime: e.target.value,
-	// 							});
-	// 						}}
-	// 					/>
-	// 				</div>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label htmlFor="capacity" className="form-label">
-	// 					定員
-	// 				</label>
-	// 				<input
-	// 					type="number"
-	// 					id="capacity"
-	// 					className="form-input"
-	// 					value={formData.capacity}
-	// 					onChange={(e) => {
-	// 						setFormData({
-	// 							...formData,
-	// 							capacity: Number(e.target.value),
-	// 						});
-	// 					}}
-	// 					min="1"
-	// 					max="10"
-	// 				/>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label htmlFor="fee" className="form-label">
-	// 					料金（円）
-	// 				</label>
-	// 				<input
-	// 					type="number"
-	// 					id="fee"
-	// 					className="form-input"
-	// 					value={formData.fee}
-	// 					onChange={(e) => {
-	// 						setFormData({
-	// 							...formData,
-	// 							fee: Number(e.target.value),
-	// 						});
-	// 					}}
-	// 					min="0"
-	// 					step="100"
-	// 				/>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label className="form-label">車両ルール</label>
-	// 				<div className="checkbox-group">
-	// 					<label className="checkbox-label">
-	// 						<input
-	// 							type="checkbox"
-	// 							checked={formData.noSmoking}
-	// 							onChange={(e) => {
-	// 								setFormData({
-	// 									...formData,
-	// 									noSmoking: e.target.checked,
-	// 								});
-	// 							}}
-	// 						/>
-	// 						<span>禁煙</span>
-	// 					</label>
-	// 					<label className="checkbox-label">
-	// 						<input
-	// 							type="checkbox"
-	// 							checked={formData.petAllowed}
-	// 							onChange={(e) => {
-	// 								setFormData({
-	// 									...formData,
-	// 									petAllowed: e.target.checked,
-	// 								});
-	// 							}}
-	// 						/>
-	// 						<span>ペット可</span>
-	// 					</label>
-	// 					<label className="checkbox-label">
-	// 						<input
-	// 							type="checkbox"
-	// 							checked={formData.musicAllowed}
-	// 							onChange={(e) => {
-	// 								setFormData({
-	// 									...formData,
-	// 									musicAllowed: e.target.checked,
-	// 								});
-	// 							}}
-	// 						/>
-	// 						<span>音楽可</span>
-	// 					</label>
-	// 				</div>
-	// 			</div>
-
-	// 			<div className="form-group">
-	// 				<label htmlFor="message" className="form-label">
-	// 					メッセージ（任意）
-	// 				</label>
-	// 				<textarea
-	// 					id="message"
-	// 					className="form-textarea"
-	// 					value={formData.message}
-	// 					onChange={(e) => {
-	// 						setFormData({
-	// 							...formData,
-	// 							message: e.target.value,
-	// 						});
-	// 					}}
-	// 					rows={4}
-	// 					placeholder="同乗者へのメッセージを入力してください"
-	// 				></textarea>
-	// 			</div>
-
-	// 			{error && <div className="error-message">{error}</div>}
-
-	// 			<div className="form-actions">
-	// 				<button
-	// 					type="button"
-	// 					className="btn btn-secondary"
-	// 					onClick={handleBack}
-	// 				>
-	// 					戻る
-	// 				</button>
-	// 				<button
-	// 					type="button"
-	// 					className="btn btn-primary"
-	// 					onClick={handleSaveClick}
-	// 					disabled={loading}
-	// 				>
-	// 					{loading ? '作成中...' : '保存'}
-	// 				</button>
-	// 			</div>
-	// 		</div>
-	// 	</div>
-	// );
-	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-
-			<div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-
-				{/* ヘッダー */}
-				<div className="bg-white shadow-sm sticky top-0 z-10 p-4 flex items-center gap-3">
-					<button onClick={() => router.push('/driver/drives')} className="text-gray-600 p-1">
-						<ArrowLeft className="w-5 h-5" />
-					</button>
-					<h1 className="text-green-600 font-bold text-lg">ドライブを作成</h1>
-				</div>
-
-				{/* フォームエリア */}
-				<form onSubmit={handleSaveClick} className="p-4 space-y-4">
-
-					{/* ルート情報カード */}
-					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-						<p className="text-xs font-bold text-gray-400 uppercase tracking-wider">ルート情報</p>
-
-						<div className="space-y-2">
-							<label className="text-xs font-bold text-gray-600 flex justify-between">
-								出発地 <span className="text-[10px] text-red-500 font-normal">※自宅付近は避けてください</span>
-							</label>
-							<div className="relative">
-								<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-								<input
-									type="text"
-									className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-green-500 outline-none"
-									placeholder="例: 東京駅"
-									value={formData.departure}
-									onChange={(e) => setFormData({ ...formData, departure: e.target.value })}
-								/>
-							</div>
-						</div>
-
-						<div className="space-y-2">
-							<label className="text-xs font-bold text-gray-600">目的地</label>
-							<div className="relative">
-								<MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
-								<input
-									type="text"
-									className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-green-500 outline-none"
-									placeholder="例: 横浜駅"
-									value={formData.destination}
-									onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-								/>
-							</div>
-						</div>
-					</div>
-
-					{/* 日時カード */}
-					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-						<p className="text-xs font-bold text-gray-400 uppercase tracking-wider">出発日時</p>
-						<div className="grid grid-cols-2 gap-3">
-							<div className="relative">
-								<Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-								<input
-									type="date"
-									className="w-full pl-10 pr-2 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm"
-									value={formData.departureDate}
-									onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
-								/>
-							</div>
-							<div className="relative">
-								<Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-								<input
-									type="time"
-									className="w-full pl-10 pr-2 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm"
-									value={formData.departureTime}
-									onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
-								/>
-							</div>
-						</div>
-					</div>
-
-					{/* 詳細設定カード */}
-					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-						<p className="text-xs font-bold text-gray-400 uppercase tracking-wider">詳細設定</p>
-						<div className="grid grid-cols-2 gap-3">
-							<div className="space-y-1">
-								<label className="text-[10px] font-bold text-gray-500">定員</label>
-								<div className="relative">
-									<Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-									<input
-										type="number"
-										className="w-full pl-10 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm"
-										value={formData.capacity}
-										onChange={(e) => setFormData({ ...formData, capacity: Number(e.target.value) })}
-									/>
-								</div>
-							</div>
-							<div className="space-y-1">
-								<label className="text-[10px] font-bold text-gray-500">料金/人</label>
-								<div className="relative">
-									<DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
-									<input
-										type="number"
-										className="w-full pl-10 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-green-600"
-										value={formData.fee}
-										onChange={(e) => setFormData({ ...formData, fee: Number(e.target.value) })}
-									/>
-								</div>
-							</div>
-						</div>
-						<textarea
-							className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[80px] outline-none"
-							placeholder="メッセージ（任意）"
-							value={formData.message}
-							onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-						/>
-					</div>
-
-					<div className="bg-white rounded-2xl p-4 shadow-sm space-y-4">
-						<p className="text-xs font-bold text-gray-400 uppercase tracking-wider">車両ルール</p>
-						<div className="space-y-3">
-							{/* 禁煙設定 */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Car size={16} /></div>
-									<span className="text-sm font-medium text-gray-700">禁煙</span>
-								</div>
-								<input
-									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
-									checked={formData.noSmoking}
-									onChange={(e) => setFormData({ ...formData, noSmoking: e.target.checked })}
-								/>
-							</div>
-
-							{/* ペット設定 */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Dog size={16} /></div>
-									<span className="text-sm font-medium text-gray-700">ペット可</span>
-								</div>
-								<input
-									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
-									checked={formData.petAllowed}
-									onChange={(e) => setFormData({ ...formData, petAllowed: e.target.checked })}
-								/>
-							</div>
-
-							{/* 飲食設定 */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Utensils size={16} /></div>
-									<span className="text-sm font-medium text-gray-700">飲食OK</span>
-								</div>
-								<input
-									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
-									checked={formData.foodAllowed}
-									onChange={(e) => setFormData({ ...formData, foodAllowed: e.target.checked })}
-								/>
-							</div>
-
-							{/* 音楽設定 */}
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500"><Music size={16} /></div>
-									<span className="text-sm font-medium text-gray-700">音楽OK</span>
-								</div>
-								<input
-									type="checkbox"
-									className="w-10 h-5 bg-gray-200 rounded-full appearance-none checked:bg-green-500 transition-all relative after:content-[''] after:absolute after:w-4 after:h-4 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 checked:after:left-5 cursor-pointer"
-									checked={formData.musicAllowed}
-									onChange={(e) => setFormData({ ...formData, musicAllowed: e.target.checked })}
-								/>
-							</div>
-						</div>
-					</div>
-
-					
-
-					{error && <div className="text-red-500 text-xs text-center font-bold">{error}</div>}
-
-					{/* 作成ボタン */}
-					<button
-						type="submit"
-						disabled={loading}
-						className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-100 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:bg-gray-400"
-					>
-						{loading ? '作成中...' : <><Check size={20} /> ドライブを確定</>}
-					</button>
-					<div className="h-10" /> {/* 余白 */}
-				</form>
-			</div>
-		</div >
-	);
-}
+// トグルスイッチ用コンポーネント
+const ToggleRow = ({ icon, label, desc, active, onClick }: any) => (
+  <div className="flex items-center py-4">
+    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-500 mr-4">{icon}</div>
+    <div className="flex-1">
+      <div className="text-sm font-bold text-slate-700">{label}</div>
+      <div className="text-[11px] text-slate-400">{desc}</div>
+    </div>
+    <button onClick={onClick} className={`w-12 h-6 rounded-full relative transition-colors ${active ? 'bg-black' : 'bg-slate-200'}`}>
+      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${active ? 'left-7' : 'left-1'}`} />
+    </button>
+  </div>
+);
 
 export default CreateDrivePage;
-
 // % End
-
