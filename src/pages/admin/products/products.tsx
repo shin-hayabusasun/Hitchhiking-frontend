@@ -22,8 +22,9 @@ export function ProductManagementPage() {
     // ★重要: useEffect の外に定義する
     async function fetchProducts() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/points/products`, {
+            const response = await fetch(`${API_BASE_URL}/api/nori/products`, {
                 method: 'GET',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -58,15 +59,16 @@ export function ProductManagementPage() {
     const handleFormSubmit = async (formData: Omit<Product, 'id'>) => {
         try {
             let method = 'POST';
-            let url = `${API_BASE_URL}/api/points/products`;
+            let url = `${API_BASE_URL}/api/nori/products`;
 
             if (editingProduct) {
                 method = 'PUT';
-                url = `${API_BASE_URL}/api/points/products/${editingProduct.id}`;
+                url = `${API_BASE_URL}/api/nori/products/${editingProduct.id}`;
             }
 
             const response = await fetch(url, {
                 method: method,
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -91,7 +93,10 @@ export function ProductManagementPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('本当に削除しますか？')) return;
         try {
-            await fetch(`${API_BASE_URL}/api/points/products/${id}`, { method: 'DELETE' });
+            await fetch(`${API_BASE_URL}/api/nori/products/${id}`, { 
+                method: 'DELETE' ,
+                
+            });
             setProducts(prev => prev.filter(p => p.id !== id));
             alert('削除しました');
         } catch (err) {
