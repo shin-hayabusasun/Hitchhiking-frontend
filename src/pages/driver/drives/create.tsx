@@ -8,8 +8,8 @@ const CreateDrivePage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
-    departure: '東京駅',
-    destination: '横浜駅',
+    departure: '',
+    destination: '',
     departureDate: '',
     departureTime: '',
     capacity: 3,
@@ -78,14 +78,14 @@ const CreateDrivePage: React.FC = () => {
               <label className="text-[11px] font-bold text-slate-500 block mb-1">出発地 <span className="text-red-500 font-black ml-1">注意：自宅付近にしないでください</span></label>
               <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
                 <MapPin className="w-4 h-4 text-slate-300 mr-3" />
-                <input type="text" className="bg-transparent w-full text-sm outline-none" value={formData.departure} onChange={e => setFormData({...formData, departure: e.target.value})} />
+                <input type="text" placeholder="出発地を入力（例：高知駅）" className="bg-transparent w-full text-sm outline-none" value={formData.departure} onChange={e => setFormData({...formData, departure: e.target.value})} />
               </div>
             </div>
             <div>
               <label className="text-[11px] font-bold text-slate-500 block mb-1">目的地</label>
               <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
                 <MapPin className="w-4 h-4 text-blue-500 mr-3" />
-                <input type="text" className="bg-transparent w-full text-sm outline-none" value={formData.destination} onChange={e => setFormData({...formData, destination: e.target.value})} />
+                <input type="text" placeholder="目的地を入力（例：高知工科大学）" className="bg-transparent w-full text-sm outline-none" value={formData.destination} onChange={e => setFormData({...formData, destination: e.target.value})} />
               </div>
             </div>
           </div>
