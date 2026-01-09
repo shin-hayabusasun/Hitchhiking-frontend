@@ -72,7 +72,9 @@ export function AdminDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
             {/* --- ヘッダー部分 --- */}
             <header className="flex items-center justify-between px-4 py-4 bg-white border-b sticky top-0 z-10">
                 {/* ① 戻るボタン (handleBackClickを使用) */}
@@ -251,6 +253,7 @@ export function AdminDashboardPage() {
                     </div>
                 </section>
             </main>
+        </div>
         </div>
     );
 }
