@@ -1,286 +1,197 @@
-// % Start(AI Assistant)
-// 注文管理画面。注文一覧確認とステータス管理
+// src/pages/admin/orders.tsx
+// 注文管理画面: 検索、統計、フィルタリング機能付き
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
-import { Search, Filter, Package, Truck, CheckCircle, Clock } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { OrderCard, Order } from '@/components/admin/orders/OrderCard';
 
-interface Order {
-    id: string;
-    productName: string;
-    points: number;
-    status: string;
-    orderDate: string;
-    // APIにない項目をフロントで補完
-    orderNumber?: string;
-    customerName?: string;
-    quantity?: number;
-}
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
-interface OrderStats {
-    totalOrders: number;
-    pendingCount: number;
-    shippedCount: number;
-}
-
-export function OrderManagementPage() {
+export default function OrderManagementPage() {
+    const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
-    const [stats, setStats] = useState<OrderStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    
-    // フィルタリングと検索
-    const [statusFilter, setStatusFilter] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
+
+    // UI用のState
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'pending', 'shipped', 'completed'
 
     useEffect(() => {
-        fetchData();
+        fetchOrders();
     }, []);
 
-    async function fetchData() {
+    // 1. 注文一覧取得
+    async function fetchOrders() {
         try {
-            // 指定されたモックAPIを使用
-            const response = await fetch('/api/points/orders', {
+            const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
                 method: 'GET',
                 credentials: 'include',
             });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
+            if (!response.ok) throw new Error('Failed to fetch orders');
             const data = await response.json();
-            const rawOrders = data.orders || [];
-
-            // 表示用にデータを加工（モックに足りない情報を補完）
-            const processedOrders: Order[] = rawOrders.map((o: any) => ({
-                ...o,
-                orderNumber: o.id.substring(0, 8).toUpperCase(), // IDの一部を注文番号風に
-                customerName: `User-${o.id.substring(0, 4)}`,   // 仮のユーザー名
-                quantity: 1, // 数量は1固定
-            }));
-
-            setOrders(processedOrders);
-            calculateStats(processedOrders);
-
+            setOrders(data.orders || []);
         } catch (err) {
             console.error(err);
-            setError('データの取得に失敗しました');
+            setError('注文データの取得に失敗しました');
         } finally {
             setLoading(false);
         }
     }
 
-    // 統計情報の計算
-    function calculateStats(orderList: Order[]) {
-        setStats({
-            totalOrders: orderList.length,
-            pendingCount: orderList.filter(o => o.status === 'pending').length,
-            shippedCount: orderList.filter(o => o.status === 'shipped').length,
-        });
+    // 2. ステータス更新処理
+    async function handleStatusChange(orderId: string, newStatus: string) {
+        const originalOrders = [...orders];
+        setOrders(prev => prev.map(o => 
+            o.id === orderId ? { ...o, status: newStatus } : o
+        ));
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!response.ok) throw new Error('Failed to update');
+        } catch (err) {
+            alert('ステータスの更新に失敗しました');
+            setOrders(originalOrders);
+        }
     }
 
-    // ステータス更新（モック動作：ローカルStateのみ更新）
-    async function handleUpdateStatus(orderId: string, newStatus: string) {
-        // 確認ダイアログ
-        const actionName = newStatus === 'shipped' ? '発送済みに' : '配達完了に';
-        if (!confirm(`この注文を「${actionName}」しますか？`)) {
-            return;
-        }
+    // 3. フィルタリングと検索ロジック
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => {
+            // タブによるフィルタ
+            let matchesTab = true;
+            if (activeTab === 'pending') matchesTab = order.status === 'pending';
+            else if (activeTab === 'shipped') matchesTab = order.status === 'shipped';
+            else if (activeTab === 'completed') matchesTab = order.status === 'completed';
+            
+            // 検索ワードによるフィルタ
+            const searchLower = searchQuery.toLowerCase();
+            const matchesSearch = 
+                order.productName.toLowerCase().includes(searchLower) ||
+                order.customerName.toLowerCase().includes(searchLower) ||
+                order.orderNumber.toLowerCase().includes(searchLower);
 
-        const updatedOrders = orders.map(order => {
-            if (order.id === orderId) {
-                return { ...order, status: newStatus };
-            }
-            return order;
+            return matchesTab && matchesSearch;
         });
+    }, [orders, activeTab, searchQuery]);
 
-        setOrders(updatedOrders);
-        calculateStats(updatedOrders); // 統計も更新
-    }
+    // 4. 統計データの計算
+    const stats = useMemo(() => {
+        return {
+            total: orders.length,
+            pending: orders.filter(o => o.status === 'pending').length,
+            completed: orders.filter(o => o.status === 'completed' || o.status === 'shipped').length
+        };
+    }, [orders]);
 
-    // フィルタリング処理
-    const filteredOrders = orders.filter((order) => {
-        // ステータスフィルタ
-        const statusMatch = statusFilter === 'all' || order.status === statusFilter;
-        
-        // 検索フィルタ（注文番号 or 商品名 or ユーザー名）
-        const searchLower = searchTerm.toLowerCase();
-        const searchMatch = 
-            (order.orderNumber?.toLowerCase().includes(searchLower)) ||
-            (order.productName.toLowerCase().includes(searchLower)) ||
-            (order.customerName?.toLowerCase().includes(searchLower));
-
-        return statusMatch && searchMatch;
-    });
-
-    // ステータスごとのラベルと色定義
-    const getStatusConfig = (status: string) => {
-        switch (status) {
-            case 'pending':
-                return { label: '準備中', color: 'bg-yellow-100 text-yellow-700', icon: Clock };
-            case 'shipped':
-                return { label: '発送済', color: 'bg-blue-100 text-blue-700', icon: Truck };
-            case 'delivered':
-                return { label: '完了', color: 'bg-green-100 text-green-700', icon: CheckCircle };
-            default:
-                return { label: status, color: 'bg-gray-100 text-gray-700', icon: Package };
-        }
+    const handleBack = () => {
+        router.push('/admin/dashboard');
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                <div className="w-full max-w-[390px] aspect-[9/19] bg-white shadow-2xl rounded-[3rem] flex items-center justify-center">
-                    <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return (
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            {/* スマホ枠 */}
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gray-50 overflow-y-auto rounded-[3rem]">
                 
-                {/* ヘッダー */}
-                <div className="bg-white/50 backdrop-blur-sm z-10 relative">
-                    <TitleHeader title="注文管理" backPath="/admin/dashboard" />
-                </div>
-
-                {/* スクロールエリア */}
-                <div className="flex-1 overflow-y-auto p-5 scrollbar-hide pb-20">
+                {/* ヘッダーエリア（固定） */}
+                {/* bg-whiteにして、z-indexを上げ、検索バーまで含めて固定エリアにしました */}
+                <div className="bg-white/90 backdrop-blur-md sticky top-0 z-20 pb-4 shadow-sm rounded-t-[2.5rem]">
                     
-                    {/* 統計カード */}
-                    {stats && (
-                        <div className="grid grid-cols-3 gap-2 mb-6">
-                            <div className="bg-white p-3 rounded-xl shadow-sm text-center border border-white/60">
-                                <h3 className="text-[10px] font-bold text-gray-500 mb-1">未発送</h3>
-                                <p className="text-xl font-extrabold text-yellow-500 leading-none">
-                                    {stats.pendingCount}
-                                </p>
-                            </div>
-                            <div className="bg-white p-3 rounded-xl shadow-sm text-center border border-white/60">
-                                <h3 className="text-[10px] font-bold text-gray-500 mb-1">発送済</h3>
-                                <p className="text-xl font-extrabold text-blue-500 leading-none">
-                                    {stats.shippedCount}
-                                </p>
-                            </div>
-                            <div className="bg-white p-3 rounded-xl shadow-sm text-center border border-white/60">
-                                <h3 className="text-[10px] font-bold text-gray-500 mb-1">総注文</h3>
-                                <p className="text-xl font-extrabold text-gray-700 leading-none">
-                                    {stats.totalOrders}
-                                </p>
+                    {/* タイトル（修正: 在庫管理 -> 注文管理） */}
+                    <TitleHeader title="注文管理" backPath="/admin/dashboard" />
+                    
+                    {/* 検索バー（修正: px-5で左右に余白を追加） */}
+                    <div className="px-5 mt-2">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="注文番号・商品名で検索..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-gray-100 text-gray-700 text-sm font-bold rounded-2xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:font-medium"
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                             </div>
                         </div>
-                    )}
+                    </div>
+                </div>
 
-                    {/* 検索バー */}
-                    <div className="relative mb-4">
-                        <input
-                            type="text"
-                            placeholder="注文番号・商品名で検索"
-                            className="w-full bg-white border-none shadow-sm rounded-xl py-3 pl-10 pr-4 text-sm font-bold text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-400"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <div className="flex-1 overflow-y-auto p-5 scrollbar-hide pb-20">
+                    
+                    {/* 3つの統計パネル */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                            <p className="text-[10px] text-gray-400 font-bold mb-1">総注文</p>
+                            <p className="text-lg font-extrabold text-gray-800">{stats.total}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-yellow-100 flex flex-col items-center justify-center relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-8 h-8 bg-yellow-50 rounded-bl-full -mr-2 -mt-2"></div>
+                            <p className="text-[10px] text-yellow-600 font-bold mb-1">対応待ち</p>
+                            <p className="text-lg font-extrabold text-yellow-600">{stats.pending}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                            <p className="text-[10px] text-green-600 font-bold mb-1">完了済</p>
+                            <p className="text-lg font-extrabold text-green-600">{stats.completed}</p>
+                        </div>
                     </div>
 
-                    {/* タブフィルタ */}
-                    {/* 変更点: overflow-x-autoなどを削除し、justify-centerを追加 */}
-                    <div className="flex justify-center gap-2 mb-6">
-                        {['all', 'pending', 'shipped', 'delivered'].map((status) => (
+                    {/* 4つのフィルタタグ（修正: flex-1を追加して横幅いっぱいに広げました） */}
+                    <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+                        {[
+                            { id: 'all', label: 'すべて' },
+                            { id: 'pending', label: '準備中' },
+                            { id: 'shipped', label: '発送済' },
+                            { id: 'completed', label: '完了' }
+                        ].map((tab) => (
                             <button
-                                key={status}
-                                onClick={() => setStatusFilter(status)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
-                                    statusFilter === status
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white text-gray-500 border border-white/60'
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                // 修正: flex-1 と min-w-fit を組み合わせて、いい感じに広がるように調整
+                                className={`flex-1 min-w-fit px-3 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all text-center ${
+                                    activeTab === tab.id
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                        : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
                                 }`}
                             >
-                                {status === 'all' ? 'すべて' : 
-                                 status === 'pending' ? '準備中' :
-                                 status === 'shipped' ? '配送中' : '完了'}
+                                {tab.label}
                             </button>
                         ))}
                     </div>
 
-                    {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-
-                    {/* 注文リスト */}
-                    {filteredOrders.length === 0 ? (
-                        <div className="text-center py-10 text-gray-400">
-                            <p>該当する注文がありません</p>
+                    {/* リスト表示 */}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-xs font-bold text-center">
+                            {error}
+                        </div>
+                    )}
+                    
+                    {filteredOrders.length === 0 && !error ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-gray-400 space-y-4">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl grayscale opacity-50">📦</div>
+                            <p className="text-sm font-bold">該当する注文がありません</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            {filteredOrders.map((order) => {
-                                const statusConfig = getStatusConfig(order.status);
-                                const StatusIcon = statusConfig.icon;
-
-                                return (
-                                    <div key={order.id} className="bg-white p-4 rounded-2xl shadow-sm border border-white/60">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] text-gray-400 font-bold mb-0.5">
-                                                    #{order.orderNumber}
-                                                </span>
-                                                <span className="text-xs text-gray-500">
-                                                    {order.orderDate}
-                                                </span>
-                                            </div>
-                                            <span className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${statusConfig.color}`}>
-                                                <StatusIcon className="w-3 h-3" />
-                                                {statusConfig.label}
-                                            </span>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <h4 className="font-bold text-gray-800 text-base mb-1">
-                                                {order.productName}
-                                            </h4>
-                                            <div className="flex justify-between items-end">
-                                                <p className="text-xs text-gray-500 font-medium">
-                                                    {order.customerName} 様
-                                                </p>
-                                                <p className="text-blue-600 font-bold">
-                                                    {order.points.toLocaleString()} pt
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* ステータス操作アクション */}
-                                        <div className="border-t border-gray-100 pt-3 flex justify-end">
-                                            {order.status === 'pending' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(order.id, 'shipped')}
-                                                    className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 active:scale-95 transition-all"
-                                                >
-                                                    <Truck className="w-3.5 h-3.5" />
-                                                    発送済みにする
-                                                </button>
-                                            )}
-                                            {order.status === 'shipped' && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(order.id, 'delivered')}
-                                                    className="flex items-center gap-1 bg-green-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-green-200 active:scale-95 transition-all"
-                                                >
-                                                    <CheckCircle className="w-3.5 h-3.5" />
-                                                    配達完了にする
-                                                </button>
-                                            )}
-                                            {order.status === 'delivered' && (
-                                                <span className="text-xs text-gray-400 font-bold flex items-center gap-1">
-                                                    <CheckCircle className="w-3.5 h-3.5" />
-                                                    対応完了
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                        <div className="space-y-3">
+                            {filteredOrders.map((order) => (
+                                <OrderCard 
+                                    key={order.id} 
+                                    order={order} 
+                                    onStatusChange={handleStatusChange} 
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
@@ -288,7 +199,3 @@ export function OrderManagementPage() {
         </div>
     );
 }
-
-export default OrderManagementPage;
-
-// % End
