@@ -18,7 +18,7 @@ export function HomePage() {
 				});
 				const data = await response.json();
 				
-				if (!response.ok ) {
+				if (!data.ok ) {
 					// ログインしていない場合はログイン画面へ
 					router.push('/login');
 				} else {
