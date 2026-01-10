@@ -59,11 +59,15 @@ export function LoginPage() {
 
 			const data = await response.json();
 
-			if (data.ok) {
+			if (data.ok && data.isuser === 0) {
 				// セッション情報を保存（cookieに自動保存される）
 				// ホーム画面へ遷移
+				router.push('/admin/dashboard');
+			} 
+      else if(data.ok && data.isuser === 1) {
 				router.push('/');
-			} else {
+			}
+      else {
 				setError('ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
 			}
 		} catch (err) {
@@ -108,45 +112,42 @@ export function LoginPage() {
 
 
 
-          {/* デモアカウントセクション (1, 2) */}
-          <div className="bg-blue-50 rounded-2xl p-4 mb-8 border border-blue-100">
-            <div className="text-[11px] mb-3 leading-tight">
+          {/* デモアカウントセクション */}
+<div className="bg-blue-50 rounded-2xl p-4 mb-8 border border-blue-100">
+  <div className="text-[11px] mb-3 leading-tight">
+    <p className="text-blue-800 font-bold mb-1">デモアカウントを選択</p>
+    <p className="text-blue-700">一般: user@test.com / password123</p>
+    <p className="text-purple-700">管理者: admin@rideshare.jp / admin123</p>
+  </div>
+  
+  <div className="flex gap-2">
+    {/* ① 一般ユーザーボタン */}
+    <button 
+      type="button"
+      onClick={() => { setEmail(''); setPassword(''); setIsUser(1); }}
+      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold shadow-sm transition-all border-2 ${
+        isUser === 1 
+          ? 'bg-blue-100 border-blue-500 text-blue-700 scale-[1.02]' 
+          : 'bg-white border-gray-200 text-gray-700'
+      }`}
+    >
+      一般ユーザー
+    </button>
 
-
-              <p className="text-blue-800 font-bold mb-1">デモアカウント</p>
-              <p className="text-blue-700">一般: user@test.com / password123</p>
-              <p className="text-purple-700">管理者: admin@rideshare.jp / admin123</p>
-
-
-            </div>
-            
-            <div className="flex gap-2">
-              {/* ① 一般ユーザーボタン */}
-              <button 
-                type="button"
-
-
-                onClick={() => { setEmail(''); setPassword(''); setIsUser(1); }}
-
-
-                className="flex-1 bg-white border border-gray-200 py-2.5 rounded-xl text-gray-700 text-[11px] font-bold shadow-sm active:bg-gray-50 transition-colors"
-              >
-                一般ユーザーで入力
-              </button>
-              {/* ② 管理者ボタン */}
-              <button 
-                type="button"
-
-
-                onClick={() => { setEmail(''); setPassword(''); setIsUser(0); }}
-
-
-                className="flex-1 bg-white border border-gray-200 py-2.5 rounded-xl text-purple-600 text-[11px] font-bold shadow-sm active:bg-gray-50 transition-colors"
-              >
-                管理者で入力
-              </button>
-            </div>
-          </div>
+    {/* ② 管理者ボタン */}
+    <button 
+      type="button"
+      onClick={() => { setEmail(''); setPassword(''); setIsUser(0); }}
+      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold shadow-sm transition-all border-2 ${
+        isUser === 0 
+          ? 'bg-purple-100 border-purple-500 text-purple-700 scale-[1.02]' 
+          : 'bg-white border-gray-200 text-gray-700'
+      }`}
+    >
+      管理者
+    </button>
+  </div>
+</div>
 
           <form className="space-y-6">
             {/* ③ メールアドレス */}
