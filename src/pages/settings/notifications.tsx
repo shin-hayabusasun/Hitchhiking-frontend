@@ -1,9 +1,9 @@
-// % Start(AI Assistant)
 // 通知設定画面（プッシュ通知等の受信設定）
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
+const API_BASE_URL = 'http://localhost:8000';
 
 export function NotificationSettingsPage() {
 	const router = useRouter();
@@ -19,7 +19,7 @@ export function NotificationSettingsPage() {
 	useEffect(() => {
 		async function fetchSettings() {
 			try {
-				const response = await fetch('/api/settings/notifications', {
+				const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
 					method: 'GET',
 					credentials: 'include',
 				});
@@ -45,7 +45,7 @@ export function NotificationSettingsPage() {
 		setError('');
 
 		try {
-			const response = await fetch('/api/settings/notifications', {
+			const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
