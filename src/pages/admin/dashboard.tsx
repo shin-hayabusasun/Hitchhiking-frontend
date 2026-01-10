@@ -21,7 +21,7 @@ export function AdminDashboardPage() {
     useEffect(() => {
         async function fetchStats() {
             try {
-                const response = await fetch('/api/admin/stats', {
+                const response = await fetch('http://localhost:8000/api/admin/stats', {
                     method: 'GET',
                     credentials: 'include',
                 });
