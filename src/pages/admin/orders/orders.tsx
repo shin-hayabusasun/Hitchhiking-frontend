@@ -1,5 +1,5 @@
 // src/pages/admin/orders.tsx
-// 注文管理画面: 検索、統計、フィルタリング機能付き
+// 注文管理画面: 背景色を青グラデーションに変更、角丸削除
 
 import { useState, useEffect, useMemo } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
@@ -103,16 +103,19 @@ export default function OrderManagementPage() {
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gray-50 overflow-y-auto rounded-[3rem]">
+            {/* ★修正ポイント: 
+               1. rounded-[3rem] を削除 (角丸なし)
+               2. bg-gray-50 を bg-gradient-to-b from-sky-200 to-white に変更 (青グラデーション)
+            */}
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
                 
-                {/* ヘッダーエリア（固定） */}
-                {/* bg-whiteにして、z-indexを上げ、検索バーまで含めて固定エリアにしました */}
-                <div className="bg-white/90 backdrop-blur-md sticky top-0 z-20 pb-4 shadow-sm rounded-t-[2.5rem]">
+                {/* ヘッダーエリア */}
+                {/* 背景を半透明(bg-white/50)にして背面の青色を透けさせます */}
+                <div className="bg-white/50 backdrop-blur-sm sticky top-0 z-20 pb-4 shadow-sm">
                     
-                    {/* タイトル（修正: 在庫管理 -> 注文管理） */}
                     <TitleHeader title="注文管理" backPath="/admin/dashboard" />
                     
-                    {/* 検索バー（修正: px-5で左右に余白を追加） */}
+                    {/* 検索バー */}
                     <div className="px-5 mt-2">
                         <div className="relative">
                             <input
@@ -120,7 +123,7 @@ export default function OrderManagementPage() {
                                 placeholder="注文番号・商品名で検索..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-gray-100 text-gray-700 text-sm font-bold rounded-2xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:font-medium"
+                                className="w-full bg-white/80 text-gray-700 text-sm font-bold rounded-2xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:font-medium"
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -133,22 +136,22 @@ export default function OrderManagementPage() {
                     
                     {/* 3つの統計パネル */}
                     <div className="grid grid-cols-3 gap-3 mb-6">
-                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
                             <p className="text-[10px] text-gray-400 font-bold mb-1">総注文</p>
                             <p className="text-lg font-extrabold text-gray-800">{stats.total}</p>
                         </div>
-                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-yellow-100 flex flex-col items-center justify-center relative overflow-hidden">
+                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-yellow-100 flex flex-col items-center justify-center relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-8 h-8 bg-yellow-50 rounded-bl-full -mr-2 -mt-2"></div>
                             <p className="text-[10px] text-yellow-600 font-bold mb-1">対応待ち</p>
                             <p className="text-lg font-extrabold text-yellow-600">{stats.pending}</p>
                         </div>
-                        <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
                             <p className="text-[10px] text-green-600 font-bold mb-1">完了済</p>
                             <p className="text-lg font-extrabold text-green-600">{stats.completed}</p>
                         </div>
                     </div>
 
-                    {/* 4つのフィルタタグ（修正: flex-1を追加して横幅いっぱいに広げました） */}
+                    {/* 4つのフィルタタグ */}
                     <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
                         {[
                             { id: 'all', label: 'すべて' },
@@ -159,11 +162,10 @@ export default function OrderManagementPage() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                // 修正: flex-1 と min-w-fit を組み合わせて、いい感じに広がるように調整
                                 className={`flex-1 min-w-fit px-3 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all text-center ${
                                     activeTab === tab.id
                                         ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                        : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
+                                        : 'bg-white/70 text-gray-500 border border-white/50 hover:bg-white'
                                 }`}
                             >
                                 {tab.label}
@@ -180,7 +182,7 @@ export default function OrderManagementPage() {
                     
                     {filteredOrders.length === 0 && !error ? (
                         <div className="flex flex-col items-center justify-center py-10 text-gray-400 space-y-4">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-2xl grayscale opacity-50">📦</div>
+                            <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center text-2xl grayscale opacity-50">📦</div>
                             <p className="text-sm font-bold">該当する注文がありません</p>
                         </div>
                     ) : (
