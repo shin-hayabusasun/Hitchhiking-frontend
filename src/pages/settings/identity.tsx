@@ -36,7 +36,7 @@ export function IdentitySettingsPage() {
 
     // 連絡先
     const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
+    
 
     // 住所（APIの address が1つの場合は addressLine に入れるなどの調整が必要）
     const [zipCode, setZipCode] = useState('');
@@ -79,7 +79,7 @@ export function IdentitySettingsPage() {
                     }
 
                     setEmail(data.email || '');
-                    setPhone(data.phone || '');
+                    
 
                     // 住所: 元データが 'address' 1つしかない場合、とりあえず番地欄に入れる
                     // (もしAPIが zipCode 等を持っているなら data.zipCode をセットしてください)
@@ -135,12 +135,10 @@ export function IdentitySettingsPage() {
                 firstName,
                 birthDate: birthDateStr,
                 email,
-                phone,
-                // APIが address 文字列1つを期待しているか、構造化データを期待しているかで変える
-                // ここでは元の仕様に合わせて結合、または addressLine をそのまま送る例
+                
+                
                 address: addressLine, 
-                // もしAPI側を拡張したなら以下のように送る
-                // zipCode, prefecture, city, ...
+                
             };
 
             // プロフィール更新リクエスト
@@ -292,15 +290,7 @@ export function IdentitySettingsPage() {
                                     className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-xs text-gray-500 mb-1 ml-1">電話番号</label>
-                                <input 
-                                    type="tel" 
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
-                                />
-                            </div>
+                            
                         </div>
                     </div>
 
