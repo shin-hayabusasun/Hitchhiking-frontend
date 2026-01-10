@@ -9,7 +9,8 @@ import { Product, StockStats } from '@/types/stock';
 
 // 在庫警告の閾値
 const ALERT_THRESHOLD = 20;
-const API_BASE_URL = 'http://127.0.0.1:8000'; // FastAPIのURL　いまは使ってない？？
+// FastAPIのURL
+const API_BASE_URL = 'http://127.0.0.1:8000'; 
 
 export function StockManagementPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -21,39 +22,36 @@ export function StockManagementPage() {
     const [replenishId, setReplenishId] = useState<string | null>(null);
     const [replenishAmount, setReplenishAmount] = useState('');
 
-    // 閾値（モックデータに含まれないため定数で定義）
-    // const ALERT_THRESHOLD = 20;
-
     useEffect(() => {
         fetchData();
     }, []);
 
     async function fetchData() {
         try {
-            // 在庫情報を持つ商品APIを使用
-            // Note: points/ordersは注文履歴のため、在庫管理にはproductsを使用します
-            const response = await fetch('/api/points/products', {
+            // ★修正: Stock.py のAPI (/api/admin/stocks) を使用する
+            const response = await fetch(`${API_BASE_URL}/api/admin/stocks`, {
                 method: 'GET',
                 credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(`Network response was not ok: ${response.status}`);
             }
 
             const data = await response.json();
             const productList: Product[] = data.products || [];
 
+            // 統計情報の計算
             const totalStock = productList.reduce((sum, p) => sum + p.stock, 0);
             const warningCount = productList.filter(p => p.stock < ALERT_THRESHOLD).length;
 
             setProducts(productList);
 
-            //setStats(calculatedStats);
             setStats({
                 totalStock,
                 warningCount,
-                totalSales: 245 // 固定値またはAPIから取得
+                totalSales: 215 // 総販売数。固定値またはAPIから取得
             });
 
         } catch (err) {
@@ -72,9 +70,11 @@ export function StockManagementPage() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/products/${productId}/replenish`, {
+            // ★修正: 補充APIも Stock.py に合わせる (/api/admin/stocks/...)
+            const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${productId}/replenish`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ amount }),
             });
 
@@ -105,7 +105,7 @@ export function StockManagementPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             {/* スマホ枠 */}
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto rounded-[3rem]">
             
                 <div className="bg-white/50 backdrop-blur-sm z-10 relative">
                     <TitleHeader title="在庫管理" backPath="/admin/dashboard" />
@@ -157,4 +157,6 @@ export function StockManagementPage() {
         </div>
     );
 }
+
 export default StockManagementPage;
+// % End
