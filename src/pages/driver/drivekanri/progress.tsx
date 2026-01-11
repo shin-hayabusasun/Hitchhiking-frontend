@@ -1,63 +1,122 @@
 // src/pages/driver/drivekanri/progress.tsx
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/router";
 import DriveStatusCard from "@/components/driver/DriveStatusCard";
 
+// 型定義
+interface OngoingDrive {
+  id: string;
+  from: string;
+  to: string;
+  datetime: string;
+  price: number;
+  driver: {
+    name: string;
+    rating: number;
+    driveCount: number;
+  };
+}
+
 export default function Progress() {
   const router = useRouter();
+  const [drives, setDrives] = useState<OngoingDrive[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // データ取得処理
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/driver/progress", {
+          credentials: "include", // セッション情報を送信
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setDrives(data.drives);
+      } catch (error) {
+        console.error("進行中データの取得失敗:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgress();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 text-gray-800">
       {/* スマホ画面外枠 */}
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto">
+      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto rounded-[2rem]">
 
         {/* ヘッダー */}
-        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
-          <button onClick={() => router.back()}>
+        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100">
+          <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-lg font-semibold">ドライブ管理</h1>
+          <h1 className="text-lg font-bold">ドライブ管理</h1>
         </div>
 
         {/* ステータスタブ */}
-        <div className="mx-4 mt-4 bg-gray-200 rounded-full p-1 flex text-sm">
+        <div className="mx-4 mt-4 bg-gray-200 rounded-full p-1 flex text-sm font-medium">
           <button
             onClick={() => router.push("/driver/drivekanri/schedule")}
-            className="flex-1 py-2 text-center"
+            className="flex-1 py-2 text-center text-gray-500"
           >
             予定中
           </button>
 
-          <div className="flex-1 bg-white rounded-full py-2 text-center font-semibold shadow">
+          <div className="flex-1 bg-white rounded-full py-2 text-center font-bold shadow-sm text-blue-600">
             進行中
           </div>
 
           <button
             onClick={() => router.push("/driver/drivekanri/completion")}
-            className="flex-1 py-2 text-center"
+            className="flex-1 py-2 text-center text-gray-500"
           >
             完了
           </button>
         </div>
+        <p className="text-gray-400 text-sm">あなたの募集とあなたが承認した同乗者募集の両方あります</p>
 
         {/* コンテンツ */}
         <div className="p-4 space-y-4">
-          <DriveStatusCard
-            status="progress"
-            from="渋谷駅"
-            to="品川駅"
-            datetime="2025-01-15 08:30"
-            price={1200}
-            driver={{
-              name: "山田 太郎",
-              rating: 4.8,
-              driveCount: 45,
-            }}
-            onChat={() => router.push("/chat/1")}
-            onComplete={() => alert("ドライブ完了")}
-          />
+          {drives.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-gray-400 text-sm">現在進行中のドライブは<br />ありません</p>
+            </div>
+          ) : (
+            drives.map((drive) => (
+              <DriveStatusCard
+                key={drive.id}
+                status="progress"
+                from={drive.from}
+                to={drive.to}
+                datetime={drive.datetime}
+                price={drive.price}
+                driver={drive.driver}
+                onChat={() => router.push(`/chat/${drive.id}`)}
+                onComplete={() => {
+                  // 本来はここで API を叩いてステータスを「完了」に更新する
+                  alert(`ドライブ ID:${drive.id} を完了しました`);
+                }}
+              />
+            ))
+          )}
         </div>
 
+        <div className="h-10" />
       </div>
     </div>
   );
