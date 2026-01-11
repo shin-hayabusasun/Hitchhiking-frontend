@@ -98,7 +98,7 @@ export function DriverDrivesPage() {
 							const isActive = currentPath === tab.path;
 							return (
 								<button
-									key={tab.id}
+									key={tab.path}
 									type="button"
 									className={`py-2 text-[10px] font-bold rounded-lg transition-all duration-200 ${isActive
 										? 'bg-white text-black shadow-sm'
