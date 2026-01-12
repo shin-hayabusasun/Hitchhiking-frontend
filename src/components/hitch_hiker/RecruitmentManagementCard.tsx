@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { MapPin, Calendar, Users, Eye, Edit3, Trash2, Star, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Users, Edit3, Trash2, Star, Loader2 } from 'lucide-react';
 
-// onDelete プロップを削除
 const RecruitmentManagementCard = ({ item }: { item: any }) => {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDeleted, setIsDeleted] = useState(false); // 削除成功時にコンポーネントを消すためのステート
+  const [isDeleted, setIsDeleted] = useState(false);
 
   // 編集画面へ遷移
   const handleEdit = () => {
@@ -19,7 +18,6 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
 
     setIsDeleting(true);
     try {
-      // クエリパラメータ形式で送信
       const response = await fetch(`http://localhost:8000/api/hitchhiker/delete_recruitment?recruitment_id=${item.id}`, {
         method: 'POST',
         headers: {
@@ -36,7 +34,7 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
 
       if (result.ok) {
         alert('募集を削除しました');
-        setIsDeleted(true); // ★ ここで自分自身を非表示にする
+        setIsDeleted(true);
       } else {
         alert('削除に失敗しました');
       }
@@ -48,7 +46,6 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
     }
   };
 
-  // 削除済みステートが true なら何も表示しない
   if (isDeleted) return null;
 
   return (
@@ -99,35 +96,27 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
         </div>
       </div>
       
-      {/* ボタン群 */}
-      <div className="space-y-2">
+      {/* ボタン群：詳細ボタンを削除し、編集・削除をメインに */}
+      <div className="flex space-x-2">
         <button 
-          className="w-full flex items-center justify-center py-2.5 rounded-xl border border-gray-100 text-[11px] font-bold text-gray-500 bg-white hover:bg-gray-50 transition-colors"
-          onClick={() => router.push(`/hitch_hiker/passenger/Detail?id=${item.id}`)}
+          onClick={handleEdit}
+          disabled={isDeleting}
+          className="flex-1 py-3 rounded-xl bg-[#F1F5F9] text-[11px] font-bold text-gray-600 flex items-center justify-center active:scale-95 transition-all hover:bg-slate-200"
         >
-          <Eye className="w-4 h-4 mr-2" /> 詳細を見る
+          <Edit3 className="w-4 h-4 mr-1" /> 編集
         </button>
-        <div className="flex space-x-2">
-          <button 
-            onClick={handleEdit}
-            disabled={isDeleting}
-            className="flex-1 py-3 rounded-xl bg-[#F1F5F9] text-[11px] font-bold text-gray-600 flex items-center justify-center active:scale-95 transition-all"
-          >
-            <Edit3 className="w-4 h-4 mr-1" /> 編集
-          </button>
-          
-          <button 
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex-1 py-3 rounded-xl bg-red-50 text-[11px] font-bold text-red-500 flex items-center justify-center active:scale-95 transition-all"
-          >
-            {isDeleting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <><Trash2 className="w-4 h-4 mr-1" /> 削除</>
-            )}
-          </button>
-        </div>
+        
+        <button 
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="flex-1 py-3 rounded-xl bg-red-50 text-[11px] font-bold text-red-500 flex items-center justify-center active:scale-95 transition-all hover:bg-red-100"
+        >
+          {isDeleting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <><Trash2 className="w-4 h-4 mr-1" /> 削除</>
+          )}
+        </button>
       </div>
     </div>
   );
