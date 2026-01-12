@@ -62,14 +62,7 @@ export function PaymentSettingsPage() {
           expYear: 2027,
           isDefault: true,
         },
-        {
-          id: 'card_2',
-          brand: 'Mastercard',
-          last4: '8888',
-          expMonth: 9,
-          expYear: 2026,
-          isDefault: false,
-        },
+        
       ];
       // 擬似的なローディング遅延を入れてリアルに見せる
       setTimeout(() => {
@@ -101,7 +94,7 @@ export function PaymentSettingsPage() {
 
     try {
       // TODO: ここでAPI通信 (POST /api/payment/cards)
-      alert('カードを追加しました（デモ）');
+      alert('この機能は実装予定です');
       
       // フォームリセット
       setNewCard({
@@ -125,7 +118,7 @@ export function PaymentSettingsPage() {
   const handleDeleteCard = async (cardId: string) => {
     if (!confirm('削除しますか？')) return;
     // API通信処理...
-    alert(`カードID: ${cardId} を削除しました`);
+    alert(`この機能は実装予定です`);
     // setCards(cards.filter(c => c.id !== cardId));
   };
 
