@@ -4,7 +4,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-// import { TitleHeader } from '@/components/TitleHeader'; // タイトルヘッダーコンポーネントがあれば使用
+import { TitleHeader } from '@/components/TitleHeader'; 
+const API_BASE_URL = 'http://localhost:8000';
 
 interface UserInfo {
     name: string;
@@ -23,24 +24,25 @@ export function SettingsPage() {
     useEffect(() => {
         async function fetchUserInfo() {
             try {
-                // API通信 (デモ用にコメントアウトしてダミーデータをセットしています)
-                /*
-                const response = await fetch('/api/users/me', {
+                // ★★★ 1. 実際のAPI通信を実行 ★★★
+                const response = await fetch(`${API_BASE_URL}/api/users/me`, {
                     method: 'GET',
-                    credentials: 'include',
-                });
-                const data = await response.json();
-                setUserInfo(data);
-                */
-               
-                // デモ用ダミーデータ
-                setUserInfo({
-                    name: '山田 太郎',
-                    email: 'test@example.com',
-                    isVerified: true
+                    credentials: 'include', // セッション維持に必須
                 });
 
+               
+               
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // ★★★ 2. 取得したデータをセット ★★★
+                setUserInfo(data);
+
             } catch (err) {
+                console.error(err);
                 setError('ユーザー情報の取得に失敗しました');
             } finally {
                 setLoading(false);
@@ -48,8 +50,7 @@ export function SettingsPage() {
         }
 
         fetchUserInfo();
-    }, []);
-
+    }, [router]);
     // --- イベントハンドラ ---
     function handleIdentityClick() { router.push('/settings/identity'); }
     function handleNotificationsClick() { router.push('/settings/notifications'); }
@@ -102,17 +103,8 @@ export function SettingsPage() {
                     <div>
                         <h2 className="text-lg font-bold text-gray-900">{userInfo?.name || 'ゲストユーザー'}</h2>
                         <p className="text-sm text-gray-500">{userInfo?.email || ''}</p>
+                    </div>   
                         
-                        {/* 本人確認済みバッジ */}
-                        {userInfo?.isVerified && (
-                            <div className="mt-1 inline-flex items-center bg-green-50 text-green-600 text-xs px-2 py-0.5 rounded-full font-bold border border-green-100">
-                                <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                                本人確認済み
-                            </div>
-                        )}
-                    </div>
                 </section>
 
                 {/* アカウントセクション */}
