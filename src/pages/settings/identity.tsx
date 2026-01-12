@@ -5,86 +5,89 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
 
-// --- アイコンコンポーネント ---
-const ShieldCheckIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-    </svg>
-);
-
+// --- アイコン ---
 const FileIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
 );
 
+const UserIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+);
+
 export function IdentitySettingsPage() {
     const router = useRouter();
+    // 環境に合わせてポート番号を確認してください
+    const API_BASE_URL = 'http://localhost:8000'; 
 
-    // --- State管理 (初期値は空文字) ---
-    // 1. ファイルアップロード用
+    // --- State管理 ---
     const [file, setFile] = useState<File | null>(null);
 
-    // 2. 基本情報
+    // 基本情報
     const [lastName, setLastName] = useState('');
     const [firstName, setFirstName] = useState('');
     
-    // 生年月日（APIの YYYY-MM-DD を分割して管理）
+    // 生年月日
     const [birthYear, setBirthYear] = useState('');
     const [birthMonth, setBirthMonth] = useState('');
     const [birthDay, setBirthDay] = useState('');
 
     // 連絡先
     const [email, setEmail] = useState('');
-    
 
-    // 住所（APIの address が1つの場合は addressLine に入れるなどの調整が必要）
+    // 住所（DBは address 1つだけなので、表示用には addressLine をメインで使います）
     const [zipCode, setZipCode] = useState('');
     const [prefecture, setPrefecture] = useState('');
     const [city, setCity] = useState('');
     const [addressLine, setAddressLine] = useState('');
 
-    // 3. パスワード
+    // パスワード
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
     // UI状態
-    const [loading, setLoading] = useState(true); // 初期ロード中
-    const [isSaving, setIsSaving] = useState(false); // 保存処理中
+    const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
     // --- 初期データ取得 (GET) ---
-    // ProfileSettingsPage の fetchProfile ロジックを統合
     useEffect(() => {
         async function fetchProfile() {
             try {
-                const response = await fetch('/api/users/me', {
+                const response = await fetch(`${API_BASE_URL}/api/users/me/profile`, {
                     method: 'GET',
                     credentials: 'include',
                 });
-                const data = await response.json();
                 
                 if (response.ok) {
+                    const data = await response.json();
+
+                    // 名前・メール
                     setLastName(data.lastName || '');
                     setFirstName(data.firstName || '');
+                    setEmail(data.email || '');
                     
-                    // 生年月日 (YYYY-MM-DD) を分割
+                    // 生年月日 (YYYY-MM-DD を分割)
                     if (data.birthDate) {
                         const [y, m, d] = data.birthDate.split('-');
                         setBirthYear(y || '');
-                        setBirthMonth(m ? String(parseInt(m)) : ''); // 01 -> 1
-                        setBirthDay(d ? String(parseInt(d)) : '');   // 05 -> 5
+                        setBirthMonth(m ? String(parseInt(m)) : '');
+                        setBirthDay(d ? String(parseInt(d)) : '');
                     }
 
-                    setEmail(data.email || '');
-                    
-
-                    // 住所: 元データが 'address' 1つしかない場合、とりあえず番地欄に入れる
-                    // (もしAPIが zipCode 等を持っているなら data.zipCode をセットしてください)
+                    // ★住所の処理
+                    // DBの `address` カラムに入っている文字列を、一番下の「番地・建物名」欄に入れます。
+                    // 郵便番号などはDBにないので空のままにします。
                     setAddressLine(data.address || ''); 
-                    // setZipCode(data.zipCode || ''); 
+                    setZipCode(''); 
+                    setPrefecture(''); 
+                    setCity(''); 
+
                 }
             } catch (err) {
                 console.error(err);
@@ -96,9 +99,7 @@ export function IdentitySettingsPage() {
         fetchProfile();
     }, []);
 
-
-    // --- イベントハンドラー ---
-
+    // --- ファイル選択 ---
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
@@ -107,13 +108,12 @@ export function IdentitySettingsPage() {
         }
     }
 
-    // --- 保存処理 (PUT/POST) ---
+    // --- 保存処理 ---
     const handleSaveAll = async () => {
         setError('');
         setSuccessMsg('');
         setIsSaving(true);
 
-        // バリデーション
         if ((newPassword || currentPassword) && newPassword !== confirmPassword) {
             setError('新しいパスワードが一致しません');
             setIsSaving(false);
@@ -123,59 +123,62 @@ export function IdentitySettingsPage() {
         try {
             const promises = [];
 
-            // 1. プロフィール情報の更新データ作成
-            // 生年月日を結合
+            // 1. プロフィール更新
             let birthDateStr = '';
             if (birthYear && birthMonth && birthDay) {
                 birthDateStr = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
             }
 
+            // DBへ送るデータを作成
+            // address は addressLine (番地欄) の内容をそのまま送ります
             const profileData = {
                 lastName,
                 firstName,
                 birthDate: birthDateStr,
                 email,
-                
-                
                 address: addressLine, 
-                
+                password: newPassword || undefined
             };
 
-            // プロフィール更新リクエスト
-            const profilePromise = fetch('/api/users/me/profile', {
+            const profilePromise = fetch(`${API_BASE_URL}/api/users/me/profile`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(profileData),
-            }).then(res => {
-                if (!res.ok) throw new Error('プロフィールの更新に失敗しました');
+            }).then(async res => {
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || 'プロフィールの更新に失敗しました');
+                }
                 return res.json();
             });
             promises.push(profilePromise);
 
-            // 2. パスワード変更がある場合
-            if (newPassword && currentPassword) {
-                 // APIエンドポイントが同じでパスワードも受け付ける仕様なら profileData に含めるだけで良いですが、
-                 // セキュリティ上分かれていることも多いため、状況に合わせてください。
-                 // 今回は ProfileSettingsPage の仕様(profileDataに含める)に合わせるなら上記 profileData に password を追加します。
-                 // ここでは念のため分離して書いておきますが、元のコードでは同じAPIで処理しているようでした。
-            }
-
-            // 3. ファイルアップロードがある場合
+            // 2. 書類アップロード (Hiedaさん仕様: Base64変換)
             if (file) {
-                const formData = new FormData();
-                formData.append('file', file);
-                const uploadPromise = fetch('/api/users/me/identity-document', {
-                    method: 'POST',
-                    credentials: 'include',
-                    body: formData,
-                }).then(res => {
-                    if (!res.ok) throw new Error('画像のアップロードに失敗しました');
+                const reader = new FileReader();
+                const filePromise = new Promise((resolve, reject) => {
+                    reader.onload = async () => {
+                        try {
+                            const base64String = reader.result;
+                            const res = await fetch(`${API_BASE_URL}/api/users/me/identity-document`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({ identification: base64String }),
+                            });
+                            if (!res.ok) throw new Error('画像のアップロードに失敗しました');
+                            resolve(res.json());
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(file);
                 });
-                promises.push(uploadPromise);
+                promises.push(filePromise);
             }
 
-            // 全て実行
             await Promise.all(promises);
 
             setSuccessMsg('変更を保存しました');
@@ -184,9 +187,6 @@ export function IdentitySettingsPage() {
             setNewPassword('');
             setConfirmPassword('');
             
-            // 必要ならページ遷移
-            // router.push('/settings'); 
-
         } catch (err: any) {
             setError(err.message || '更新に失敗しました');
         } finally {
@@ -205,21 +205,21 @@ export function IdentitySettingsPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
             
-            {/* スマホ端末フレーム */}
             <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto overflow-x-hidden">
                 <TitleHeader title="プロフィール設定" backPath="/settings" />
                 
-                <main className="p-4 space-y-6 flex-1"> 
+                <main className="p-4 space-y-6 flex-1 pb-20"> 
 
-                    {/* ステータスカード */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-                        <div className="bg-green-50 p-3 rounded-full">
-                            <ShieldCheckIcon />
+                    {/* 説明ヘッダー */}
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start space-x-3">
+                        <div className="mt-1 bg-white p-1.5 rounded-full shadow-sm">
+                            <UserIcon />
                         </div>
                         <div>
-                            <h2 className="font-bold text-gray-800">本人確認書類</h2>
-                            {/* ここもAPIからステータスを取れれば動的に変える */}
-                            <p className="text-green-600 text-sm font-bold">確認済み</p>
+                            <h2 className="font-bold text-gray-800 text-sm">登録情報の変更</h2>
+                            <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                                名前や住所を変更できます。
+                            </p>
                         </div>
                     </div>
 
@@ -236,12 +236,14 @@ export function IdentitySettingsPage() {
                                         type="text" 
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
+                                        placeholder="姓"
                                         className="flex-1 min-w-0 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                     <input 
                                         type="text" 
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
+                                        placeholder="名"
                                         className="flex-1 min-w-0 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
@@ -290,7 +292,6 @@ export function IdentitySettingsPage() {
                                     className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
                                 />
                             </div>
-                            
                         </div>
                     </div>
 
@@ -298,6 +299,7 @@ export function IdentitySettingsPage() {
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h3 className="text-gray-600 mb-4 font-medium">住所</h3>
                         <div className="space-y-4">
+                            {/* 郵便番号などは入力してもDBに保存されませんが、UIとして残しておきます */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">郵便番号</label>
                                 <input 
@@ -327,6 +329,7 @@ export function IdentitySettingsPage() {
                                     />
                                 </div>
                             </div>
+                            {/* ★ここがメインの住所欄になります */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">番地・建物名</label>
                                 <input 
@@ -417,3 +420,4 @@ export function IdentitySettingsPage() {
 }
 
 export default IdentitySettingsPage;
+// % End

@@ -52,7 +52,6 @@ export function PaymentSettingsPage() {
       */
 
       // ★ダミーデータ生成関数（ご要望により追加）
-      // APIがまだない場合でも画面確認ができるようにしています
       const dummyCards: Card[] = [
         {
           id: 'card_1',
@@ -62,7 +61,6 @@ export function PaymentSettingsPage() {
           expYear: 2027,
           isDefault: true,
         },
-        
       ];
       // 擬似的なローディング遅延を入れてリアルに見せる
       setTimeout(() => {
@@ -106,7 +104,7 @@ export function PaymentSettingsPage() {
         isDefault: false,
       });
       
-      // 一覧再取得（デモ用にダミー追加処理を入れても良いですが、今回は再取得のフリ）
+      // 一覧再取得
       fetchCards();
 
     } catch (err) {
@@ -114,12 +112,11 @@ export function PaymentSettingsPage() {
     }
   };
 
-  // カード削除（画像の「編集」等の代わりとして実装）
+  // カード削除
   const handleDeleteCard = async (cardId: string) => {
     if (!confirm('削除しますか？')) return;
     // API通信処理...
     alert(`この機能は実装予定です`);
-    // setCards(cards.filter(c => c.id !== cardId));
   };
 
   if (loading) {
@@ -154,7 +151,6 @@ export function PaymentSettingsPage() {
                   <div className={`w-12 h-8 rounded flex items-center justify-center text-white font-bold text-xs shadow-sm
                     ${card.brand === 'VISA' ? 'bg-blue-600' : 
                       card.brand === 'Mastercard' ? 'bg-orange-500' : 'bg-gray-500'}`}>
-                    {/* アイコン画像があればimgタグにする。ここでは文字で代用 */}
                     {card.brand === 'VISA' && <span className="italic font-serif">VISA</span>}
                     {card.brand === 'Mastercard' && (
                       <div className="flex -space-x-1">
@@ -180,7 +176,7 @@ export function PaymentSettingsPage() {
                   </div>
                 </div>
 
-                {/* 編集ボタン（テキストのみ） */}
+                {/* 編集ボタン */}
                 <button 
                   onClick={() => handleDeleteCard(card.id)} 
                   className="text-sm text-gray-400 font-medium hover:text-gray-600 px-2 py-1"
@@ -199,12 +195,13 @@ export function PaymentSettingsPage() {
           <div className="space-y-4">
             {/* ② カード番号 */}
             <div className="relative border border-red-500 rounded-lg group focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500">
-              {/* ※画像のデザイン（赤い枠線）を再現していますが、通常はエラー時のみ赤くします */}
               <div className="absolute -top-2.5 left-3 bg-white px-1 text-xs text-gray-500">
                 カード番号
               </div>
               <input
                 type="text"
+                name="cardNumber"
+                autoComplete="cc-number" // ★追加
                 placeholder="1234 5678 9012 3456"
                 className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0 focus:bg-white transition-colors h-12"
                 value={newCard.cardNumber}
@@ -219,6 +216,8 @@ export function PaymentSettingsPage() {
               </div>
               <input
                 type="text"
+                name="cardName"
+                autoComplete="cc-name" // ★追加
                 placeholder="TARO YAMADA"
                 className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white h-12"
                 value={newCard.name}
@@ -235,6 +234,8 @@ export function PaymentSettingsPage() {
                 <div className="flex items-center bg-gray-50 rounded-lg h-12 px-4">
                    <input
                     type="text"
+                    name="expMonth"
+                    autoComplete="cc-exp-month" // ★追加: 月と明示
                     placeholder="MM"
                     maxLength={2}
                     className="w-10 bg-transparent border-none p-0 text-center focus:outline-none placeholder-gray-400"
@@ -244,6 +245,8 @@ export function PaymentSettingsPage() {
                   <span className="text-gray-400 mx-1">/</span>
                   <input
                     type="text"
+                    name="expYear"
+                    autoComplete="cc-exp-year" // ★追加: 年と明示
                     placeholder="YY"
                     maxLength={2}
                     className="w-10 bg-transparent border-none p-0 text-center focus:outline-none placeholder-gray-400"
@@ -260,6 +263,8 @@ export function PaymentSettingsPage() {
                 </div>
                 <input
                   type="password"
+                  name="cvc"
+                  autoComplete="cc-csc" // ★追加: セキュリティコードと明示
                   placeholder="123"
                   maxLength={4}
                   className="w-full bg-gray-50 border-none rounded-lg px-4 py-3 text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white h-12"
