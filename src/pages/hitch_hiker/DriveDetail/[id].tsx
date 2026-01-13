@@ -31,6 +31,7 @@ export default function DriveDetailPage() {
         try {
             const response = await fetch(`http://localhost:8000/api/actions/apply`, {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     recruitment_id: Number(id),
@@ -39,7 +40,7 @@ export default function DriveDetailPage() {
             });
             if (response.ok) {
                 alert("申請が完了しました！");
-                router.push('/home');
+                router.push('/');
             } else {
                 const errorData = await response.json();
                 alert(errorData.detail || "申請に失敗しました");
