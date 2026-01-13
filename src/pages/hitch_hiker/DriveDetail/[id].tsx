@@ -25,22 +25,21 @@ export default function DriveDetailPage() {
         fetchDriveDetail();
     }, [id]);
 
-    // ★追加：申請ボタンを押した時の処理
     const handleApply = async () => {
         if (!id) return;
         setApplying(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/drives/apply`, {
+            const response = await fetch(`http://localhost:8000/api/actions/apply`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     recruitment_id: Number(id),
-                    user_id: 1, // 本来はログイン中のユーザーID
+                    user_id: 1, 
                 }),
             });
             if (response.ok) {
                 alert("申請が完了しました！");
-                router.push('/home'); // ホーム画面へ遷移
+                router.push('/home');
             } else {
                 const errorData = await response.json();
                 alert(errorData.detail || "申請に失敗しました");
@@ -58,10 +57,8 @@ export default function DriveDetailPage() {
 
     return (
         <div className="min-h-screen bg-gray-200 flex items-center justify-center p-4 font-sans">
-            {/* スマホ外枠 */}
             <div className="w-full max-w-[390px] aspect-[9/19] bg-[#F3F4F6] shadow-2xl flex flex-col border-[8px] border-white relative overflow-hidden rounded-[3rem]">
                 
-                {/* ヘッダー */}
                 <div className="bg-white p-4 flex items-center border-b pt-10 sticky top-0 z-30">
                     <button onClick={() => router.back()} className="mr-3 p-1">
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -69,17 +66,14 @@ export default function DriveDetailPage() {
                     <h1 className="text-base font-bold text-gray-800">ドライブ詳細</h1>
                 </div>
 
-                {/* スクロールエリア */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32 scrollbar-hide">
                     
-                    {/* マッチング度バナー */}
                     <div className="bg-gradient-to-r from-[#F43F5E] to-[#A855F7] rounded-2xl p-3 flex items-center justify-center shadow-sm">
                         <div className="text-white font-bold text-xs flex items-center">
                             <span className="mr-2">❤️</span> マッチング度 95%
                         </div>
                     </div>
 
-                    {/* ドライバーカード */}
                     <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Driver</p>
                         <div className="flex items-start space-x-3">
@@ -106,7 +100,6 @@ export default function DriveDetailPage() {
                         </button>
                     </div>
 
-                    {/* ルートカード */}
                     <div className="bg-white rounded-2xl p-5 shadow-sm">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-4">Route</p>
                         <div className="relative pl-6 space-y-6">
@@ -130,7 +123,6 @@ export default function DriveDetailPage() {
                         </div>
                     </div>
 
-                    {/* 詳細情報 */}
                     <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Details</p>
                         <div className="flex items-center justify-between pb-3 border-b border-gray-50 text-xs">
@@ -158,7 +150,6 @@ export default function DriveDetailPage() {
                         </div>
                     </div>
 
-                    {/* 車両詳細・ルール */}
                     <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Vehicle Details</p>
                         <div className="space-y-3">
@@ -174,21 +165,24 @@ export default function DriveDetailPage() {
                                 </div>
                             ))}
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                            {drive.vehicleRules.noSmoking && <span className="bg-gray-100 text-gray-500 text-[9px] px-2.5 py-1 rounded-md font-bold">禁煙</span>}
-                            {!drive.vehicleRules.petAllowed && <span className="bg-gray-100 text-gray-500 text-[9px] px-2.5 py-1 rounded-md font-bold">ペット不可</span>}
-                            {drive.vehicleRules.musicAllowed && <span className="bg-gray-100 text-gray-500 text-[9px] px-2.5 py-1 rounded-md font-bold">音楽OK</span>}
+                    </div>
+
+                    {/* 【追加】メッセージセクション */}
+                    <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">運転者からのメッセージ</p>
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                {drive.driverProfile.bio || "メッセージはありません。"}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                {/* ★固定フッター */}
                 <div className="absolute bottom-0 left-0 right-0 bg-white border-t px-6 py-5 flex items-center justify-between z-40">
                     <div>
                         <p className="text-[9px] text-gray-400 font-bold uppercase">Total Price</p>
                         <p className="text-lg font-black text-green-600">¥{drive.fee}</p>
                     </div>
-                    {/* ★onClickを変更 */}
                     <button 
                         onClick={handleApply}
                         disabled={applying}
