@@ -51,6 +51,11 @@ export function DriverNearbyPage() {
                     console.error(err);
                     setError('位置情報の取得に失敗しました');
                     setLoading(false);
+                },
+				{
+                    enableHighAccuracy: false,
+                    timeout: 20000,
+                    maximumAge: 0
                 }
             );
         } else {
