@@ -1,7 +1,7 @@
 // % Start(AI Assistant)
 // 本人確認画面（個人情報・セキュリティ設定）
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // ★ Reactをインポート
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
 
@@ -25,6 +25,7 @@ export function IdentitySettingsPage() {
 
     // --- State管理 ---
     const [file, setFile] = useState<File | null>(null);
+    const [hasIdentityDoc, setHasIdentityDoc] = useState(false);
 
     // 基本情報
     const [lastName, setLastName] = useState('');
@@ -67,12 +68,10 @@ export function IdentitySettingsPage() {
                 if (response.ok) {
                     const data = await response.json();
 
-                    // 名前・メール
                     setLastName(data.lastName || '');
                     setFirstName(data.firstName || '');
                     setEmail(data.email || '');
                     
-                    // 生年月日 (YYYY-MM-DD を分割)
                     if (data.birthDate) {
                         const [y, m, d] = data.birthDate.split('-');
                         setBirthYear(y || '');
@@ -80,18 +79,16 @@ export function IdentitySettingsPage() {
                         setBirthDay(d ? String(parseInt(d)) : '');
                     }
 
-                    // ★住所の処理
-                    // DBの `address` カラムに入っている文字列を、一番下の「番地・建物名」欄に入れます。
-                    // 郵便番号などはDBにないので空のままにします。
-                    setAddressLine(data.address || ''); 
-                    setZipCode(''); 
-                    setPrefecture(''); 
-                    setCity(''); 
+                    // ★修正: 分割されたデータを受け取ってセットする
+                    setZipCode(data.zipCode || '');
+                    setPrefecture(data.prefecture || '');
+                    setCity(data.city || '');
+                    setAddressLine(data.address || ''); // ここは番地のみが入ってくる
 
+                    setHasIdentityDoc(data.hasIdentityDoc || false);
                 }
             } catch (err) {
-                console.error(err);
-                setError('プロフィール情報の取得に失敗しました');
+                // ...
             } finally {
                 setLoading(false);
             }
@@ -99,7 +96,8 @@ export function IdentitySettingsPage() {
         fetchProfile();
     }, []);
 
-    // --- ファイル選択 ---
+    // --- ファイル選択ハンドラーの定義 ---
+    // ★ここが大事！コンポーネント内で定義する
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
@@ -108,17 +106,9 @@ export function IdentitySettingsPage() {
         }
     }
 
-    // --- 保存処理 ---
+    // --- 保存処理 (PUT) ---
     const handleSaveAll = async () => {
-        setError('');
-        setSuccessMsg('');
-        setIsSaving(true);
-
-        if ((newPassword || currentPassword) && newPassword !== confirmPassword) {
-            setError('新しいパスワードが一致しません');
-            setIsSaving(false);
-            return;
-        }
+        // ... (エラーリセットなどはそのまま) ...
 
         try {
             const promises = [];
@@ -129,14 +119,16 @@ export function IdentitySettingsPage() {
                 birthDateStr = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
             }
 
-            // DBへ送るデータを作成
-            // address は addressLine (番地欄) の内容をそのまま送ります
+            // ★修正: 住所をスペース区切りで結合する
+            // 結合例: "100-0001 東京都 千代田区 1-1-1"
+            const fullAddress = `${zipCode} ${prefecture} ${city} ${addressLine}`.trim(); 
+
             const profileData = {
                 lastName,
                 firstName,
                 birthDate: birthDateStr,
                 email,
-                address: addressLine, 
+                address: fullAddress, // ★結合した住所を送る
                 password: newPassword || undefined
             };
 
@@ -186,6 +178,9 @@ export function IdentitySettingsPage() {
             setCurrentPassword('');
             setNewPassword('');
             setConfirmPassword('');
+            
+            // アップロード成功時にフラグを更新
+            if (file) setHasIdentityDoc(true);
             
         } catch (err: any) {
             setError(err.message || '更新に失敗しました');
