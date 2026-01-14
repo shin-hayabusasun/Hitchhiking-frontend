@@ -259,6 +259,7 @@ type Props = {
   setFilter: React.Dispatch<React.SetStateAction<SearchFilters>>;
 };
 
+// APIレスポンス型定義
 type PassengerRequest = {
   id: string;
   passengerName: string;
@@ -287,6 +288,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // 募集情報取得
   const fetchRecruitments = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -309,8 +311,11 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
     }
   }, [filter]);
 
+  // 初回およびフィルター変更時に検索実行
   useEffect(() => {
-    if(filter) fetchRecruitments();
+    if(filter) {
+        fetchRecruitments();
+    }
   }, [fetchRecruitments]);
 
   if (!filter) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -324,6 +329,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
         </div>
 
         <main className="flex-1 p-4 pb-24 scrollbar-hide">
+          {/* タブメニュー */}
           <div className="grid grid-cols-4 gap-1 bg-gray-200/50 p-1 rounded-xl mb-6 backdrop-blur-sm">
               {tabs.map((tab) => {
                   const isActive = currentPath === tab.path;
@@ -340,6 +346,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
               })}
           </div>
 
+          {/* 検索フォーム */}
           <div className="mb-6">
             <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 space-y-3">
               <div className="relative">
@@ -376,6 +383,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
             </div>
           </div>
 
+          {/* 結果リスト */}
           <div className="space-y-4">
             {loading ? (
               <div className="flex justify-center py-10">
@@ -391,12 +399,16 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
                     passengerName={req.passengerName}
                     rating={req.rating}
                     reviewCount={req.reviewCount}
+                    
+                    // ★APIレスポンスをカードのPropsにマッピング
                     departure={req.start} 
                     destination={req.end}
                     budget={req.money}
                     date={req.date}
                     people={req.people}
                     matchingScore={req.match}
+                    
+                    // 検索画面では distance, startsIn は渡さない (undefinedでOK)
                     onClick={() => router.push(`/driver/search/${req.id}`)}
                 />
               ))
@@ -409,6 +421,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
           </div>
         </main>
 
+        {/* 下部固定ボタン */}
         <div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
           <button onClick={() => router.push('/driver/regist_drive')} className="w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-green-200 flex items-center justify-center gap-2 active:scale-95 transition-transform">
             <Plus className="w-5 h-5" /> 運転者として募集を作成
