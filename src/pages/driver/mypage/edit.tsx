@@ -203,23 +203,6 @@ export default function DriverEditPage() {
             </section>
           ))}
 
-          {/* 運転免許証 */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm space-y-2 text-sm">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-gray-500">運転免許証</h3>
-              <span className="flex items-center text-blue-600 text-xs">
-                <CheckCircle size={14} className="mr-1" />
-                確認済み
-              </span>
-            </div>
-            <p>免許証番号：第123456789012号</p>
-            <p>有効期限：2028/12/31</p>
-            <button className="w-full border rounded-lg py-2 text-sm flex justify-center items-center gap-2">
-              <Camera size={16} />
-              免許証を撮影してアップロード
-            </button>
-          </section>
-
           {/* 設定 */}
           <section className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm font-medium">
