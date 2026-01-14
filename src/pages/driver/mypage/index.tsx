@@ -1,8 +1,6 @@
 // % Start 黒星
-// src/pages/driver/mypage/index.tsx
-
-import React from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
 import {
   ArrowLeft,
   Pencil,
@@ -15,25 +13,97 @@ import {
   AlertTriangle,
   Music,
   FileText,
-} from 'lucide-react';
+} from "lucide-react";
+
+/* ===== 型定義 ===== */
+type DriverProfile = {
+  name: string;
+  initial: string;
+  driveCount: number;
+  rating: number;
+  registeredAt: string;
+
+  car: {
+    model: string;
+    color: string;
+    year: number;
+    number: string;
+  };
+
+  rules: {
+    smoking: boolean;
+    pet: boolean;
+    food: boolean;
+    music: boolean;
+  };
+
+  introduction: string;
+  hobby: string;
+  purpose: string;
+
+  license: {
+    number: string;
+    expire: string;
+    verified: boolean;
+  };
+};
 
 export default function DriverProfilePage() {
   const router = useRouter();
+  const [profile, setProfile] = useState<DriverProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* ===== データ取得（SearchPageと同じ構造） ===== */
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/driver/mypage", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setProfile(data);
+    } catch (e) {
+      setError("プロフィールの取得に失敗しました");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  /* ===== ローディング・エラー ===== */
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        読み込み中...
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
-    /* ===== 追加：画面中央寄せ ===== */
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* ===== 追加：スマホ画面風コンテナ ===== */}
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-        
-        {/* ヘッダー */}
+      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+
+        {/* ===== ヘッダー ===== */}
         <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
-          <button onClick={() => router.back()}>
+          <button onClick={() => router.back("/driver/drives")}>
             <ArrowLeft />
           </button>
           <h1 className="font-bold">マイページ</h1>
           <button
-            onClick={() => router.push('/driver/mypage/edit')}
+            onClick={() => router.push("/driver/mypage/edit")}
             className="text-blue-600 flex items-center gap-1 text-sm"
           >
             <Pencil size={16} /> 編集
@@ -41,12 +111,13 @@ export default function DriverProfilePage() {
         </header>
 
         <main className="p-4 space-y-4">
-          {/* プロフィール概要 */}
+
+          {/* ===== プロフィール概要 ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm text-center">
             <div className="w-20 h-20 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center text-3xl font-bold text-green-600">
-              山
+              {profile.initial}
             </div>
-            <h2 className="text-xl font-bold">山田 太郎</h2>
+            <h2 className="text-xl font-bold">{profile.name}</h2>
 
             <div className="flex justify-center gap-2 my-3">
               <span className="flex items-center text-xs bg-green-50 text-green-600 px-3 py-1 rounded-full">
@@ -61,26 +132,26 @@ export default function DriverProfilePage() {
 
             <div className="flex justify-around border-t pt-4 mt-4 text-sm">
               <div>
-                <p className="font-bold text-lg">45</p>
+                <p className="font-bold text-lg">{profile.driveCount}</p>
                 <p className="text-gray-500">ドライブ回数</p>
               </div>
               <div>
                 <p className="font-bold text-lg flex items-center justify-center">
                   <Star size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
-                  4.8
+                  {profile.rating}
                 </p>
                 <p className="text-gray-500">評価</p>
               </div>
               <div>
-                <p className="font-bold">2024-01~</p>
+                <p className="font-bold">{profile.registeredAt}</p>
                 <p className="text-gray-500">登録日</p>
               </div>
             </div>
 
             <div className="mt-4">
               <button
-                onClick={() => router.push('/driver/drivekanri/schedule')}
-                className="w-full flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 hover:bg-gray-100"
+                onClick={() => router.push("/driver/drivekanri/schedule")}
+                className="w-full flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"
               >
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <FileText className="text-green-600" />
@@ -91,79 +162,54 @@ export default function DriverProfilePage() {
             </div>
           </section>
 
-          {/* 車両情報 */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm space-y-2 text-sm">
-            <h3 className="font-bold text-gray-500 text-sm mb-2">車両情報</h3>
-            <p>車種：トヨタ プリウス</p>
-            <p>色：白</p>
-            <p>年式：2022年</p>
-            <p>ナンバー：品川 123 あ4567</p>
+          {/* ===== 車両情報 ===== */}
+          <section className="bg-white rounded-2xl p-6 shadow-sm text-sm">
+            <h3 className="font-bold text-gray-500 mb-2">車両情報</h3>
+            <p>車種：{profile.car.model}</p>
+            <p>色：{profile.car.color}</p>
+            <p>年式：{profile.car.year}年</p>
+            <p>ナンバー：{profile.car.number}</p>
           </section>
 
-          {/* 車両ルール */}
+          {/* ===== 車両ルール ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="font-bold text-gray-500 text-sm">車両ルール</h3>
 
             {[
-              { label: '禁煙', icon: <XCircle className="text-red-500" />, on: true },
-              { label: 'ペット可', icon: <PawPrint className="text-orange-500" />, on: false },
-              { label: '飲食OK', icon: <AlertTriangle className="text-yellow-500" />, on: true },
-              { label: '音楽OK', icon: <Music className="text-purple-500" />, on: true },
+              { label: "禁煙", icon: <XCircle className="text-red-500" />, on: profile.rules.smoking },
+              { label: "ペット可", icon: <PawPrint className="text-orange-500" />, on: profile.rules.pet },
+              { label: "飲食OK", icon: <AlertTriangle className="text-yellow-500" />, on: profile.rules.food },
+              { label: "音楽OK", icon: <Music className="text-purple-500" />, on: profile.rules.music },
             ].map((item) => (
               <div key={item.label} className="flex justify-between items-center">
                 <div className="flex items-center gap-3 text-sm font-medium">
                   {item.icon}
                   {item.label}
                 </div>
-                <div
-                  className={`w-11 h-6 rounded-full flex items-center px-1 ${
-                    item.on ? 'bg-blue-600' : 'bg-gray-300'
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 bg-white rounded-full transition ${
-                      item.on ? 'translate-x-5' : ''
-                    }`}
-                  />
+                <div className={`w-11 h-6 rounded-full px-1 flex items-center ${item.on ? "bg-blue-600" : "bg-gray-300"}`}>
+                  <div className={`w-4 h-4 bg-white rounded-full transition ${item.on ? "translate-x-5" : ""}`} />
                 </div>
               </div>
             ))}
           </section>
 
-          {/* 自己紹介 */}
+          {/* ===== 自己紹介など ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-gray-500 text-sm mb-2">自己紹介</h3>
-            <p className="text-sm">
-              安全運転を心がけています。快適なドライブを提供します！
-            </p>
+            <p className="text-sm">{profile.introduction}</p>
           </section>
 
-          {/* 趣味 */}
           <section className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-gray-500 text-sm mb-2">趣味</h3>
-            <p className="text-sm">ドライブ、音楽、カラオケ</p>
+            <p className="text-sm">{profile.hobby}</p>
           </section>
 
-          {/* 主な利用目的 */}
           <section className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-gray-500 text-sm mb-2">主な利用目的</h3>
-            <p className="text-sm">通勤ついでに同乗者募集</p>
+            <p className="text-sm">{profile.purpose}</p>
           </section>
 
-          {/* 運転免許証 */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm space-y-2">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-gray-500 text-sm">運転免許証</h3>
-              <span className="text-blue-600 text-xs flex items-center">
-                <CheckCircle size={14} className="mr-1" />
-                確認済み
-              </span>
-            </div>
-            <p className="text-sm">免許証番号：第123456789012号</p>
-            <p className="text-sm">有効期限：2028-12-31</p>
-          </section>
-
-          {/* 設定 */}
+          {/* ===== 設定 ===== */}
           <section className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
             <div className="flex items-center gap-2 font-medium text-sm">
               <Settings />

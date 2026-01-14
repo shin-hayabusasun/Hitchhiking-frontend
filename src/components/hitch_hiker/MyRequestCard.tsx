@@ -1,14 +1,37 @@
 import React from 'react';
 import { MapPin, Calendar, Star, Eye, MessageCircle, Clock, CheckCircle2 } from 'lucide-react';
 
+import { useRouter } from 'next/router';
+
+
 interface MyRequestCardProps {
   item: any;
   tab: 'requesting' | 'approved' | 'completed';
+
+  onCancel: (id: number) => void;
 }
 
-export const MyRequestCard: React.FC<MyRequestCardProps> = ({ item, tab }) => {
+export const MyRequestCard: React.FC<MyRequestCardProps> = ({ item, tab, onCancel }) => {
+  const router = useRouter();
+
+  // MyRequestCard.tsx の詳細ボタンの処理を以下に書き換えてください
+
+const handleDetailClick = () => {
+  // モックの 'rec1' や本番の 1 など、ある方のIDを使う
+  const detailId = item.recruitmentId || item.id; 
+
+  if (detailId) {
+    // 【重要】フォルダ名「hitch_hiker_DriveDetail」と完全に一致させる
+    router.push(`/hitch_hiker_DriveDetail/${detailId}`);
+  } else {
+    console.error("IDが見つかりません", item);
+  }
+};
+
   return (
-    <div className="bg-white rounded-[1.8rem] p-5 shadow-sm border border-white relative overflow-hidden">
+    <div className="bg-white rounded-[1.8rem] p-5 shadow-sm border border-white relative overflow-hidden transition-all active:scale-[0.98]">
+      {/* --- ステータス・ユーザー・ルート情報の表示は今のままでOK --- */}
+
       <div className="flex justify-between items-start mb-4">
         <div>
           {tab === 'requesting' ? (
@@ -21,12 +44,14 @@ export const MyRequestCard: React.FC<MyRequestCardProps> = ({ item, tab }) => {
             </div>
           )}
         </div>
-        <span className="text-[10px] text-gray-400 font-medium">申請日: {item.date}</span>
+=
+        <span className="text-[10px] text-gray-400 font-medium">{item.date}</span>
       </div>
 
       <div className="flex items-center space-x-3 mb-5">
-        <div className="w-12 h-12 bg-[#E0EDFF] rounded-full flex items-center justify-center font-bold text-[#3B82F6] text-lg">
-          {item.name[0]}
+        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600 text-lg">
+          {item.name ? item.name[0] : "U"}
+
         </div>
         <div>
           <div className="font-extrabold text-[15px] text-gray-800">{item.name}</div>
@@ -37,35 +62,51 @@ export const MyRequestCard: React.FC<MyRequestCardProps> = ({ item, tab }) => {
         </div>
       </div>
 
-      <div className="space-y-3 mb-5 bg-gray-50/50 p-3 rounded-2xl">
+
+      <div className="space-y-3 mb-5 bg-gray-50/50 p-3 rounded-2xl border border-gray-100/50">
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from}
+          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from_loc || item.origin}
         </div>
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to}
+          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to_loc || item.destination}
         </div>
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
           <div className="flex items-center text-[11px] text-gray-400 font-bold">
             <Calendar className="w-4 h-4 mr-2" /> {item.time}
           </div>
-          <div className="text-[#059669] font-black text-xl flex items-baseline">
-            <span className="text-[12px] mr-0.5 font-bold">¥</span>{item.price}
+          <div className="text-emerald-600 font-black text-xl flex items-baseline">
+            <span className="text-[12px] mr-0.5 font-bold">¥</span>{item.price || item.fee}
+
           </div>
         </div>
       </div>
 
+
+      {/* --- ボタンエリア --- */}
       <div className="space-y-2">
-        <button className="w-full py-2.5 rounded-xl border border-gray-100 text-[11px] font-bold text-gray-500 flex items-center justify-center bg-white">
+        <button 
+          onClick={handleDetailClick}
+          className="w-full py-2.5 rounded-xl border border-gray-200 text-[11px] font-bold text-gray-500 flex items-center justify-center bg-white hover:bg-gray-50"
+        >
           <Eye className="w-4 h-4 mr-2" /> 詳細を見る
         </button>
+
         {tab === 'completed' ? (
-          <button className="w-full py-3.5 rounded-xl bg-[#D97706] text-white text-[11px] font-bold flex items-center justify-center shadow-lg shadow-orange-100 active:scale-95 transition-all">
+          <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+
             <Star className="w-4 h-4 mr-2" /> レビューを書く
           </button>
         ) : (
           <div className="flex space-x-2">
-            <button className="flex-1 py-3.5 rounded-xl bg-white border border-gray-100 text-[11px] font-bold text-gray-400">取り消し</button>
-            <button className="flex-[2] py-3.5 rounded-xl bg-[#2563EB] text-white text-[11px] font-bold flex items-center justify-center shadow-lg shadow-blue-100 active:scale-95 transition-all">
+
+            <button 
+              onClick={() => onCancel(item.id)}
+              className="flex-1 py-3.5 rounded-xl bg-white border border-red-100 text-[11px] font-bold text-red-400 hover:bg-red-50"
+            >
+              取り消し
+            </button>
+            <button className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+
               <MessageCircle className="w-4 h-4 mr-2" /> チャット
             </button>
           </div>
