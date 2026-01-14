@@ -3,23 +3,18 @@ import { useRouter } from 'next/router';
 import {
   ArrowLeft,
   Camera,
-  CheckCircle,
   Music,
   PawPrint,
   AlertTriangle,
   XCircle,
-  Settings,
 } from 'lucide-react';
 
 export default function DriverEditPage() {
   const router = useRouter();
 
   /* ===== state ===== */
-  const [name, setName] = useState('');
+  const [name, setName] = useState(''); // 表示用。編集はさせない
   const [introduction, setIntroduction] = useState('');
-  const [hobby, setHobby] = useState('');
-  const [purpose, setPurpose] = useState('');
-
   const [carModel, setCarModel] = useState('');
   const [carColor, setCarColor] = useState('');
   const [carYear, setCarYear] = useState('');
@@ -32,130 +27,134 @@ export default function DriverEditPage() {
     music: true,
   });
 
-  /* ===== 初期値読み込み ===== */
+  /* ===== 初期値読み込み（APIから取得） ===== */
   useEffect(() => {
-    const saved = localStorage.getItem('driverProfile');
-    if (saved) {
-      const p = JSON.parse(saved);
-      setName(p.name ?? '山田 太郎');
-      setIntroduction(p.introduction ?? '');
-      setHobby(p.hobby ?? '');
-      setPurpose(p.purpose ?? '');
-      setCarModel(p.carModel ?? 'トヨタ プリウス');
-      setCarColor(p.carColor ?? '白');
-      setCarYear(p.carYear ?? '2022');
-      setCarNumber(p.carNumber ?? '品川 123 あ4567');
-      setRules(p.rules ?? rules);
-    }
+    const fetchInitialData = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/driver/mypage', {
+          credentials: 'include', // 認証情報を含める
+        });
+        if (res.ok) {
+          const p = await res.json();
+          setName(p.name ?? '');
+          setIntroduction(p.introduction ?? '');
+          setCarModel(p.car.model ?? '');
+          setCarColor(p.car.color ?? '');
+          setCarYear(p.car.year?.toString() ?? '');
+          setCarNumber(p.car.number ?? '');
+          setRules({
+            smoke: p.rules.smoking,
+            pet: p.rules.pet,
+            food: p.rules.food,
+            music: p.rules.music,
+          });
+        }
+      } catch (e) {
+        console.error("データの取得に失敗しました");
+      }
+    };
+    fetchInitialData();
   }, []);
 
-  /* ===== 保存 ===== */
-  const handleSave = () => {
-    localStorage.setItem(
-      'driverProfile',
-      JSON.stringify({
-        name,
-        introduction,
-        hobby,
-        purpose,
-        carModel,
-        carColor,
-        carYear,
-        carNumber,
-        rules,
-      })
-    );
-    router.push('/driver/mypage');
+  /* ===== 保存処理 ===== */
+  const handleSave = async () => {
+    const payload = {
+      name,
+      introduction,
+      carModel,
+      carColor,
+      carYear,
+      carNumber,
+      rules,
+    };
+
+    try {
+      const res = await fetch('http://localhost:8000/api/driver/mypage', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 保存時にも認証情報を含める
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        router.push('/driver/mypage');
+      } else {
+        alert("保存に失敗しました");
+      }
+    } catch (e) {
+      alert("通信エラーが発生しました");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* 📱 スマホ外枠 */}
       <div className="w-full max-w-[390px] aspect-[9/19] bg-white shadow-2xl border-[8px] border-white rounded-3xl overflow-y-auto">
 
         {/* ヘッダー */}
         <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ArrowLeft className="cursor-pointer" onClick={() => router.back()} />
-            <span className="font-bold">マイページ</span>
+            <span className="font-bold">プロフィール編集</span>
           </div>
-          <button onClick={() => router.back()} className="text-sm">
+          <button onClick={() => router.back()} className="text-sm text-gray-500">
             キャンセル
           </button>
         </header>
 
-        <main className="p-4 space-y-4">
+        <main className="p-4 space-y-4 pb-10">
 
-          {/* プロフィール */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm text-center">
+          {/* プロフィール基本情報（氏名固定） */}
+          <section className="bg-white rounded-2xl p-6 shadow-sm text-center border">
             <div className="relative w-24 h-24 mx-auto mb-4">
               <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center text-3xl font-bold text-green-600">
-                {name.charAt(0)}
+                {name.charAt(0) || 'K'}
               </div>
-              <button className="absolute bottom-0 right-0 bg-green-600 p-2 rounded-full">
+              <button className="absolute bottom-0 right-0 bg-green-600 p-2 rounded-full border-2 border-white">
                 <Camera size={16} className="text-white" />
               </button>
             </div>
 
-            <label className="text-sm text-gray-500 block mb-1">氏名</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-100 rounded-lg py-2 text-sm text-center"
-            />
-
-            <div className="flex justify-around mt-4 text-sm">
-              <div>
-                <p className="font-bold">45</p>
-                <p className="text-gray-500">ドライブ回数</p>
-              </div>
-              <div>
-                <p className="font-bold text-yellow-500">★ 4.8</p>
-                <p className="text-gray-500">評価</p>
-              </div>
-              <div>
-                <p className="font-bold">2024-01~</p>
-                <p className="text-gray-500">登録日</p>
+            <div className="text-left space-y-1">
+              <label className="text-xs text-gray-400 ml-1">氏名（変更できません）</label>
+              <div className="w-full bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 text-sm font-bold text-gray-600">
+                {name}
               </div>
             </div>
           </section>
 
           {/* 車両情報 */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm text-sm space-y-3">
-            <h3 className="font-bold text-gray-500">車両情報</h3>
-
+          <section className="bg-white rounded-2xl p-6 shadow-sm border space-y-3">
+            <h3 className="font-bold text-gray-500 text-sm">車両情報</h3>
             <input
               value={carModel}
               onChange={(e) => setCarModel(e.target.value)}
-              className="w-full bg-gray-100 rounded-lg px-3 py-2"
+              className="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm"
               placeholder="車種"
             />
-
             <div className="flex gap-3">
               <input
                 value={carColor}
                 onChange={(e) => setCarColor(e.target.value)}
-                className="flex-1 bg-gray-100 rounded-lg px-3 py-2"
+                className="flex-1 bg-gray-50 border rounded-lg px-3 py-2 text-sm"
                 placeholder="色"
               />
               <input
                 value={carYear}
                 onChange={(e) => setCarYear(e.target.value)}
-                className="flex-1 bg-gray-100 rounded-lg px-3 py-2"
+                className="flex-1 bg-gray-50 border rounded-lg px-3 py-2 text-sm"
                 placeholder="年式"
               />
             </div>
-
             <input
               value={carNumber}
               onChange={(e) => setCarNumber(e.target.value)}
-              className="w-full bg-gray-100 rounded-lg px-3 py-2"
+              className="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm"
               placeholder="ナンバープレート"
             />
           </section>
 
           {/* 車両ルール */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
+          <section className="bg-white rounded-2xl p-6 shadow-sm border space-y-4">
             <h3 className="font-bold text-gray-500 text-sm">車両ルール</h3>
             {[
               { key: 'smoke', label: '禁煙', icon: <XCircle className="text-red-500" /> },
@@ -172,12 +171,12 @@ export default function DriverEditPage() {
                   onClick={() =>
                     setRules({ ...rules, [r.key]: !rules[r.key as keyof typeof rules] })
                   }
-                  className={`w-11 h-6 rounded-full px-1 flex items-center ${
+                  className={`w-11 h-6 rounded-full px-1 flex items-center transition-colors ${
                     rules[r.key as keyof typeof rules] ? 'bg-blue-600' : 'bg-gray-300'
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 bg-white rounded-full transition ${
+                    className={`w-4 h-4 bg-white rounded-full transition-transform ${
                       rules[r.key as keyof typeof rules] ? 'translate-x-5' : ''
                     }`}
                   />
@@ -186,39 +185,27 @@ export default function DriverEditPage() {
             ))}
           </section>
 
-          {/* 自己紹介・趣味・目的 */}
-          {[
-            ['自己紹介', introduction, setIntroduction],
-            ['趣味', hobby, setHobby],
-            ['主な利用目的', purpose, setPurpose],
-          ].map(([label, value, setter]: any) => (
-            <section key={label} className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-gray-500 text-sm mb-2">{label}</h3>
-              <textarea
-                rows={label === '自己紹介' ? 4 : 1}
-                value={value}
-                onChange={(e) => setter(e.target.value)}
-                className="w-full bg-gray-100 rounded-lg px-3 py-2 text-sm"
-              />
-            </section>
-          ))}
-
-          {/* 設定 */}
-          <section className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Settings size={16} />
-              設定
-            </div>
-            <span className="text-gray-400">›</span>
+          {/* 自己紹介 */}
+          <section className="bg-white rounded-2xl p-6 shadow-sm border">
+            <h3 className="font-bold text-gray-500 text-sm mb-2">自己紹介</h3>
+            <textarea
+              rows={5}
+              value={introduction}
+              onChange={(e) => setIntroduction(e.target.value)}
+              className="w-full bg-gray-50 border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
+              placeholder="自己紹介を書いてみましょう"
+            />
           </section>
 
-          {/* 保存 */}
-          <button
-            onClick={handleSave}
-            className="w-full bg-green-600 text-white font-bold py-3 rounded-xl"
-          >
-            保存
-          </button>
+          {/* 保存ボタン */}
+          <div className="pt-4">
+            <button
+              onClick={handleSave}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-[0.98]"
+            >
+              保存する
+            </button>
+          </div>
         </main>
       </div>
     </div>

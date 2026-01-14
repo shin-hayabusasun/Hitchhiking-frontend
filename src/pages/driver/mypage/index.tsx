@@ -1,13 +1,10 @@
-// % Start 黒星
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   ArrowLeft,
   Pencil,
-  CheckCircle,
   Car,
   Star,
-  Settings,
   XCircle,
   PawPrint,
   AlertTriangle,
@@ -15,7 +12,7 @@ import {
   FileText,
 } from "lucide-react";
 
-/* ===== 型定義 ===== */
+/* ===== 型定義（趣味・目的・ライセンスを削除） ===== */
 type DriverProfile = {
   name: string;
   initial: string;
@@ -38,14 +35,6 @@ type DriverProfile = {
   };
 
   introduction: string;
-  hobby: string;
-  purpose: string;
-
-  license: {
-    number: string;
-    expire: string;
-    verified: boolean;
-  };
 };
 
 export default function DriverProfilePage() {
@@ -54,11 +43,11 @@ export default function DriverProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* ===== データ取得（SearchPageと同じ構造） ===== */
+  /* ===== データ取得 ===== */
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/driver/mypage", {
+      const res = await fetch("http://localhost:8000/api/driver/mypage", {
         credentials: "include",
       });
       if (!res.ok) throw new Error();
@@ -98,7 +87,7 @@ export default function DriverProfilePage() {
 
         {/* ===== ヘッダー ===== */}
         <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
-          <button onClick={() => router.back("/driver/drives")}>
+          <button onClick={() => router.back()}>
             <ArrowLeft />
           </button>
           <h1 className="font-bold">マイページ</h1>
@@ -110,7 +99,7 @@ export default function DriverProfilePage() {
           </button>
         </header>
 
-        <main className="p-4 space-y-4">
+        <main className="p-4 space-y-4 pb-8">
 
           {/* ===== プロフィール概要 ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm text-center">
@@ -119,16 +108,7 @@ export default function DriverProfilePage() {
             </div>
             <h2 className="text-xl font-bold">{profile.name}</h2>
 
-            <div className="flex justify-center gap-2 my-3">
-              <span className="flex items-center text-xs bg-green-50 text-green-600 px-3 py-1 rounded-full">
-                <CheckCircle size={14} className="mr-1" />
-                本人確認済み
-              </span>
-              <span className="flex items-center text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-full">
-                <Car size={14} className="mr-1" />
-                免許証確認済み
-              </span>
-            </div>
+            {/* 本人確認・免許証確認バッジを削除 */}
 
             <div className="flex justify-around border-t pt-4 mt-4 text-sm">
               <div>
@@ -143,7 +123,7 @@ export default function DriverProfilePage() {
                 <p className="text-gray-500">評価</p>
               </div>
               <div>
-                <p className="font-bold">{profile.registeredAt}</p>
+                <p className="font-bold text-lg">{profile.registeredAt}</p>
                 <p className="text-gray-500">登録日</p>
               </div>
             </div>
@@ -164,11 +144,27 @@ export default function DriverProfilePage() {
 
           {/* ===== 車両情報 ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm text-sm">
-            <h3 className="font-bold text-gray-500 mb-2">車両情報</h3>
-            <p>車種：{profile.car.model}</p>
-            <p>色：{profile.car.color}</p>
-            <p>年式：{profile.car.year}年</p>
-            <p>ナンバー：{profile.car.number}</p>
+            <h3 className="font-bold text-gray-500 mb-3 flex items-center gap-2">
+              <Car size={16} /> 車両情報
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-500">車種</span>
+                <span className="font-medium">{profile.car.model}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">色</span>
+                <span className="font-medium">{profile.car.color}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">年式</span>
+                <span className="font-medium">{profile.car.year}年</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">ナンバー</span>
+                <span className="font-medium">{profile.car.number}</span>
+              </div>
+            </div>
           </section>
 
           {/* ===== 車両ルール ===== */}
@@ -186,37 +182,23 @@ export default function DriverProfilePage() {
                   {item.icon}
                   {item.label}
                 </div>
-                <div className={`w-11 h-6 rounded-full px-1 flex items-center ${item.on ? "bg-blue-600" : "bg-gray-300"}`}>
-                  <div className={`w-4 h-4 bg-white rounded-full transition ${item.on ? "translate-x-5" : ""}`} />
+                <div className={`w-11 h-6 rounded-full px-1 flex items-center transition-colors ${item.on ? "bg-blue-600" : "bg-gray-300"}`}>
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${item.on ? "translate-x-5" : ""}`} />
                 </div>
               </div>
             ))}
           </section>
 
-          {/* ===== 自己紹介など ===== */}
+          {/* ===== 自己紹介 ===== */}
           <section className="bg-white rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold text-gray-500 text-sm mb-2">自己紹介</h3>
-            <p className="text-sm">{profile.introduction}</p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">
+              {profile.introduction}
+            </p>
           </section>
 
-          <section className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-500 text-sm mb-2">趣味</h3>
-            <p className="text-sm">{profile.hobby}</p>
-          </section>
+          {/* 趣味・目的・設定 セクションを削除 */}
 
-          <section className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-500 text-sm mb-2">主な利用目的</h3>
-            <p className="text-sm">{profile.purpose}</p>
-          </section>
-
-          {/* ===== 設定 ===== */}
-          <section className="bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center">
-            <div className="flex items-center gap-2 font-medium text-sm">
-              <Settings />
-              設定
-            </div>
-            <span className="text-gray-400">›</span>
-          </section>
         </main>
       </div>
     </div>

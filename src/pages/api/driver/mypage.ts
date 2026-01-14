@@ -2,9 +2,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 /*
-  フロント側が期待しているレスポンス構造に完全一致させたモックAPI
+   趣味、目的、およびライセンス情報を削除したモックデータ
 */
-
 let mockProfile = {
   name: "黒星 朋来",
   initial: "K",
@@ -27,14 +26,6 @@ let mockProfile = {
   },
 
   introduction: "安全運転を心がけています。楽しくドライブしましょう！",
-  hobby: "ドライブ、写真撮影",
-  purpose: "通勤・週末のお出かけ",
-
-  license: {
-    number: "1234567890",
-    expire: "2027-03-31",
-    verified: true,
-  },
 };
 
 export default function handler(
@@ -42,21 +33,19 @@ export default function handler(
   res: NextApiResponse
 ) {
   /* ======================
-     GET：マイページ取得
+      GET：マイページ取得
   ====================== */
   if (req.method === "GET") {
     return res.status(200).json(mockProfile);
   }
 
   /* ======================
-     PUT：マイページ編集保存
+      PUT：マイページ編集保存
   ====================== */
   if (req.method === "PUT") {
     const {
       name,
       introduction,
-      hobby,
-      purpose,
       carModel,
       carColor,
       carYear,
@@ -64,29 +53,27 @@ export default function handler(
       rules,
     } = req.body;
 
-    // フロント編集画面の state と対応
+    // 内部データの更新（licenseを排除）
     mockProfile = {
       ...mockProfile,
-      name,
-      introduction,
-      hobby,
-      purpose,
+      name: name ?? mockProfile.name,
+      introduction: introduction ?? mockProfile.introduction,
       car: {
-        model: carModel,
-        color: carColor,
-        year: Number(carYear),
-        number: carNumber,
+        model: carModel ?? mockProfile.car.model,
+        color: carColor ?? mockProfile.car.color,
+        year: carYear ? Number(carYear) : mockProfile.car.year,
+        number: carNumber ?? mockProfile.car.number,
       },
-      rules: {
+      rules: rules ? {
         smoking: rules.smoke,
         pet: rules.pet,
         food: rules.food,
         music: rules.music,
-      },
-      initial: name?.charAt(0) ?? "K",
+      } : mockProfile.rules,
+      initial: name?.charAt(0) ?? mockProfile.initial,
     };
 
-    console.log("=== Driver mypage updated ===");
+    console.log("=== Driver mypage updated (License removed) ===");
     console.log(mockProfile);
 
     return res.status(200).json({
@@ -96,7 +83,7 @@ export default function handler(
   }
 
   /* ======================
-     その他のメソッド
+      その他のメソッド
   ====================== */
   res.setHeader("Allow", ["GET", "PUT"]);
   return res.status(405).json({ message: "Method Not Allowed" });
