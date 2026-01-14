@@ -127,7 +127,10 @@ export function UserManagementPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-10">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+
             <TitleHeader title="顧客管理" onBack={handleBack} />
 
             <div className="p-4 max-w-md mx-auto space-y-6">
@@ -240,6 +243,7 @@ export function UserManagementPage() {
                 )}
             </div>
         </div>
+    </div>
     );
 }
 
