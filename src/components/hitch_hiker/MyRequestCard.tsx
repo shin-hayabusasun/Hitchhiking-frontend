@@ -20,12 +20,7 @@ const handleDetailClick = () => {
   // モックの 'rec1' や本番の 1 など、ある方のIDを使う
   const detailId = item.recruitmentId || item.id; 
 
-  if (detailId) {
-    // 【重要】フォルダ名「hitch_hiker_DriveDetail」と完全に一致させる
-    router.push(`/hitch_hiker_DriveDetail/${detailId}`);
-  } else {
-    console.error("IDが見つかりません", item);
-  }
+  alert("機能未実装: 詳細ページへ移動します");
 };
 
   return (
@@ -65,10 +60,10 @@ const handleDetailClick = () => {
 
       <div className="space-y-3 mb-5 bg-gray-50/50 p-3 rounded-2xl border border-gray-100/50">
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from_loc || item.origin}
+          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from}
         </div>
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to_loc || item.destination}
+          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to}
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
           <div className="flex items-center text-[11px] text-gray-400 font-bold">
