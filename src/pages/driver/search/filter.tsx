@@ -6,6 +6,15 @@ type Props = {
   filter: SearchFilters;
   setFilter: React.Dispatch<React.SetStateAction<SearchFilters>>;
 };
+// ★修正: Switchコンポーネントを関数の外で定義して確実に参照できるようにする
+const Switch = ({ checked, onChange }: { checked: boolean | null, onChange: (val: boolean) => void }) => (
+  <button
+    onClick={() => onChange(!checked)}
+    className={`w-12 h-6 rounded-full transition-colors relative duration-200 ease-in-out ${checked ? 'bg-green-600' : 'bg-gray-300'}`}
+  >
+    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${checked ? 'translate-x-7' : 'translate-x-1'}`} />
+  </button>
+);
 
 export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
   const router = useRouter();
@@ -36,16 +45,10 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
     setFilter({ ...filter, timeRange: range });
   };
 
-  const Switch = ({ checked, onChange }: { checked: boolean | null, onChange: (val: boolean) => void }) => (
-    <button onClick={() => onChange(!checked)} className={`w-12 h-6 rounded-full transition-colors relative duration-200 ease-in-out ${checked ? 'bg-green-600' : 'bg-gray-300'}`}>
-      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${checked ? 'translate-x-7' : 'translate-x-1'}`} />
-    </button>
-  );
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans max-w-[390px] mx-auto shadow-xl border-x overflow-x-hidden">
       <header className="flex items-center justify-between px-4 py-4 bg-white sticky top-0 z-20 border-b border-gray-100">
-        <button onClick={() => router.back()} className="p-2 border border-gray-100 rounded-xl shadow-sm"><LucideChevronLeft size={20} className="text-gray-600" /></button>
+        <button onClick={() => router.back()} className="p-2 border border-gray-100 rounded-xl shadow-sm active:bg-gray-50"><LucideChevronLeft size={20} className="text-gray-600" /></button>
         <h1 className="text-lg font-bold text-gray-800">条件絞り込み</h1>
         <button onClick={handleReset} className="text-sm font-bold text-gray-400">リセット</button>
       </header>
