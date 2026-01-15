@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+
+
 import { MyRequestHeader } from '@/components/hitch_hiker/MyRequestHeader';
 import { MyRequestCard } from '@/components/hitch_hiker/MyRequestCard';
 
@@ -7,7 +9,10 @@ const MyRequest = () => {
   const [allData, setAllData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+
   // --- APIからリクエスト一覧を取得 ---
+
+
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -92,6 +97,7 @@ const MyRequest = () => {
               />
             ))
           ) : (
+<<<<<<< HEAD
             <div className="flex flex-col items-center justify-center py-32 space-y-4">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-300">
                 📁
@@ -102,6 +108,7 @@ const MyRequest = () => {
                  '完了した履歴はありません'}
               </p>
             </div>
+
           )}
         </div>
       </div>
