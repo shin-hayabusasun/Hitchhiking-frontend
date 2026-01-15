@@ -1,4 +1,4 @@
-import { Star, Heart, MapPin } from 'lucide-react';
+import { Star, Heart, MapPin, Clock } from 'lucide-react';
 
 interface RequestCardProps {
     id: number;
@@ -9,6 +9,7 @@ interface RequestCardProps {
     departure: string;
     destination: string;
     departureTime: string;
+    createdAt: string; // ★追加
     onApprove: (id: number) => void;
     onReject: (id: number) => void;
 }
@@ -22,6 +23,7 @@ export function RequestCard({
     departure,
     destination,
     departureTime,
+    // createdAt, // 使わない場合は受け取らなくても良いが、interfaceには必要
     onApprove,
     onReject
 }: RequestCardProps) {
@@ -35,27 +37,30 @@ export function RequestCard({
 
             <div className="flex items-center gap-3">
                 {/* ユーザーアイコン（頭文字） */}
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg">
-                    {passengerName[0]}
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg border border-blue-50">
+                    {passengerName.charAt(0)}
                 </div>
                 <div>
                     <h3 className="font-bold text-gray-800 text-base">{passengerName}</h3>
-                    <div className="flex items-center text-xs text-gray-400 gap-1">
+                    <div className="flex items-center text-xs text-gray-400 gap-1 mt-0.5">
                         <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                        <span className="font-bold text-gray-600">{rating}</span>
+                        <span className="font-bold text-gray-600">{rating.toFixed(1)}</span>
                         <span>({reviewCount}回)</span>
                     </div>
                 </div>
             </div>
 
             {/* ルート表示カード */}
-            <div className="bg-gray-50 rounded-2xl p-3 space-y-1 border border-gray-100/50">
-                <div className="text-sm text-gray-700 flex items-center gap-2 font-medium">
-                    <MapPin size={14} className="text-gray-400" />
-                    {departure} → {destination}
+            <div className="bg-gray-50 rounded-2xl p-3 space-y-2 border border-gray-100/50">
+                <div className="text-sm text-gray-700 flex items-center gap-2 font-bold">
+                    <MapPin size={14} className="text-gray-400 flex-shrink-0" />
+                    <span className="truncate">{departure}</span>
+                    <span className="text-gray-300">→</span>
+                    <span className="truncate">{destination}</span>
                 </div>
-                <div className="text-[10px] text-gray-400 ml-6">
-                    {departureTime}
+                <div className="text-[11px] text-gray-500 ml-6 flex items-center gap-1 font-medium">
+                    <Clock size={12} />
+                    {departureTime} 出発
                 </div>
             </div>
 
