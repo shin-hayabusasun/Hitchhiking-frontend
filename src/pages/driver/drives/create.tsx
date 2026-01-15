@@ -1,13 +1,14 @@
-// % Start(AI Assistant)
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
-import { ArrowLeft, Check, MapPin, Calendar, Clock, Users, DollarSign, Cigarette, Dog, Utensils, Music, Loader2 } from 'lucide-react';
+// 使わなくなったアイコン（Cigarette, Dog等）は整理し、Infoを追加
+import { Check, MapPin, Calendar, Clock, Users, DollarSign, Loader2, Info } from 'lucide-react';
 
 const CreateDrivePage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // useStateはそのまま保持（バックエンドへの送信形式を維持するため）
   const [formData, setFormData] = useState({
     departure: '',
     destination: '',
@@ -48,7 +49,7 @@ const CreateDrivePage: React.FC = () => {
       const result = await response.json();
       if (response.ok && result.ok) {
         alert("ドライブを公開しました！");
-        router.push('/driver/drives/management'); // 成功後の遷移先
+        router.push('/driver/drives');
       } else {
         alert(result.detail || 'エラーが発生しました');
       }
@@ -63,10 +64,9 @@ const CreateDrivePage: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
         <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100">
-          <DriverHeader title="ドライブ作成" showBackButton={true} showNotification = {false} showMyPage = {false}/>
+          <DriverHeader title="ドライブ作成" showBackButton={true} showNotification={false} showMyPage={false} />
         </div>
 
-        {/* 余白調整: px-5を追加し、pbを増やしてフッター被りを解消 */}
         <main className="flex-1 px-5 pt-6 pb-24 space-y-6">
           {/* ルート設定 */}
           <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
@@ -137,18 +137,17 @@ const CreateDrivePage: React.FC = () => {
             />
           </div>
 
-          {/* 車内ルール (黒いトグルスイッチ) */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          {/* 車両ルール (表示の変更) */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
             <h2 className="text-xs font-bold text-slate-400 uppercase">車両ルール</h2>
-            <div className="divide-y divide-slate-50">
-              <ToggleRow icon={<Cigarette className="w-4 h-4" />} label="禁煙" desc="車内での喫煙を禁止" active={formData.noSmoking} onClick={() => setFormData({ ...formData, noSmoking: !formData.noSmoking })} />
-              <ToggleRow icon={<Dog className="w-4 h-4" />} label="ペット可" desc="ペット同乗を許可" active={formData.petAllowed} onClick={() => setFormData({ ...formData, petAllowed: !formData.petAllowed })} />
-              <ToggleRow icon={<Utensils className="w-4 h-4" />} label="飲食OK" desc="車内での飲食を許可" active={formData.foodAllowed} onClick={() => setFormData({ ...formData, foodAllowed: !formData.foodAllowed })} />
-              <ToggleRow icon={<Music className="w-4 h-4" />} label="音楽OK" desc="音楽再生を許可" active={formData.musicAllowed} onClick={() => setFormData({ ...formData, musicAllowed: !formData.musicAllowed })} />
+            <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-slate-600 leading-relaxed">
+                車両条件はプロフィールの値を使います
+              </p>
             </div>
           </div>
 
-          {/* 送信ボタン: 下に余白を追加 */}
           <div className="mb-6">
             <button
               onClick={handleCreate}
@@ -165,19 +164,4 @@ const CreateDrivePage: React.FC = () => {
   );
 };
 
-// トグルスイッチ用コンポーネント
-const ToggleRow = ({ icon, label, desc, active, onClick }: any) => (
-  <div className="flex items-center py-4 cursor-pointer" onClick={onClick}>
-    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-500 mr-4 shrink-0">{icon}</div>
-    <div className="flex-1">
-      <div className="text-sm font-bold text-slate-700">{label}</div>
-      <div className="text-[11px] text-slate-400">{desc}</div>
-    </div>
-    <button className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ${active ? 'bg-black' : 'bg-slate-200'}`}>
-      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${active ? 'left-7' : 'left-1'}`} />
-    </button>
-  </div>
-);
-
 export default CreateDrivePage;
-// % End
