@@ -22,6 +22,15 @@ const handleDetailClick = () => {
 
   alert("機能未実装: 詳細ページへ移動します");
 };
+const handleChatClick = (requestId: number) => () => {
+  // モックの 'chat1' や本番の requestId を使う
+  router.push(`/chat/${requestId}`);
+};
+
+const handleReviewClick = (requestId: number) => () => {
+  // モックの 'rec1' や本番の requestId を使う
+  router.push(`/hitch_hiker/review?recruitmentId=${requestId}`);
+}
 
   return (
     <div className="bg-white rounded-[1.8rem] p-5 shadow-sm border border-white relative overflow-hidden transition-all active:scale-[0.98]">
@@ -87,7 +96,7 @@ const handleDetailClick = () => {
         </button>
 
         {tab === 'completed' ? (
-          <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+          <button onClick={handleReviewClick(item.id)} className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
 
             <Star className="w-4 h-4 mr-2" /> レビューを書く
           </button>
@@ -100,7 +109,7 @@ const handleDetailClick = () => {
             >
               取り消し
             </button>
-            <button className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+            <button onClick={handleChatClick(item.id)} className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
 
               <MessageCircle className="w-4 h-4 mr-2" /> チャット
             </button>
