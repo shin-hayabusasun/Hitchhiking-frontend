@@ -1,4 +1,4 @@
-import { Star, Heart, MapPin, Clock } from 'lucide-react';
+import { Star, Heart, MapPin, Clock, MessageCircle } from 'lucide-react';
 
 interface RequestCardProps {
     id: number;
@@ -12,6 +12,7 @@ interface RequestCardProps {
     createdAt: string; // ★追加
     onApprove: (id: number) => void;
     onReject: (id: number) => void;
+    onChat?: (id: number) => void; // ★追加：チャットボタン用
 }
 
 export function RequestCard({
@@ -25,7 +26,8 @@ export function RequestCard({
     departureTime,
     // createdAt, // 使わない場合は受け取らなくても良いが、interfaceには必要
     onApprove,
-    onReject
+    onReject,
+    onChat
 }: RequestCardProps) {
     return (
         <div className="bg-white rounded-[2rem] p-5 shadow-sm border border-gray-100 space-y-4 mb-4 text-left relative overflow-hidden transition-all hover:shadow-md">
@@ -65,19 +67,33 @@ export function RequestCard({
             </div>
 
             {/* アクションボタン */}
-            <div className="flex gap-3 pt-1">
-                <button
-                    onClick={() => onReject(id)}
-                    className="flex-1 py-3 px-4 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm active:scale-95 transition-all hover:bg-gray-50"
-                >
-                    拒否
-                </button>
-                <button
-                    onClick={() => onApprove(id)}
-                    className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-bold text-sm active:scale-95 transition-all shadow-lg shadow-green-100 hover:bg-green-700"
-                >
-                    承認
-                </button>
+            <div className="space-y-2 pt-1">
+                {/* チャットボタン */}
+                {onChat && (
+                    <button
+                        onClick={() => onChat(id)}
+                        className="w-full py-2.5 px-4 border border-blue-200 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm active:scale-95 transition-all hover:bg-blue-100 flex items-center justify-center gap-2"
+                    >
+                        <MessageCircle size={16} />
+                        メッセージ
+                    </button>
+                )}
+                
+                {/* 拒否・承認ボタン */}
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => onReject(id)}
+                        className="flex-1 py-3 px-4 border border-gray-200 text-gray-600 rounded-xl font-bold text-sm active:scale-95 transition-all hover:bg-gray-50"
+                    >
+                        拒否
+                    </button>
+                    <button
+                        onClick={() => onApprove(id)}
+                        className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-bold text-sm active:scale-95 transition-all shadow-lg shadow-green-100 hover:bg-green-700"
+                    >
+                        承認
+                    </button>
+                </div>
             </div>
         </div>
     );

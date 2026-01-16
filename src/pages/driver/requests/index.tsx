@@ -88,6 +88,12 @@ export default function DriverRequestsPage() {
         }
     }
 
+    // チャット処理
+    function handleChat(id: number) {
+        // チャット画面に遷移（申請IDをchatidとして使用）
+        router.push(`/chat/${id}`);
+    }
+
     function handleCreateClick() {
         router.push('/driver/regist_drive');
     }
@@ -146,6 +152,7 @@ export default function DriverRequestsPage() {
                                         createdAt={request.createdAt} // Propsとして渡す
                                         onApprove={handleApprove}
                                         onReject={handleReject}
+                                        onChat={handleChat} // ★追加：チャット処理を渡す
                                     />
                                 ))
                             ) : (
