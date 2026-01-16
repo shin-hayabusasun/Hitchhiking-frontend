@@ -322,7 +322,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans bg-white border-[8px] relative ring-1 ring-gray-200 bg-gradient-to-b from-green-50 to-white rounded-[3rem] overflow-hidden">
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
         
         <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
             <DriverHeader title="募集検索" />

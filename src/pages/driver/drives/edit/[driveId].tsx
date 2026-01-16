@@ -112,8 +112,8 @@ export default function EditDrivePage() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 text-left">
-            <div className="w-full max-w-[390px] shadow-2xl flex flex-col font-sans border-[8px] border-white bg-gradient-to-b from-emerald-50 to-white rounded-[3rem] overflow-hidden h-[844px]">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
                 {/* ヘッダー */}
                 <div className="bg-white p-6 flex items-center justify-between border-b border-slate-100 sticky top-0 z-10">
                     <button type="button" onClick={() => router.back()} className="hover:bg-slate-50 p-2 rounded-full transition"><ArrowLeft className="text-slate-400" /></button>
