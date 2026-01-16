@@ -325,7 +325,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
             <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
         
         <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
-            <DriverHeader title="募集検索" />
+            <DriverHeader title="募集検索" backPath="/"/>
         </div>
 
         <main className="flex-1 p-4 pb-24 scrollbar-hide">
