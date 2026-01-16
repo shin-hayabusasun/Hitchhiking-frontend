@@ -10,23 +10,23 @@ interface Message {
 
 export default function ChatPage() {
   const router = useRouter();
-  const { chatid } = router.query;
+  const { chatid } = router.query; // ここは recruitmentId として扱われます
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState(""); // ★追加: 入力テキストの状態
   const [loading, setLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false); // ★追加: 送信中の連打防止
 
-  // --- 1. データ取得ロジックを独立した関数にする ---
+  // --- データ取得ロジック ---
   const fetchChat = useCallback(async (isInitial: boolean = false) => {
     if (!chatid) return;
-    
     try {
-      if (isInitial) setLoading(true); // 初回だけローディングを表示
-
-      const res = await fetch('/api/chat/getchat', {
+      if (isInitial) setLoading(true);
+      const res = await fetch('http://localhost:8000/api/chat/getchat', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recruitmentId: chatid }),
+        body: JSON.stringify({ recruitmentId: Number(chatid) }),
       });
-      
       const data = await res.json();
       if (data.messages) {
         setMessages(data.messages);
@@ -38,20 +38,40 @@ export default function ChatPage() {
     }
   }, [chatid]);
 
-  // --- 2. useEffect で 10秒おきのタイマーを設定する ---
+  // --- ★追加: メッセージ送信ロジック ---
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || !chatid || isSending) return;
+
+    try {
+      setIsSending(true);
+      const res = await fetch('http://localhost:8000/api/chat/sendmessage', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recruitmentId: Number(chatid),
+          message: inputText,
+        }),
+      });
+
+      if (res.ok) {
+        setInputText(""); // 入力欄をクリア
+        await fetchChat(false); // 即座にメッセージ一覧を更新
+      } else {
+        alert("送信に失敗しました");
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // ポーリング設定
   useEffect(() => {
     if (!chatid) return;
-
-    // 初回の取得
     fetchChat(true);
-
-    // 10秒(10000ms)ごとに fetchChat を実行
-    const timer = setInterval(() => {
-      console.log("チャットを更新中...");
-      fetchChat(false); // 2回目以降は裏側で更新
-    }, 10000);
-
-    // クリーンアップ関数: 画面を離れた時にタイマーを破棄する
+    const timer = setInterval(() => fetchChat(false), 10000);
     return () => clearInterval(timer);
   }, [chatid, fetchChat]);
 
@@ -116,10 +136,20 @@ export default function ChatPage() {
         <footer className="p-4 border-t bg-white flex gap-2 items-center">
           <input
             type="text"
+            value={inputText} // ★追加: ステータスと紐付け
+            onChange={(e) => setInputText(e.target.value)} // ★追加
+            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} // ★追加: Enterで送信
             placeholder="メッセージを入力..."
             className="flex-1 bg-gray-100 border-none rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            disabled={isSending}
           />
-          <button className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-90 transition-all shadow-md">
+          <button 
+            onClick={handleSendMessage} // ★追加
+            disabled={isSending || !inputText.trim()}
+            className={`p-2 rounded-full active:scale-90 transition-all shadow-md ${
+              inputText.trim() ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 text-gray-500'
+            }`}
+          >
             <Send size={18} />
           </button>
         </footer>

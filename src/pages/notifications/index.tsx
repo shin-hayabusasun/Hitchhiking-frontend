@@ -1,364 +1,219 @@
-// % Start(Assistant)
-// 通知一覧画面 - 全ての通知を表示する画面
-// % End
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  MessageCircle, 
+  Mail, 
+  Bell, 
+  Info, 
+  CheckCheck,
+  Clock
+} from 'lucide-react';
 
 interface Notification {
-	id: string;
-	type: 'request' | 'approval' | 'message' | 'system';
-	title: string;
-	message: string;
-	timestamp: string;
-	isRead: boolean;
-	link?: string;
+    id: string;
+    type: 'request' | 'approval' | 'message' | 'system';
+    title: string;
+    message: string;
+    timestamp: string;
+    isRead: boolean;
+    link?: string;
 }
 
 export const NotificationsPage: React.FC = () => {
-	const router = useRouter();
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>('');
-	const [filter, setFilter] = useState<string>('all');
+    const router = useRouter();
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
+    const [filter, setFilter] = useState<string>('all');
 
-	useEffect(() => {
-		fetchNotifications();
-	}, []);
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
 
-	const fetchNotifications = async () => {
-		setLoading(true);
-		setError('');
-		
-		try {
-			const response = await fetch('/api/notifications', {
-				method: 'GET',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-			});
-			const data = await response.json();
+    const fetchNotifications = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await fetch('http://localhost:8000/api/notifications', {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                setNotifications(data.data);
+            } else {
+                setError(data.error || '通知の取得に失敗しました。');
+            }
+        } catch (err) {
+            setError('ネットワークエラーが発生しました。');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-			if (response.ok && data.success) {
-				setNotifications(data.data);
-			} else {
-				setError(data.error || '通知情報の取得に失敗しました。');
-			}
-		} catch (err) {
-			setError('ネットワークエラーが発生しました。');
-		} finally {
-			setLoading(false);
-		}
-	};
+    const markAsRead = async (id: string) => {
+        try {
+            const response = await fetch(`http://localhost:8000/api/notifications/${id}/read`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+            if (response.ok) {
+                setNotifications(prev =>
+                    prev.map(notif => notif.id === id ? { ...notif, isRead: true } : notif)
+                );
+            }
+        } catch (err) {
+            console.error('Failed to mark as read:', err);
+        }
+    };
 
-	const markAsRead = async (id: string) => {
-		try {
-			const response = await fetch(`/api/notifications/${id}/read`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-			});
-			const data = await response.json();
+    const markAllAsRead = async () => {
+        try {
+            const response = await fetch('/api/notifications/read-all', {
+                method: 'POST',
+                credentials: 'include',
+            });
+            if (response.ok) {
+                setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+            }
+        } catch (err) {
+            console.error('Failed to mark all as read:', err);
+        }
+    };
 
-			if (response.ok && data.success) {
-				setNotifications(prev =>
-					prev.map(notif =>
-						notif.id === id ? { ...notif, isRead: true } : notif
-					)
-				);
-			}
-		} catch (err) {
-			console.error('Failed to mark notification as read:', err);
-		}
-	};
+    const handleNotificationClick = (notification: Notification) => {
+        markAsRead(notification.id);
+        if (notification.link) {
+            router.push(notification.link);
+        }
+    };
 
-	const markAllAsRead = async () => {
-		try {
-			const response = await fetch('/api/notifications/read-all', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				credentials: 'include',
-			});
-			const data = await response.json();
+    const getNotificationIcon = (type: string) => {
+        switch (type) {
+            case 'request': return <Mail className="text-blue-500" size={20} />;
+            case 'approval': return <CheckCircle2 className="text-green-500" size={20} />;
+            case 'message': return <MessageCircle className="text-purple-500" size={20} />;
+            case 'system': return <Bell className="text-orange-500" size={20} />;
+            default: return <Info className="text-gray-500" size={20} />;
+        }
+    };
 
-			if (response.ok && data.success) {
-				setNotifications(prev =>
-					prev.map(notif => ({ ...notif, isRead: true }))
-				);
-			}
-		} catch (err) {
-			console.error('Failed to mark all notifications as read:', err);
-		}
-	};
+    const filteredNotifications = notifications.filter(notif => {
+        if (filter === 'all') return true;
+        if (filter === 'unread') return !notif.isRead;
+        return notif.type === filter;
+    });
 
-	const handleNotificationClick = (notification: Notification) => {
-		markAsRead(notification.id);
-		if (notification.link) {
-			router.push(notification.link);
-		}
-	};
+    const unreadCount = notifications.filter(n => !n.isRead).length;
 
-	const getNotificationIcon = (type: string) => {
-		switch (type) {
-			case 'request': return '📩';
-			case 'approval': return '✅';
-			case 'message': return '💬';
-			case 'system': return '🔔';
-			default: return '📌';
-		}
-	};
+    return (
+        <>
+            <Head>
+                <title>通知 | ヒッチハイクマッチング</title>
+            </Head>
 
-	const filteredNotifications = notifications.filter(notif => {
-		if (filter === 'all') return true;
-		if (filter === 'unread') return !notif.isRead;
-		return notif.type === filter;
-	});
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+                {/* スマホ風コンテナ */}
+                <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-100 to-white overflow-hidden rounded-[3rem]">
+                    
+                    {/* ヘッダー */}
+                    <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between">
+                        <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <ArrowLeft size={20} className="text-gray-600" />
+                        </button>
+                        <h1 className="text-lg font-bold text-gray-800">通知</h1>
+                        <div className="w-10 flex justify-end">
+                            {unreadCount > 0 && (
+                                <button onClick={markAllAsRead} className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="全て既読">
+                                    <CheckCheck size={20} />
+                                </button>
+                            )}
+                        </div>
+                    </header>
 
-	const unreadCount = notifications.filter(n => !n.isRead).length;
+                    {/* フィルターバー */}
+                    <div className="flex gap-2 p-3 bg-white/50 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+                        {[
+                            { id: 'all', label: 'すべて' },
+                            { id: 'unread', label: `未読${unreadCount > 0 ? `(${unreadCount})` : ''}` },
+                            { id: 'request', label: '申請' },
+                            { id: 'message', label: 'メッセージ' },
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setFilter(f.id)}
+                                className={`px-4 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${
+                                    filter === f.id 
+                                    ? 'bg-blue-600 text-white shadow-md' 
+                                    : 'bg-white text-gray-500 border border-gray-200'
+                                }`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
 
-	return (
-		<>
-			<Head>
-				<title>通知 | ヒッチハイクマッチング</title>
-			</Head>
+                    {/* メインリスト */}
+                    <main className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+                        {error && (
+                            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold border border-red-100">
+                                {error}
+                            </div>
+                        )}
 
-			<div style={styles.container}>
-				<header style={styles.header}>
-					<button onClick={() => router.back()} style={styles.backButton}>
-						← 戻る
-					</button>
-					<h1 style={styles.title}>通知</h1>
-					{unreadCount > 0 && (
-						<button onClick={markAllAsRead} style={styles.markAllButton}>
-							全て既読
-						</button>
-					)}
-				</header>
-
-				{/* フィルター */}
-				<div style={styles.filters}>
-					<button
-						style={{
-							...styles.filterButton,
-							...(filter === 'all' ? styles.activeFilter : {}),
-						}}
-						onClick={() => setFilter('all')}
-					>
-						すべて
-					</button>
-					<button
-						style={{
-							...styles.filterButton,
-							...(filter === 'unread' ? styles.activeFilter : {}),
-						}}
-						onClick={() => setFilter('unread')}
-					>
-						未読 {unreadCount > 0 && `(${unreadCount})`}
-					</button>
-					<button
-						style={{
-							...styles.filterButton,
-							...(filter === 'request' ? styles.activeFilter : {}),
-						}}
-						onClick={() => setFilter('request')}
-					>
-						申請
-					</button>
-					<button
-						style={{
-							...styles.filterButton,
-							...(filter === 'message' ? styles.activeFilter : {}),
-						}}
-						onClick={() => setFilter('message')}
-					>
-						メッセージ
-					</button>
-				</div>
-
-				<main style={styles.main}>
-					{error && <div style={styles.error}>{error}</div>}
-
-					{loading ? (
-						<div style={styles.loading}>読み込み中...</div>
-					) : filteredNotifications.length === 0 ? (
-						<div style={styles.empty}>
-							<p>通知がありません。</p>
-						</div>
-					) : (
-						<div style={styles.notificationList}>
-							{filteredNotifications.map((notification) => (
-								<div
-									key={notification.id}
-									style={{
-										...styles.notificationCard,
-										...(notification.isRead ? {} : styles.unreadCard),
-									}}
-									onClick={() => handleNotificationClick(notification)}
-								>
-									<div style={styles.notificationIcon}>
-										{getNotificationIcon(notification.type)}
-									</div>
-									<div style={styles.notificationContent}>
-										<div style={styles.notificationHeader}>
-											<h3 style={styles.notificationTitle}>
-												{notification.title}
-											</h3>
-											{!notification.isRead && (
-												<span style={styles.unreadBadge}>未読</span>
-											)}
-										</div>
-										<p style={styles.notificationMessage}>
-											{notification.message}
-										</p>
-										<span style={styles.notificationTime}>
-											{notification.timestamp}
-										</span>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</main>
-			</div>
-		</>
-	);
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-	container: {
-		minHeight: '100vh',
-		backgroundColor: '#f5f5f5',
-	},
-	header: {
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		padding: '16px',
-		backgroundColor: '#fff',
-		borderBottom: '1px solid #ddd',
-		position: 'sticky' as 'sticky',
-		top: 0,
-		zIndex: 10,
-	},
-	backButton: {
-		fontSize: '16px',
-		background: 'none',
-		border: 'none',
-		cursor: 'pointer',
-		color: '#333',
-	},
-	title: {
-		fontSize: '20px',
-		fontWeight: 'bold',
-		margin: 0,
-	},
-	markAllButton: {
-		padding: '6px 12px',
-		backgroundColor: '#2196F3',
-		color: '#fff',
-		border: 'none',
-		borderRadius: '4px',
-		cursor: 'pointer',
-		fontSize: '12px',
-	},
-	filters: {
-		display: 'flex',
-		gap: '8px',
-		padding: '12px 16px',
-		backgroundColor: '#fff',
-		borderBottom: '1px solid #ddd',
-		overflowX: 'auto' as 'auto',
-	},
-	filterButton: {
-		padding: '6px 12px',
-		fontSize: '14px',
-		background: '#f5f5f5',
-		border: '1px solid #ddd',
-		borderRadius: '16px',
-		cursor: 'pointer',
-		whiteSpace: 'nowrap' as 'nowrap',
-	},
-	activeFilter: {
-		backgroundColor: '#4CAF50',
-		color: '#fff',
-		border: '1px solid #4CAF50',
-	},
-	main: {
-		padding: '16px',
-	},
-	error: {
-		backgroundColor: '#ffebee',
-		color: '#c62828',
-		padding: '12px',
-		borderRadius: '4px',
-		marginBottom: '16px',
-	},
-	loading: {
-		textAlign: 'center' as 'center',
-		padding: '40px',
-		color: '#666',
-	},
-	empty: {
-		textAlign: 'center' as 'center',
-		padding: '40px',
-		color: '#999',
-	},
-	notificationList: {
-		display: 'flex',
-		flexDirection: 'column' as 'column',
-		gap: '8px',
-	},
-	notificationCard: {
-		display: 'flex',
-		gap: '12px',
-		backgroundColor: '#fff',
-		borderRadius: '8px',
-		padding: '16px',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-		cursor: 'pointer',
-		transition: 'box-shadow 0.2s',
-	},
-	unreadCard: {
-		backgroundColor: '#E3F2FD',
-		borderLeft: '4px solid #2196F3',
-	},
-	notificationIcon: {
-		fontSize: '24px',
-		flexShrink: 0,
-	},
-	notificationContent: {
-		flex: 1,
-	},
-	notificationHeader: {
-		display: 'flex',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: '4px',
-	},
-	notificationTitle: {
-		fontSize: '16px',
-		fontWeight: 'bold',
-		margin: 0,
-		color: '#333',
-	},
-	unreadBadge: {
-		fontSize: '10px',
-		padding: '2px 8px',
-		backgroundColor: '#2196F3',
-		color: '#fff',
-		borderRadius: '10px',
-		fontWeight: 'bold',
-	},
-	notificationMessage: {
-		fontSize: '14px',
-		color: '#666',
-		margin: '4px 0',
-	},
-	notificationTime: {
-		fontSize: '12px',
-		color: '#999',
-	},
+                        {loading ? (
+                            <div className="flex flex-col items-center justify-center py-20 space-y-3">
+                                <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" />
+                                <p className="text-gray-400 text-xs font-bold">読み込み中...</p>
+                            </div>
+                        ) : filteredNotifications.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                                <Bell size={48} className="opacity-20 mb-3" />
+                                <p className="text-sm font-bold">通知はありません</p>
+                            </div>
+                        ) : (
+                            filteredNotifications.map((notif) => (
+                                <div
+                                    key={notif.id}
+                                    onClick={() => handleNotificationClick(notif)}
+                                    className={`flex gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer ${
+                                        notif.isRead 
+                                        ? 'bg-white/60 border-gray-100' 
+                                        : 'bg-white border-blue-200 shadow-sm ring-1 ring-blue-50'
+                                    }`}
+                                >
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-100' : 'bg-blue-50'}`}>
+                                        {getNotificationIcon(notif.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className={`text-[13px] font-bold truncate ${notif.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
+                                                {notif.title}
+                                            </h3>
+                                            {!notif.isRead && (
+                                                <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1.5" />
+                                            )}
+                                        </div>
+                                        <p className="text-[12px] text-gray-500 leading-relaxed mb-2">
+                                            {notif.message}
+                                        </p>
+                                        <div className="flex items-center text-[10px] text-gray-400 font-medium">
+                                            <Clock size={12} className="mr-1" />
+                                            {notif.timestamp}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        <div className="h-10" />
+                    </main>
+                </div>
+            </div>
+        </>
+    );
 };
 
 export default NotificationsPage;
-
