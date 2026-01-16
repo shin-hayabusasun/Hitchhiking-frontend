@@ -106,7 +106,7 @@ export default function DriveCompletionPage() {
                 price={drive.price}
                 driver={drive.driver}
                 onReview={() =>
-                  router.push(`/driver/drivekanri/review?driveId=${drive.id}`)
+                  router.push(`/driver/drivekanri/review?recruitmentId=${drive.id}`)
                 }
               />
             ))

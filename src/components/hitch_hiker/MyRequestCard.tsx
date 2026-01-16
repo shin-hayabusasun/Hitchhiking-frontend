@@ -20,13 +20,17 @@ const handleDetailClick = () => {
   // モックの 'rec1' や本番の 1 など、ある方のIDを使う
   const detailId = item.recruitmentId || item.id; 
 
-  if (detailId) {
-    // 【重要】フォルダ名「hitch_hiker_DriveDetail」と完全に一致させる
-    router.push(`/hitch_hiker_DriveDetail/${detailId}`);
-  } else {
-    console.error("IDが見つかりません", item);
-  }
+  alert("機能未実装: 詳細ページへ移動します");
 };
+const handleChatClick = (requestId: number) => () => {
+  // モックの 'chat1' や本番の requestId を使う
+  router.push(`/chat/${requestId}`);
+};
+
+const handleReviewClick = (requestId: number) => () => {
+  // モックの 'rec1' や本番の requestId を使う
+  router.push(`/hitch_hiker/review?recruitmentId=${requestId}`);
+}
 
   return (
     <div className="bg-white rounded-[1.8rem] p-5 shadow-sm border border-white relative overflow-hidden transition-all active:scale-[0.98]">
@@ -65,10 +69,10 @@ const handleDetailClick = () => {
 
       <div className="space-y-3 mb-5 bg-gray-50/50 p-3 rounded-2xl border border-gray-100/50">
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from_loc || item.origin}
+          <MapPin className="w-4 h-4 mr-3 text-green-500" /> {item.from}
         </div>
         <div className="flex items-center text-[13px] font-bold text-gray-600">
-          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to_loc || item.destination}
+          <MapPin className="w-4 h-4 mr-3 text-red-500" /> {item.to}
         </div>
         <div className="flex items-center justify-between pt-2 border-t border-gray-200/50">
           <div className="flex items-center text-[11px] text-gray-400 font-bold">
@@ -92,7 +96,7 @@ const handleDetailClick = () => {
         </button>
 
         {tab === 'completed' ? (
-          <button className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+          <button onClick={handleReviewClick(item.id)} className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
 
             <Star className="w-4 h-4 mr-2" /> レビューを書く
           </button>
@@ -105,7 +109,7 @@ const handleDetailClick = () => {
             >
               取り消し
             </button>
-            <button className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
+            <button onClick={handleChatClick(item.id)} className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shadow-lg">
 
               <MessageCircle className="w-4 h-4 mr-2" /> チャット
             </button>
