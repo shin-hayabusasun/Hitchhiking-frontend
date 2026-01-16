@@ -2,7 +2,7 @@
 // 商品情報の新規登録・編集用モーダルコンポーネント
 
 import { useState, useEffect } from 'react';
-import { Product } from '@/types/product'; // 型定義をインポート
+import { Product } from '@/types'; // 型定義をインポート
 
 interface ProductFormModalProps {
     isOpen: boolean;
