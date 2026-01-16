@@ -7,8 +7,8 @@ import DriveStatusCard from "@/components/driver/DriveStatusCard";
 // 型定義
 interface OngoingDrive {
   id: string;
-  from: string;
-  to: string;
+  from_loc: string;
+  to_loc: string;
   datetime: string;
   price: number;
   driver: {
@@ -130,8 +130,8 @@ export default function Progress() {
               <DriveStatusCard
                 key={drive.id}
                 status="progress"
-                from={drive.from}
-                to={drive.to}
+                from={drive.from_loc}
+                to={drive.to_loc}
                 datetime={drive.datetime}
                 price={drive.price}
                 driver={drive.driver}
