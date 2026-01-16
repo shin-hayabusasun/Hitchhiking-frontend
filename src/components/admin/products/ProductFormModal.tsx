@@ -4,10 +4,18 @@
 import { useState, useEffect } from 'react';
 import { Product } from '@/types'; // 型定義をインポート
 
+// フォームで扱うデータの型（新規作成・編集で使用）
+interface ProductFormData {
+    name: string;
+    points: number;
+    stock: number;
+    description: string;
+}
+
 interface ProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: Omit<Product, 'id'>) => void; // ID以外のデータを親に渡す
+    onSubmit: (data: ProductFormData) => void; // フォームデータを親に渡す
     initialData?: Product | null; // 編集時はこれが入る
 }
 

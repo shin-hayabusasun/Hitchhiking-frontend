@@ -7,18 +7,22 @@ interface TitleHeaderProps {
 	title: string;
 	showBackButton?: boolean;//何もないとture
 	onBack?: () => void;
+	backPath?: string;
 }
 
 export function TitleHeader({
 	title,
 	showBackButton = true,
 	onBack,
+	backPath,
 }: TitleHeaderProps) {
 	const router = useRouter();
 
 	function handleBack() {
 		if (onBack) {
 			onBack();
+		} else if (backPath) {
+			router.push(backPath);
 		} else {
 			router.back();
 		}

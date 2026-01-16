@@ -6,7 +6,7 @@ import {
   Calendar,
   Star,
   User,
-  Yen,
+  CircleDollarSign,
 } from 'lucide-react';
 
 /** ドライバー情報 */
@@ -58,7 +58,7 @@ export default function DriveRecruitCard({ drive, onClick }: Props) {
         <span>{drive.datetime}</span>
 
         <span className="ml-auto flex items-center gap-1 font-bold text-green-600">
-          <Yen size={16} />
+          <CircleDollarSign size={16} />
           {drive.price.toLocaleString()}
         </span>
       </div>

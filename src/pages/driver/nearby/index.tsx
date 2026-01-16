@@ -157,7 +157,6 @@ export function DriverNearbyPage() {
                                         departure={request.departure}
                                         destination={request.destination}
                                         date={request.date}
-                                        time={request.time}
                                         budget={request.budget}
                                         distance={request.distance}
                                         matchingScore={request.matchingScore}

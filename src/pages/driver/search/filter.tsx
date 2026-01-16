@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { SearchFilters, TimeRange } from '../../../_app';
+import { SearchFilters, TimeRange } from '../../_app';
 import { LucideChevronLeft, LucideMapPin, LucideCalendar, LucideUsers, LucideClock, LucideSearch } from 'lucide-react';
 
 type Props = {
@@ -21,12 +21,19 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
 
   const handleReset = () => {
     setFilter({
-      departure: '', destination: '', date: null,
+      departure: '', 
+      destination: '', 
+      date: null,
       timeRange: { start: '00:00', end: '23:59' },
       priceRange: { min: null, max: null },
       seats: 1,
       isVerifiedOnly: null,
-      // conditions は削除済
+      conditions: {
+        nonSmoking: null,
+        petsAllowed: null,
+        foodAllowed: null,
+        musicAllowed: null,
+      },
     });
   };
 

@@ -4,7 +4,7 @@
 // import { useEffect, useState } from 'react';
 import { useEffect, useState, useRef } from 'react'; // ★ useRefを追加
 import { useRouter } from 'next/router';
-import { Product } from '@/types/product';
+import { Product } from '@/types';
 import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductHeader } from '@/components/admin/products/ProductHeader';
 import { ProductFormModal } from '@/components/admin/products/ProductFormModal';
@@ -137,7 +137,7 @@ export function ProductManagementPage() {
         }
     }
 
-    const handleFormSubmit = async (formData: Omit<Product, 'id'>) => {
+    const handleFormSubmit = async (formData: { name: string; points: number; stock: number; description: string }) => {
         try {
             let method = 'POST';
             let url = `${API_BASE_URL}/api/admin/products`;

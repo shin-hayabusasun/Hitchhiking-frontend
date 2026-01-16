@@ -4,7 +4,8 @@
 import { useRouter } from 'next/router';
 
 type caritem = {
-	jouken_name: string;
+	id: string;
+	name: string;
 };
 interface SearchCardProps {
 	id: string;// 募集ID
@@ -127,7 +128,7 @@ export function SearchCard({
       </div>
 
       {/* 詳細を見るボタン */}
-      <button onClick={() => handleDetailClick(id)} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-transform text-sm">
+      <button onClick={handleDetailClick} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-transform text-sm">
         詳細を見る
       </button>
     </div>

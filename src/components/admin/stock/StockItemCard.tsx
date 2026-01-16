@@ -1,5 +1,5 @@
 // 憲生：src/components/admin/stock/StockItemCard.tsx
-import { Product } from '@/types/stock';
+import { Product } from '@/types';
 
 interface StockItemCardProps {
     product: Product;

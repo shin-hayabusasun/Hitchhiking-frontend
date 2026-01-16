@@ -10,7 +10,8 @@ type Props = {
 };
 
 type caritem = {
-  jouken_name: string;
+  id: string;
+  name: string;
 };
 
 type Drive = {

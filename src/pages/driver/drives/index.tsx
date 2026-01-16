@@ -66,7 +66,7 @@ export function DriverDrivesPage() {
 		router.push('/driver/drives/create');
 	}
 
-	async function handleDelete(id: string) {
+	async function handleDelete(id: number) {
 		if (!confirm('本当に削除しますか？')) {
 			return;
 		}

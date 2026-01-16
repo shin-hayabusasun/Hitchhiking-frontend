@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { StockStatsCard } from '@/components/admin/stock/StockStatsCard';
 import { StockItemCard } from '@/components/admin/stock/StockItemCard';
-import { Product, StockStats } from '@/types/stock';
+import { Product, StockStats } from '@/types';
 
 const ALERT_THRESHOLD = 20;
 const API_BASE_URL = 'http://127.0.0.1:8000'; 

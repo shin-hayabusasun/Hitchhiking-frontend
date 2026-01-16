@@ -1,5 +1,5 @@
 // 憲生：src/components/admin/stock/StockStatsCard.tsx
-import { StockStats } from '@/types/stock';
+import { StockStats } from '@/types';
 
 interface StockStatsCardProps {
     stats: StockStats;
