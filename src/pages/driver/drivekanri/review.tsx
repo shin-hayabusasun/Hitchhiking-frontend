@@ -47,7 +47,7 @@ export default function PassengerReviewPage() {
 
       // ★ 追加: 二重投稿チェックロジック
       if (response.ok && data.ok === false && data.status === "already_reviewed") {
-        alert("このドライブに対するレビューは既に投稿済みです。相手の評価をお待ちください。");
+        alert("このドライブに対するレビューは既に投稿済みです。相手の評価が終わり次第、決済を反映させます。");
         // 既に終わっているので、履歴（完了）画面へ飛ばす
         router.push("/driver/drivekanri/completion");
         return;
@@ -85,7 +85,7 @@ export default function PassengerReviewPage() {
         <main className="p-6 space-y-8">
           <div className="text-center mt-4">
             <h2 className="text-xl font-bold text-gray-800">ドライブの評価</h2>
-            <p className="text-sm text-gray-500 mt-2">今回のドライブはいかがでしたか？</p>
+            <p className="text-sm text-gray-500 mt-2">相手の評価が終わり次第、決済を反映させます</p>
           </div>
 
           {/* 星評価セクション */}

@@ -85,7 +85,7 @@ export default function PassengerReviewPage() {
         <main className="p-6 space-y-8">
           <div className="text-center mt-4">
             <h2 className="text-xl font-bold text-gray-800">ドライブの評価</h2>
-            <p className="text-sm text-gray-500 mt-2">今回のドライブはいかがでしたか？</p>
+            <p className="text-sm text-gray-500 mt-2">レビュー完了後に決済情報を使って、自動で送金します</p>
           </div>
 
           {/* 星評価セクション */}
