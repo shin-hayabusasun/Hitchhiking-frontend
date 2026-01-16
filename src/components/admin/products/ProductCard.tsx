@@ -1,7 +1,7 @@
 //憲生：（内部設計書ではSearchCard）
 // src/components/admin/product/ProductCard.tsx
 
-import { Product } from '@/types/product'; // 上記で定義した型をインポート
+import { Product } from '@/types'; // 上記で定義した型をインポート
 
 interface ProductCardProps {
     product: Product;
