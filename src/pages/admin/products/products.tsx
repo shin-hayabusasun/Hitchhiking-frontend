@@ -1,7 +1,8 @@
 // % Start(小松憲生)
 // 商品情報管理画面
 
-import { useEffect, useState } from 'react';
+// import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; // ★ useRefを追加
 import { useRouter } from 'next/router';
 import { Product } from '@/types/product';
 import { ProductCard } from '@/components/admin/products/ProductCard';
@@ -12,6 +13,12 @@ const API_BASE_URL = 'http://127.0.0.1:8000';
 
 // ★ここにサンプルデータを定義します（IDは不要です）
 const SAMPLE_DATA = [
+    {
+        name: '10円分のクオカード（テスト）',
+        description: '全国の加盟店で使えるクオカード',
+        points: 10,
+        stock: 5,
+    },
     {
         name: 'Amazonギフト券 1,000円分',
         description: 'すぐに使えるAmazonギフト券',
@@ -35,7 +42,7 @@ const SAMPLE_DATA = [
         description: '全国の加盟店で使えるクオカード',
         points: 3000,
         stock: 0,
-    },
+    }
 ];
 
 
@@ -44,6 +51,9 @@ export function ProductManagementPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // ★追加: データ投入が走ったかを記録するフラグ
+    const hasSeeded = useRef(false);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -82,6 +92,11 @@ export function ProductManagementPage() {
             // ★ここが修正ポイント
             // もし取得したリストが0件なら、サンプルデータを投入してから再取得する
             if (currentList.length === 0) {
+                if (hasSeeded.current) return; 
+                
+                // 投入処理を開始する前にフラグを立てる
+                hasSeeded.current = true;
+
                 await seedSampleData();
                 
                 // 投入後に、もう一度だけデータを取得して画面を更新
@@ -92,9 +107,10 @@ export function ProductManagementPage() {
                 const retryData = await retryResponse.json();
                 setProducts(retryData.products || []);
                 return; // ここで終了
+            } else {
+                // 通常のケース: 取得したデータをセット
+                setProducts(currentList);
             }
-
-            setProducts(currentList);
         } catch (err) {
             console.error('Fetch error:', err);
             setError('データの取得に失敗しました');
