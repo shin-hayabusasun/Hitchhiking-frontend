@@ -49,7 +49,7 @@ export function DriverDriveDetailPage() {
 
         async function fetchDriveDetail() {
             try {
-                const response = await fetch(`http://localhost:8000/api/driver/drives/${id}`, {
+                const response = await fetch(`http://54.165.126.189:8000/api/driver/drives/${id}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

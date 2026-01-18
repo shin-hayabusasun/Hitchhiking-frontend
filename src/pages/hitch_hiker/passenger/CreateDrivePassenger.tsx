@@ -40,7 +40,7 @@ const CreateDrivePassengerPage: React.FC = () => {
 
     try {
       // FastAPIのバックエンドを叩く
-      const response = await fetch('http://localhost:8000/api/hitchhiker/regist_recruitment', {
+      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/regist_recruitment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

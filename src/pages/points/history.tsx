@@ -42,7 +42,7 @@ useEffect(() => {
   const fetchOrders = async () => {
     try {
       // 1. URLをバックエンドの絶対パスに変更し、credentialsを追加
-      const response = await fetch('http://localhost:8000/api/points/orders', {
+      const response = await fetch('http://54.165.126.189:8000/api/points/orders', {
         method: 'GET',
         credentials: 'include', // クッキー(session_id)を送信するために必須
         headers: {

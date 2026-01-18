@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { OrderCard, OrderItemResponse } from '@/components/point/OrderCard';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://54.165.126.189:8000';
 
 export function PointOrdersPage() {
   // 型定義

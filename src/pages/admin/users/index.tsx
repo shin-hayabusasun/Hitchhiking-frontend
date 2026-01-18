@@ -34,7 +34,7 @@ export function UserManagementPage() {
         async function fetchData() {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:8000/api/admin/customers', {
+                const response = await fetch('http://54.165.126.189:8000/api/admin/customers', {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -79,7 +79,7 @@ export function UserManagementPage() {
         setDeletingId(id);
 
         try {
-            const response = await fetch(`http://localhost:8000/api/admin/customers/${id}`, {
+            const response = await fetch(`http://54.165.126.189:8000/api/admin/customers/${id}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {

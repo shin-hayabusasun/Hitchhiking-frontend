@@ -35,7 +35,7 @@ export default function DriverRequestsPage() {
     useEffect(() => {
         async function fetchRequests() {
             try {
-                const response = await fetch('http://localhost:8000/api/driver/requests', {
+                const response = await fetch('http://54.165.126.189:8000/api/driver/requests', {
                     method: 'GET',
                     credentials: 'include',
                 });
@@ -59,7 +59,7 @@ export default function DriverRequestsPage() {
         if (!confirm('この申請を承認しますか？')) return;
         try {
             // ★修正: バッククォート ( ` ) を使用
-            await fetch(`http://localhost:8000/api/applications/${id}/approve`, {
+            await fetch(`http://54.165.126.189:8000/api/applications/${id}/approve`, {
                 method: 'POST',
                 credentials: 'include',
             });
@@ -76,7 +76,7 @@ export default function DriverRequestsPage() {
         if (!confirm('この申請を拒否しますか？')) return;
         try {
             // ★修正: バッククォート ( ` ) を使用
-            await fetch(`http://localhost:8000/api/applications/${id}/reject`, {
+            await fetch(`http://54.165.126.189:8000/api/applications/${id}/reject`, {
                 method: 'POST',
                 credentials: 'include',
             });

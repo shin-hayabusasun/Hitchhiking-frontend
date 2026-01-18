@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { ArrowLeft, MapPin, Calendar, Users, Trash2, Dog, Music, Utensils, CigaretteOff, MessageSquare, Loader2, Info } from 'lucide-react';
 
 // ★バックエンドのアドレスを定数化
-const API_BASE = 'http://localhost:8000/api/driver';
+const API_BASE = 'http://54.165.126.189:8000/api/driver';
 
 export default function EditDrivePage() {
     const router = useRouter();

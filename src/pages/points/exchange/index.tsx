@@ -41,7 +41,7 @@ export default function PointExchangePage() {
   // 商品一覧取得
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/points/products', {
+      const response = await fetch('http://54.165.126.189:8000/api/points/products', {
         method: 'GET',
         credentials: 'include',
       });
@@ -58,7 +58,7 @@ export default function PointExchangePage() {
   // ユーザーのポイント残高取得
   const fetchUserBalance = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/point/remain', {
+      const response = await fetch('http://54.165.126.189:8000/api/point/remain', {
         method: 'POST',
         credentials: 'include',
       });
@@ -83,7 +83,7 @@ export default function PointExchangePage() {
 
     setIsExchanging(true);
     try {
-      const response = await fetch('http://localhost:8000/api/points/exchange', {
+      const response = await fetch('http://54.165.126.189:8000/api/points/exchange', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

@@ -77,7 +77,7 @@ export function DriverNearbyPage() {
         try {
             // ★修正: APIエンドポイントを変更
             const response = await fetch(
-                `http://localhost:8000/api/driver/nearby?lat=${location.lat}&lng=${location.lng}&radius=10`,
+                `http://54.165.126.189:8000/api/driver/nearby?lat=${location.lat}&lng=${location.lng}&radius=10`,
                 {
                     method: 'GET',
                     credentials: 'include',

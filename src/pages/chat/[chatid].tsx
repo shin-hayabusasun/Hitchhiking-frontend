@@ -21,7 +21,7 @@ export default function ChatPage() {
     if (!chatid) return;
     try {
       if (isInitial) setLoading(true);
-      const res = await fetch('http://localhost:8000/api/chat/getchat', {
+      const res = await fetch('http://54.165.126.189:8000/api/chat/getchat', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ export default function ChatPage() {
 
     try {
       setIsSending(true);
-      const res = await fetch('http://localhost:8000/api/chat/sendmessage', {
+      const res = await fetch('http://54.165.126.189:8000/api/chat/sendmessage', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

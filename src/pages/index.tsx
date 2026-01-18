@@ -12,7 +12,7 @@ export function HomePage() {
 	useEffect(() => {
 		async function checkSession() {
 			try {
-				const response = await fetch('http://localhost:8000/api/user/IsLogin', {
+				const response = await fetch('http://54.165.126.189:8000/api/user/IsLogin', {
 					method: 'GET',
 					credentials: 'include',
 				});
@@ -34,7 +34,7 @@ export function HomePage() {
 
 	async function handleLogout() {
 		try {
-			await fetch('http://localhost:8000/api/user/logout', {
+			await fetch('http://54.165.126.189:8000/api/user/logout', {
 				method: 'GET',
 				credentials: 'include',
 			});

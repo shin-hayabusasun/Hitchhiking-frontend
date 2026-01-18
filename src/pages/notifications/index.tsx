@@ -37,7 +37,7 @@ export const NotificationsPage: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch('http://localhost:8000/api/notifications', {
+            const response = await fetch('http://54.165.126.189:8000/api/notifications', {
                 method: 'GET',
                 credentials: 'include',
             });
@@ -56,7 +56,7 @@ export const NotificationsPage: React.FC = () => {
 
     const markAsRead = async (id: string) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/notifications/${id}/read`, {
+            const response = await fetch(`http://54.165.126.189:8000/api/notifications/${id}/read`, {
                 method: 'POST',
                 credentials: 'include',
             });

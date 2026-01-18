@@ -13,7 +13,7 @@ const RecruitmentManagement = () => {
       try {
         setLoading(true);
         // FastAPIのバックエンドからデータを取得
-        const response = await fetch('http://localhost:8000/api/hitchhiker/my_recruitments', {
+        const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/my_recruitments', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

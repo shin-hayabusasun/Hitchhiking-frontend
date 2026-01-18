@@ -49,7 +49,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
         if (!id) return;
         const fetchDriveDetail = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/api/drives/${id}`);
+                const response = await fetch(`http://54.165.126.189:8000/api/drives/${id}`);
                 const data = await response.json();
                 console.log('📍 バックエンドレスポンス:', data); // デバッグ用
                 if (response.ok) {
@@ -137,7 +137,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
         if (!id) return;
         setApplying(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/actions/apply`, {
+            const response = await fetch(`http://54.165.126.189:8000/api/actions/apply`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },

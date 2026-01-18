@@ -293,7 +293,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:8000/api/driver/search', {
+      const response = await fetch('http://54.165.126.189:8000/api/driver/search', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

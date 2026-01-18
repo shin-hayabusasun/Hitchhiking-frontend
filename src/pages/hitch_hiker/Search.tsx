@@ -41,7 +41,7 @@ export function SearchPage({ filter, setFilter }: Props) {
   const fetchRecruitments = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/hitchhiker/boshukensaku', {
+      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/boshukensaku', {
         // body を使用するため、メソッドを POST に変更
         method: 'POST', 
         credentials: 'include',

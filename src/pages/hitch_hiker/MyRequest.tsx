@@ -17,7 +17,7 @@ const MyRequest = () => {
     try {
       setLoading(true);
       // credentials: 'include' を追加してCookie（session_id）を送信
-      const response = await fetch('http://localhost:8000/api/hitchhiker/my-requests', {
+      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/my-requests', {
         credentials: 'include',
       });
       
@@ -45,7 +45,7 @@ const MyRequest = () => {
     if (!confirm("このリクエストを取り消しますか？")) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/hitchhiker/cancel-request/${id}`, { 
+      const res = await fetch(`http://54.165.126.189:8000/api/hitchhiker/cancel-request/${id}`, { 
         method: 'DELETE',
         credentials: 'include', // 認証が必要なため追加
       });

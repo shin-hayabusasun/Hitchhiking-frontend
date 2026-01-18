@@ -18,7 +18,7 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/hitchhiker/delete_recruitment?recruitment_id=${item.id}`, {
+      const response = await fetch(`http://54.165.126.189:8000/api/hitchhiker/delete_recruitment?recruitment_id=${item.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

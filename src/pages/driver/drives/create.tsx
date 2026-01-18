@@ -31,7 +31,7 @@ const CreateDrivePage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:8000/api/driver/regist_drive', {
+      const response = await fetch('http://54.165.126.189:8000/api/driver/regist_drive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

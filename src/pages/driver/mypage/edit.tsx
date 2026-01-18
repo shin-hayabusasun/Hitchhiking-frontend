@@ -31,7 +31,7 @@ export default function DriverEditPage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/driver/mypage', {
+        const res = await fetch('http://54.165.126.189:8000/api/driver/mypage', {
           credentials: 'include', // 認証情報を含める
         });
         if (res.ok) {
@@ -69,7 +69,7 @@ export default function DriverEditPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:8000/api/driver/mypage', {
+      const res = await fetch('http://54.165.126.189:8000/api/driver/mypage', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // 保存時にも認証情報を含める

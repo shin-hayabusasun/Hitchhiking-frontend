@@ -43,7 +43,7 @@ export function DriverDrivesPage() {
     useEffect(() => {
         async function fetchDrives() {
             try {
-                const response = await fetch('http://localhost:8000/api/driver/drives', {
+                const response = await fetch('http://54.165.126.189:8000/api/driver/drives', {
                     method: 'GET',
                     credentials: 'include',
                 });

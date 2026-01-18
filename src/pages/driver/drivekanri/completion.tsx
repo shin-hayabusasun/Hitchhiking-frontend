@@ -27,7 +27,7 @@ export default function DriveCompletionPage() {
   useEffect(() => {
     const fetchCompletion = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/driver/completion", {
+        const response = await fetch("http://54.165.126.189:8000/api/driver/completion", {
           credentials: "include", // セッション情報を送信
         });
 

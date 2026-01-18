@@ -49,7 +49,7 @@ export function MyDriveCard({
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:8000/api/driver/schedules/${id}`, {
+            const response = await fetch(`http://54.165.126.189:8000/api/driver/schedules/${id}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // セッションID（クッキー）を送信
