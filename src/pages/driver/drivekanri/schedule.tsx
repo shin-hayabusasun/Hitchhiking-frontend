@@ -10,6 +10,7 @@ import {
   DollarSign, 
   ChevronRight 
 } from "lucide-react";
+import { getApiUrl } from "@/config/api";
 
 // 型定義
 interface ScheduleItem {
@@ -33,7 +34,7 @@ export default function Schedule() {
   const fetchSchedules = async () => {
     try {
       // credentials: "include" を追加してクッキーを送信可能にする
-      const response = await fetch("http://54.165.126.189:8000/api/driver/schedules", {
+      const response = await fetch(getApiUrl("/api/driver/schedules"), {
         credentials: "include",
       });
       
@@ -56,7 +57,7 @@ export default function Schedule() {
 function handleDel(id: string) {
     return async () => {
       try {
-        await fetch(`http://54.165.126.189:8000/api/driver/schedules/${id}`, {
+        await fetch(getApiUrl(`/api/driver/schedules/${id}`), {
           method: "DELETE",
           credentials: "include",
         });

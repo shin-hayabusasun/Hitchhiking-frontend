@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, MapPin, Calendar, Users, Trash2, Dog, Music, Utensils, CigaretteOff, MessageSquare, Loader2, Info } from 'lucide-react';
-
-// ★バックエンドのアドレスを定数化
-const API_BASE = 'http://54.165.126.189:8000/api/driver';
+import { getApiUrl } from '@/config/api';
 
 export default function EditDrivePage() {
     const router = useRouter();
@@ -21,7 +19,7 @@ export default function EditDrivePage() {
         if (!driveId) return;
 
         // 相対パスから絶対パスに変更
-        fetch(`${API_BASE}/schedules/${driveId}`, { credentials: 'include' })
+        fetch(getApiUrl(`/api/schedules/${driveId}`), { credentials: 'include' })
             .then(async res => {
                 if (!res.ok) throw new Error('データの取得に失敗しました');
                 return res.json();
@@ -66,7 +64,7 @@ export default function EditDrivePage() {
     };
 
     try {
-        const res = await fetch(`${API_BASE}/schedules/${driveId}`, {
+        const res = await fetch(getApiUrl(`/api/schedules/${driveId}`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload), // 整形した payload を送る
@@ -89,7 +87,7 @@ export default function EditDrivePage() {
     const handleDelete = async () => {
         if (!confirm("この募集を完全に削除しますか？\n関連する取引データもすべて削除されます。")) return;
         try {
-            const res = await fetch(`${API_BASE}/schedules/${driveId}`, { 
+            const res = await fetch(getApiUrl(`/api/schedules/${driveId}`), { 
                 method: 'DELETE', 
                 credentials: 'include' 
             });

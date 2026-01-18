@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react'; // ★ Reactをインポート
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
+import { API_BASE_URL } from '@/config/api';
 
 // --- アイコン ---
 const FileIcon = () => (
@@ -21,7 +22,6 @@ const UserIcon = () => (
 export function IdentitySettingsPage() {
     const router = useRouter();
     // 環境に合わせてポート番号を確認してください
-    const API_BASE_URL = 'http://54.165.126.189:8000'; 
 
     // --- State管理 ---
     const [file, setFile] = useState<File | null>(null);

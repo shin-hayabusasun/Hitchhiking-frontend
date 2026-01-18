@@ -3,6 +3,7 @@
 import { ArrowLeft, Star } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { getApiUrl } from "@/config/api";
 
 export default function PassengerReviewPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function PassengerReviewPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://54.165.126.189:8000/api/reviews', {
+      const response = await fetch(getApiUrl('/api/reviews'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

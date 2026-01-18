@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Plus, Search, Bell, Home, ShoppingBag, FileText } from 'lucide-react';
 import RecruitmentManagementCard from '../../components/hitch_hiker/RecruitmentManagementCard';
+import { getApiUrl } from '@/config/api';
 
 const RecruitmentManagement = () => {
   const router = useRouter();
@@ -13,7 +14,7 @@ const RecruitmentManagement = () => {
       try {
         setLoading(true);
         // FastAPIのバックエンドからデータを取得
-        const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/my_recruitments', {
+        const response = await fetch(getApiUrl('/api/hitchhiker/my_recruitments'), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Wallet
 } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 type Product = {
   id: string;

@@ -56,7 +56,7 @@
 
 //     async function fetchRequestDetail() {
 //         try {
-//             const response = await fetch(`http://54.165.126.189:8000/api/driver/search/${id}`, {
+//             const response = await fetch(getApiUrl(`/api/driver/search/${id}`), {
 //                 method: 'GET',
 //                 credentials: 'include',
 //             });
@@ -285,6 +285,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
+import { getApiUrl } from '@/config/api';
 import { 
     Calendar, Users, DollarSign, 
     Star, ShieldCheck, MessageCircle, Navigation, Heart, Check

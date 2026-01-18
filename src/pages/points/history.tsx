@@ -9,6 +9,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 // APIから返ってくるデータの型
 type OrderFromAPI = {

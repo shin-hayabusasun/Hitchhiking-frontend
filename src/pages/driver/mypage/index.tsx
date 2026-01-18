@@ -11,6 +11,7 @@ import {
   Music,
   FileText,
 } from "lucide-react";
+import { getApiUrl } from "@/config/api";
 
 /* ===== 型定義（趣味・目的・ライセンスを削除） ===== */
 type DriverProfile = {
@@ -47,7 +48,7 @@ export default function DriverProfilePage() {
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://54.165.126.189:8000/api/driver/mypage", {
+      const res = await fetch(getApiUrl("/api/driver/mypage"), {
         credentials: "include",
       });
       if (!res.ok) throw new Error();

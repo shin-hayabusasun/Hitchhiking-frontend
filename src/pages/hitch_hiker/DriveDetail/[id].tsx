@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, MessageCircle, Calendar, Users, Info, Car, DollarSign, ShieldCheck, Navigation } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 import dynamic from 'next/dynamic';
 import { SearchFilters } from '../../_app';
 import { MarkerData } from '@/components/Map';

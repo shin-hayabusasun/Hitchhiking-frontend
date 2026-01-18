@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
+import { getApiUrl } from '@/config/api';
 import {
     ArrowLeft, MapPin, Calendar, Clock, Users,
     DollarSign, Car, Check, Music, Dog, Utensils, Edit
@@ -49,7 +50,7 @@ export function DriverDriveDetailPage() {
 
         async function fetchDriveDetail() {
             try {
-                const response = await fetch(`http://54.165.126.189:8000/api/driver/drives/${id}`, {
+                const response = await fetch(getApiUrl(`/api/driver/drives/${id}`), {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',

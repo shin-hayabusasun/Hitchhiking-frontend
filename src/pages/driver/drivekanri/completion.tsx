@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowLeft } from "lucide-react";
 import DriveStatusCard from "@/components/driver/DriveStatusCard";
+import { getApiUrl } from "@/config/api";
 
 // 型定義
 interface CompletedDrive {
@@ -27,7 +28,7 @@ export default function DriveCompletionPage() {
   useEffect(() => {
     const fetchCompletion = async () => {
       try {
-        const response = await fetch("http://54.165.126.189:8000/api/driver/completion", {
+        const response = await fetch(getApiUrl("/api/driver/completion"), {
           credentials: "include", // セッション情報を送信
         });
 

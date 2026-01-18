@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import { getApiUrl } from '@/config/api';
 
 interface Stats {
     totalUsers: number;

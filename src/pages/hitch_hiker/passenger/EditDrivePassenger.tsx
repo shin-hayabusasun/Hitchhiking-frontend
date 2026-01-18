@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Trash2, Save, Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 interface EditFormData {
   departure: string;
@@ -38,7 +39,7 @@ const EditDrivePassengerPage: React.FC = () => {
       try {
         setLoading(true);
         // 詳細API：/api/hitchhiker/recruitment_detail?recruitment_id=xx
-        const response = await fetch(`http://54.165.126.189:8000/api/hitchhiker/recruitment_detail?recruitment_id=${id}`, {
+        const response = await fetch(getApiUrl(`/api/hitchhiker/recruitment_detail?recruitment_id=${id}`), {
           method: 'GET',
           credentials: 'include',
         });
@@ -79,7 +80,7 @@ const EditDrivePassengerPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/update_recruitment', {
+      const response = await fetch(getApiUrl('/api/hitchhiker/update_recruitment'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

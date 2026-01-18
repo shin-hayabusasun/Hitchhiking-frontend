@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
+import { getApiUrl } from '@/config/api';
 import { RecruitmentCard } from '@/components/driver/RecruitmentCard';
 import { Plus, ArrowLeft } from 'lucide-react';
 
@@ -77,7 +78,7 @@ export function DriverNearbyPage() {
         try {
             // ★修正: APIエンドポイントを変更
             const response = await fetch(
-                `http://54.165.126.189:8000/api/driver/nearby?lat=${location.lat}&lng=${location.lng}&radius=10`,
+                getApiUrl(`/api/driver/nearby?lat=${location.lat}&lng=${location.lng}&radius=10`),
                 {
                     method: 'GET',
                     credentials: 'include',

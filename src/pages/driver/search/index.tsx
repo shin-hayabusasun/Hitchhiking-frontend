@@ -253,6 +253,7 @@ import { DriverHeader } from '@/components/driver/DriverHeader';
 import { RecruitmentCard } from '@/components/driver/RecruitmentCard';
 import { SearchFilters } from "../../_app"; 
 import { Plus, Filter, MapPin, Search } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 type Props = {
   filter: SearchFilters;
@@ -293,7 +294,7 @@ export default function DriverSearchPage({ filter, setFilter }: Props) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://54.165.126.189:8000/api/driver/search', {
+      const response = await fetch(getApiUrl('/api/driver/search'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

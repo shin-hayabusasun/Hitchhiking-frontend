@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, ChevronRight, MapPin } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 const MyPage = () => {
   const router = useRouter();
@@ -12,7 +13,7 @@ const MyPage = () => {
     const fetchUserData = async () => {
       try {
         // バックエンドが別ポート（8000）で動いている場合は、環境に合わせてパスを調整してください
-        const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/mypage', {
+        const response = await fetch(getApiUrl('/api/hitchhiker/mypage'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

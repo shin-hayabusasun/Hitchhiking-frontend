@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { MapPin, Calendar, Users, Edit3, Trash2, Star, Loader2 } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 const RecruitmentManagementCard = ({ item }: { item: any }) => {
   const router = useRouter();
@@ -18,7 +19,7 @@ const RecruitmentManagementCard = ({ item }: { item: any }) => {
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`http://54.165.126.189:8000/api/hitchhiker/delete_recruitment?recruitment_id=${item.id}`, {
+      const response = await fetch(getApiUrl(`/api/hitchhiker/delete_recruitment?recruitment_id=${item.id}`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

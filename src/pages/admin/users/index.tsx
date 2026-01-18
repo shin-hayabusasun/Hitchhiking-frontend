@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
+import { getApiUrl } from '@/config/api';
 
 // 顧客データの型定義
 interface Customer {
@@ -34,7 +35,7 @@ export function UserManagementPage() {
         async function fetchData() {
             setLoading(true);
             try {
-                const response = await fetch('http://54.165.126.189:8000/api/admin/customers', {
+                const response = await fetch(getApiUrl('/api/admin/customers'), {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -79,7 +80,7 @@ export function UserManagementPage() {
         setDeletingId(id);
 
         try {
-            const response = await fetch(`http://54.165.126.189:8000/api/admin/customers/${id}`, {
+            const response = await fetch(getApiUrl(`/api/admin/customers/${id}`), {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {

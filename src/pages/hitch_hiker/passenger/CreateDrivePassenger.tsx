@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Calendar, Clock, Users, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 // 型定義
 interface FormData {
@@ -40,7 +41,7 @@ const CreateDrivePassengerPage: React.FC = () => {
 
     try {
       // FastAPIのバックエンドを叩く
-      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/regist_recruitment', {
+      const response = await fetch(getApiUrl('/api/hitchhiker/regist_recruitment'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

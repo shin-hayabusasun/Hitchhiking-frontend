@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Check } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 const EditMyPage = () => {
   const router = useRouter();
@@ -42,7 +43,7 @@ const EditMyPage = () => {
   const handleSave = async () => {
   setIsSaving(true);
   try {
-    const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/myupdate', {
+    const response = await fetch(getApiUrl('/api/hitchhiker/myupdate'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

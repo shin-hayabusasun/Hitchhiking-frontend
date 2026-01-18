@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
+import { getApiUrl } from '@/config/api';
 // 使わなくなったアイコン（Cigarette, Dog等）は整理し、Infoを追加
 import { Check, MapPin, Calendar, Clock, Users, DollarSign, Loader2, Info } from 'lucide-react';
 
@@ -31,7 +32,7 @@ const CreateDrivePage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://54.165.126.189:8000/api/driver/regist_drive', {
+      const response = await fetch(getApiUrl('/api/driver/regist_drive'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
