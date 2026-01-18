@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Wallet, Gift, ShoppingBag, Loader2, Banknote } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 export default function PointsHomePage() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function PointsHomePage() {
   useEffect(() => {
     const fetchPoints = async () => {
       try {
-        const response = await fetch('http://54.165.126.189:8000/api/point/remain', {
+        const response = await fetch(getApiUrl('/api/point/remain'), {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },

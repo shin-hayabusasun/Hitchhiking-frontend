@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/router";
 import DriveStatusCard from "@/components/driver/DriveStatusCard";
+import { getApiUrl } from "@/config/api";
 
 // 型定義
 interface OngoingDrive {
@@ -28,7 +29,7 @@ export default function Progress() {
   const fetchProgress = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://54.165.126.189:8000/api/driver/progress", {
+      const response = await fetch(getApiUrl("/api/driver/progress"), {
         credentials: "include", // セッション情報を送信
       });
 
@@ -54,7 +55,7 @@ export default function Progress() {
     if (!confirm("このドライブを完了状態にしますか？")) return;
 
     try {
-      const response = await fetch("http://54.165.126.189:8000/api/driver/complete", {
+      const response = await fetch(getApiUrl("/api/driver/complete"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

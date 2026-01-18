@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { getApiUrl } from '@/config/api';
 
 export function LoginPage() {
 	const router = useRouter();
@@ -44,7 +45,7 @@ export function LoginPage() {
 		setLoading(true);
 
 		try {
-			const response = await fetch('http://54.165.126.189:8000/api/user/login', {
+			const response = await fetch(getApiUrl('/api/user/login'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { HitchhikerHeader } from '@/components/hitch_hiker/Header';
 import { SearchCard } from '@/components/hitch_hiker/SearchCard';
 import { SearchFilters } from "../_app"; // 型名を合わせる
+import { getApiUrl } from '@/config/api';
 
 type Props = {
   filter: SearchFilters;
@@ -41,7 +42,7 @@ export function SearchPage({ filter, setFilter }: Props) {
   const fetchRecruitments = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://54.165.126.189:8000/api/hitchhiker/boshukensaku', {
+      const response = await fetch(getApiUrl('/api/hitchhiker/boshukensaku'), {
         // body を使用するため、メソッドを POST に変更
         method: 'POST', 
         credentials: 'include',

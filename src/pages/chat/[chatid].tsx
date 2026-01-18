@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useCallback } from 'react';
 import { ArrowLeft, Send } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 interface Message {
   role: '自分' | '相手';
@@ -21,7 +22,7 @@ export default function ChatPage() {
     if (!chatid) return;
     try {
       if (isInitial) setLoading(true);
-      const res = await fetch('http://54.165.126.189:8000/api/chat/getchat', {
+      const res = await fetch(getApiUrl('/api/chat/getchat'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -44,7 +45,7 @@ export default function ChatPage() {
 
     try {
       setIsSending(true);
-      const res = await fetch('http://54.165.126.189:8000/api/chat/sendmessage', {
+      const res = await fetch(getApiUrl('/api/chat/sendmessage'), {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

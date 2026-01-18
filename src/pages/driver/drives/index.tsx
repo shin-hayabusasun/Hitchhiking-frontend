@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
 import { MyDriveCard } from '@/components/driver/MyDriveCard';
 import { Plus } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 interface Passenger {
     userId: number;
@@ -43,7 +44,7 @@ export function DriverDrivesPage() {
     useEffect(() => {
         async function fetchDrives() {
             try {
-                const response = await fetch('http://54.165.126.189:8000/api/driver/drives', {
+                const response = await fetch(getApiUrl('/api/driver/drives'), {
                     method: 'GET',
                     credentials: 'include',
                 });

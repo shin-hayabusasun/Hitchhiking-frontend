@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
-const API_BASE_URL = 'http://54.165.126.189:8000';
+import { API_BASE_URL } from '@/config/api';
 
 export function NotificationSettingsPage() {
 	const router = useRouter();

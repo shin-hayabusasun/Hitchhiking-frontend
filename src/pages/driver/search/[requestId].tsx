@@ -79,7 +79,7 @@
 
 //         setProcessing(true);
 //         try {
-//             const response = await fetch('http://54.165.126.189:8000/api/driver/respond', {
+//             const response = await fetch(getApiUrl('/api/driver/respond'), {
 //                 method: 'POST',
 //                 headers: { 'Content-Type': 'application/json' },
 //                 credentials: 'include',
@@ -375,7 +375,7 @@ export default function RequestDetailPage() {
     async function fetchRequestDetail() {
         try {
             // ★修正: id ではなく requestId を使用
-            const response = await fetch(`http://54.165.126.189:8000/api/driver/search/${requestId}`, {
+            const response = await fetch(getApiUrl(`/api/driver/search/${requestId}`), {
                 method: 'GET',
                 credentials: 'include',
             });
@@ -469,7 +469,7 @@ export default function RequestDetailPage() {
 
         setProcessing(true);
         try {
-            const response = await fetch('http://54.165.126.189:8000/api/driver/respond', {
+            const response = await fetch(getApiUrl('/api/driver/respond'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

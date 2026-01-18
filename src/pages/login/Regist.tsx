@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { getApiUrl } from '@/config/api';
 
 export function RegistPage() {
     const router = useRouter();
@@ -69,7 +70,7 @@ export function RegistPage() {
                 isdriver: formData.isDriver,
             };
 
-            const response = await fetch('http://54.165.126.189:8000/api/user/regist', {
+            const response = await fetch(getApiUrl('/api/user/regist'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData),
