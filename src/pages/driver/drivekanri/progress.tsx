@@ -7,6 +7,7 @@ import DriveStatusCard from "@/components/driver/DriveStatusCard";
 // 型定義
 interface OngoingDrive {
   id: string;
+  application_id: number; // 申請ID（取引ID）
   from_loc: string;
   to_loc: string;
   datetime: string;
@@ -135,7 +136,7 @@ export default function Progress() {
                 datetime={drive.datetime}
                 price={drive.price}
                 driver={drive.driver}
-                onChat={() => router.push(`/chat/${drive.id}`)}
+                onChat={() => router.push(`/chat/${drive.application_id}`)}
                 onComplete={() => handleComplete(drive.id)} // ここで実行
               />
             ))

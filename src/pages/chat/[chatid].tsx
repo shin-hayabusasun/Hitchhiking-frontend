@@ -10,7 +10,7 @@ interface Message {
 
 export default function ChatPage() {
   const router = useRouter();
-  const { chatid } = router.query; // ここは recruitmentId として扱われます
+  const { chatid } = router.query; // ここは applicationId（申請ID）として扱われます
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState(""); // ★追加: 入力テキストの状態
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function ChatPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recruitmentId: Number(chatid) }),
+        body: JSON.stringify({ applicationId: Number(chatid) }),
       });
       const data = await res.json();
       if (data.messages) {
@@ -49,7 +49,7 @@ export default function ChatPage() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          recruitmentId: Number(chatid),
+          applicationId: Number(chatid),
           message: inputText,
         }),
       });
