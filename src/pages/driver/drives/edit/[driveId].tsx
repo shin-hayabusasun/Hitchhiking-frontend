@@ -19,7 +19,7 @@ export default function EditDrivePage() {
         if (!driveId) return;
 
         // 相対パスから絶対パスに変更
-        fetch(getApiUrl(`/api/schedules/${driveId}`), { credentials: 'include' })
+        fetch(getApiUrl(`/api/driver/schedules/${driveId}`), { credentials: 'include' })
             .then(async res => {
                 if (!res.ok) throw new Error('データの取得に失敗しました');
                 return res.json();
@@ -64,7 +64,7 @@ export default function EditDrivePage() {
     };
 
     try {
-        const res = await fetch(getApiUrl(`/api/schedules/${driveId}`), {
+        const res = await fetch(getApiUrl(`/api/driver/schedules/${driveId}`), {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload), // 整形した payload を送る
@@ -87,7 +87,7 @@ export default function EditDrivePage() {
     const handleDelete = async () => {
         if (!confirm("この募集を完全に削除しますか？\n関連する取引データもすべて削除されます。")) return;
         try {
-            const res = await fetch(getApiUrl(`/api/schedules/${driveId}`), { 
+            const res = await fetch(getApiUrl(`/api/driver/schedules/${driveId}`), { 
                 method: 'DELETE', 
                 credentials: 'include' 
             });
