@@ -43,13 +43,19 @@ const RecruitmentManagement = () => {
     fetchData();
   }, []);
 
+  function handleManagementClick() {
+    router.push('/hitch_hiker/Search');
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-[#E0F2FE] overflow-hidden rounded-[3rem]">
         
         {/* ヘッダー */}
         <div className="bg-white p-4 flex items-center justify-between pt-10 sticky top-0 z-20">
-          <button onClick={() => router.back()} className="text-gray-500 p-1"><ArrowLeft className="w-6 h-6" /></button>
+          {/* <button onClick={() => router.back()} className="text-gray-500 p-1"><ArrowLeft className="w-6 h-6" /></button> */}
+          <button onClick={() => router.push('/')} className="text-gray-500 p-1"><ArrowLeft className="w-6 h-6" /></button>
+          
           <h1 className="text-lg font-bold text-gray-700">同乗者として利用</h1>
           <div className="flex space-x-3 text-gray-400">
             <Search className="w-6 h-6" />
@@ -59,7 +65,7 @@ const RecruitmentManagement = () => {
 
         {/* ヘッダータブ */}
         <div className="px-4 py-2 bg-white flex space-x-2 border-b border-gray-50">
-          <button className="flex-1 py-2 text-sm font-bold text-gray-400">募集検索</button>
+          <button onClick={handleManagementClick} className="flex-1 py-2 text-sm font-bold text-gray-400">募集検索</button>
           <button className="flex-1 py-2 text-sm font-bold text-gray-700 bg-[#F1F5F9] rounded-xl relative">
             募集管理 <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#2563EB] text-white text-[10px] rounded-full flex items-center justify-center border-2 border-white">{recruitments.length}</span>
           </button>
