@@ -5,9 +5,9 @@ import { TitleHeader } from '@/components/TitleHeader';
 import { StockStatsCard } from '@/components/admin/stock/StockStatsCard';
 import { StockItemCard } from '@/components/admin/stock/StockItemCard';
 import { Product, StockStats } from '@/types';
+import { getApiUrl } from '@/config/api';
 
-const ALERT_THRESHOLD = 20;
-const API_BASE_URL = 'http://127.0.0.1:8000'; 
+const ALERT_THRESHOLD = 20; //警告値
 
 export function StockManagementPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -26,8 +26,8 @@ export function StockManagementPage() {
         try {
             // ★修正: 2つのAPIを並行して呼び出す
             const [productsRes, salesRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/api/admin/stocks`, { method: 'GET' }),
-                fetch(`${API_BASE_URL}/api/admin/stocks/sales`, { method: 'GET' })
+                fetch(getApiUrl('/api/admin/stocks'), { method: 'GET' }),
+                fetch(getApiUrl('/api/admin/stocks/sales'), { method: 'GET' })
             ]);
 
             if (!productsRes.ok || !salesRes.ok) {
@@ -68,7 +68,7 @@ export function StockManagementPage() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${productId}/replenish`, {
+            const response = await fetch(getApiUrl(`/api/admin/stocks/${productId}/replenish`), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ amount }),

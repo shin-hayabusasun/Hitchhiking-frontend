@@ -1,15 +1,13 @@
 // % Start(小松憲生)
 // 商品情報管理画面
 
-// import { useEffect, useState } from 'react';
 import { useEffect, useState, useRef } from 'react'; // ★ useRefを追加
 import { useRouter } from 'next/router';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductHeader } from '@/components/admin/products/ProductHeader';
 import { ProductFormModal } from '@/components/admin/products/ProductFormModal';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { getApiUrl } from '@/config/api';
 
 // ★ここにサンプルデータを定義します（IDは不要です）
 const SAMPLE_DATA = [
@@ -64,7 +62,7 @@ export function ProductManagementPage() {
         try {
             // SAMPLE_DATAを1つずつループして登録APIに投げる
             for (const item of SAMPLE_DATA) {
-                await fetch(`${API_BASE_URL}/api/admin/products`, {
+                await fetch(getApiUrl('/api/admin/products'), {
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
@@ -80,7 +78,7 @@ export function ProductManagementPage() {
     // ★重要: useEffect の外に定義する
     async function fetchProducts() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
+            const response = await fetch(getApiUrl('/api/admin/products'), {
                 method: 'GET',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -100,7 +98,8 @@ export function ProductManagementPage() {
                 await seedSampleData();
                 
                 // 投入後に、もう一度だけデータを取得して画面を更新
-                const retryResponse = await fetch(`${API_BASE_URL}/api/admin/products`, {
+                const retryResponse = await fetch(getApiUrl('/api/admin/products'), {
+
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
@@ -140,11 +139,11 @@ export function ProductManagementPage() {
     const handleFormSubmit = async (formData: { name: string; points: number; stock: number; description: string }) => {
         try {
             let method = 'POST';
-            let url = `${API_BASE_URL}/api/admin/products`;
+            let url = getApiUrl('/api/admin/products');
 
             if (editingProduct) {
                 method = 'PUT';
-                url = `${API_BASE_URL}/api/admin/products/${editingProduct.id}`;
+                url = getApiUrl(`/api/admin/products/${editingProduct.id}`);
             }
 
             const response = await fetch(url, {
@@ -174,7 +173,7 @@ export function ProductManagementPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('本当に削除しますか？')) return;
         try {
-            await fetch(`${API_BASE_URL}/api/admin/products/${id}`, { 
+            await fetch(getApiUrl(`/api/admin/products/${id}`), { 
                 method: 'DELETE' ,
                 
             });
