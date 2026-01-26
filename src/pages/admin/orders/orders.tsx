@@ -5,8 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { useRouter } from 'next/router';
 import { OrderCard, Order } from '@/components/admin/orders/OrderCard';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import { getApiUrl } from '@/config/api';
 
 export default function OrderManagementPage() {
     const router = useRouter();
@@ -25,7 +24,7 @@ export default function OrderManagementPage() {
     // 1. 注文一覧取得
     async function fetchOrders() {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
+            const response = await fetch(getApiUrl('/api/admin/orders'), {
                 method: 'GET',
                 credentials: 'include',
             });
@@ -48,7 +47,7 @@ export default function OrderManagementPage() {
         ));
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}/status`, {
+            const response = await fetch(getApiUrl(`/api/admin/orders/${orderId}/status`), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

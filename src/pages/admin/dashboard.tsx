@@ -45,9 +45,9 @@ export function AdminDashboardPage() {
     }, []);
 
     // 【追加】ヘッダーの「戻るボタン」用ハンドラー
-    function handleBackClick() {
-        router.back();
-    }
+    // function handleBackClick() {
+    //     router.back();
+    // }
 
     function handleCustomersClick() { router.push('/admin/users'); }
     function handleProductsClick() { router.push('/admin/products/products'); }
@@ -79,11 +79,11 @@ export function AdminDashboardPage() {
             {/* --- ヘッダー部分 --- */}
             <header className="flex items-center justify-between px-4 py-4 bg-white border-b sticky top-0 z-10">
                 {/* ① 戻るボタン (handleBackClickを使用) */}
-                <button onClick={handleBackClick} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+                {/* <button onClick={handleBackClick} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
-                </button>
+                </button> */}
 
                 <h1 className="text-lg font-bold">管理者ダッシュボード</h1>
 

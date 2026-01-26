@@ -1,9 +1,10 @@
-// % Start(五藤暖葵)
+// % Start(五藤暖葵、小松憲生)
 // 問い合わせ画面: 運営への問い合わせフォームおよびFAQを表示する画面
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
+import { getApiUrl } from '@/config/api';
 
 export function InquiryPage() {
 	const router = useRouter();
@@ -50,7 +51,7 @@ export function InquiryPage() {
 		setLoading(true);
 
 		try {
-			await fetch('http://127.0.0.1:8000/api/inquiry', {
+			await fetch(getApiUrl('/api/inquiry'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
