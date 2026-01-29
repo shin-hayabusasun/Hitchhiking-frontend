@@ -101,12 +101,12 @@ export default function OrderManagementPage() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-white">
             {/* ★修正ポイント: 
                1. rounded-[3rem] を削除 (角丸なし)
                2. bg-gray-50 を bg-gradient-to-b from-sky-200 to-white に変更 (青グラデーション)
             */}
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+            <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
                 
                 {/* ヘッダーエリア */}
                 {/* 背景を半透明(bg-white/50)にして背面の青色を透けさせます */}
