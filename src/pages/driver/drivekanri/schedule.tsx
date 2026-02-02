@@ -31,30 +31,30 @@ export default function Schedule() {
 
   // データ取得処理 (fetch API を使用)
   useEffect(() => {
-  const fetchSchedules = async () => {
-    try {
-      // credentials: "include" を追加してクッキーを送信可能にする
-      const response = await fetch(getApiUrl("/api/driver/schedules"), {
-        credentials: "include",
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    const fetchSchedules = async () => {
+      try {
+        // credentials: "include" を追加してクッキーを送信可能にする
+        const response = await fetch(getApiUrl("/api/driver/schedules"), {
+          credentials: "include",
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setSchedules(data.schedules);
+      } catch (error) {
+        console.error("データ取得失敗:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = await response.json();
-      setSchedules(data.schedules);
-    } catch (error) {
-      console.error("データ取得失敗:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchSchedules();
+  }, []);
 
-  fetchSchedules();
-}, []);
-
-function handleDel(id: string) {
+  function handleDel(id: string) {
     return async () => {
       try {
         await fetch(getApiUrl(`/api/driver/schedules/${id}`), {
@@ -77,11 +77,14 @@ function handleDel(id: string) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 text-gray-800">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-50 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto rounded-[2rem]">
-
-        {/* Header */}
-        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100">
+    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更。元のスマホ風デザイン（shadow等）を維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-200">
+        
+        {/* Header (元のデザイン、サイズ、stickyを維持) */}
+        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100 w-full">
           <button 
             onClick={() => router.back()}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -91,35 +94,37 @@ function handleDel(id: string) {
           <h1 className="text-lg font-bold">ドライブ管理</h1>
         </div>
 
-        {/* Tabs */}
-        <div className="mx-4 mt-4 bg-gray-200 rounded-full p-1 flex text-sm font-medium">
-          <div className="flex-1 bg-white rounded-full py-2 text-center shadow-sm text-blue-600">
-            予定中
+        {/* Tabs (元のデザインを維持) */}
+        <div className="w-full px-4 pt-4">
+          <div className="bg-gray-200 rounded-full p-1 flex text-sm font-medium">
+            <div className="flex-1 bg-white rounded-full py-2 text-center shadow-sm text-blue-600">
+              予定中
+            </div>
+            <button 
+              onClick={() => router.push("/driver/drivekanri/progress")} 
+              className="flex-1 py-2 text-gray-500"
+            >
+              進行中
+            </button>
+            <button 
+              onClick={() => router.push("/driver/drivekanri/completion")} 
+              className="flex-1 py-2 text-gray-500"
+            >
+              完了
+            </button>
           </div>
-          <button 
-            onClick={() => router.push("/driver/drivekanri/progress")} 
-            className="flex-1 py-2 text-gray-500"
-          >
-            進行中
-          </button>
-          <button 
-            onClick={() => router.push("/driver/drivekanri/completion")} 
-            className="flex-1 py-2 text-gray-500"
-          >
-            完了
-          </button>
+          <p className="mt-2 px-1 text-gray-400 text-xs">あなたが募集しているリスト</p>
         </div>
-        <p className="text-gray-400 text-sm">あなたが募集しているリスト</p>
-        {/* List */}
-        <div className="p-4 space-y-4">
+
+        {/* List (Cardのデザイン・ボタンサイズなどは一切変更なし) */}
+        <main className="w-full p-4 space-y-4 flex-grow">
           {schedules.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-gray-400 text-sm">予定されているドライブは<br />ありません</p>
             </div>
           ) : (
-            
             schedules.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
+              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4 w-full">
                 
                 {/* ステータス & 作成日 */}
                 <div className="flex justify-between items-center">
@@ -155,7 +160,7 @@ function handleDel(id: string) {
                   </div>
                 </div>
 
-                {/* アクションボタン */}
+                {/* アクションボタン (元のサイズと配置を維持) */}
                 <div className="flex gap-3 pt-1">
                   <button 
                     onClick={() => router.push(`/driver/requests`)}
@@ -164,7 +169,8 @@ function handleDel(id: string) {
                     詳細・申請を確認 <ChevronRight size={14} />
                   </button>
                   <button 
-                    onClick={handleDel(item.id)} className="flex-1 bg-white border border-gray-200 rounded-xl py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-50 active:scale-95 transition-all"
+                    onClick={handleDel(item.id)} 
+                    className="flex-1 bg-white border border-gray-200 rounded-xl py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                     消去
                   </button>
@@ -173,7 +179,7 @@ function handleDel(id: string) {
               </div>
             ))
           )}
-        </div>
+        </main>
 
         <div className="h-10" />
       </div>

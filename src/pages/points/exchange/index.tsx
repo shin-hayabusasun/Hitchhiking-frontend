@@ -23,7 +23,7 @@ export default function PointExchangePage() {
   const router = useRouter();
   const [keyword, setKeyword] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
-  const [userPoints, setUserPoints] = useState<number | null>(null); // 所持ポイント用
+  const [userPoints, setUserPoints] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExchanging, setIsExchanging] = useState(false);
   const [error, setError] = useState(false);
@@ -32,14 +32,12 @@ export default function PointExchangePage() {
     initPage();
   }, []);
 
-  // 画面初期化（商品一覧とユーザーポイントを両方取得）
   const initPage = async () => {
     setLoading(true);
     await Promise.all([fetchProducts(), fetchUserBalance()]);
     setLoading(false);
   };
 
-  // 商品一覧取得
   const fetchProducts = async () => {
     try {
       const response = await fetch(getApiUrl('/api/points/products'), {
@@ -56,7 +54,6 @@ export default function PointExchangePage() {
     }
   };
 
-  // ユーザーのポイント残高取得
   const fetchUserBalance = async () => {
     try {
       const response = await fetch(getApiUrl('/api/point/remain'), {
@@ -72,9 +69,7 @@ export default function PointExchangePage() {
     }
   };
 
-  // --- 商品交換APIを呼び出す関数 ---
   const handleExchange = async (productId: string, productName: string, cost: number) => {
-    // クライアント側でも簡易チェック
     if (userPoints !== null && userPoints < cost) {
       alert('ポイントが不足しています');
       return;
@@ -88,7 +83,6 @@ export default function PointExchangePage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        // productIdはDBに合わせて数値型に変換して送信
         body: JSON.stringify({ product_id: parseInt(productId) }), 
       });
 
@@ -96,7 +90,6 @@ export default function PointExchangePage() {
 
       if (response.ok && result.ok) {
         alert('交換が完了しました！');
-        // 在庫数と所持ポイントを最新にするため再取得
         await initPage();
       } else {
         alert(`エラー: ${result.detail || '交換に失敗しました'}`);
@@ -114,8 +107,11 @@ export default function PointExchangePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto">
+    /* ★ 背景を w-full で画面一杯に広げる */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更（元のデザイン・パーツ・ボタンサイズを維持） */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto">
         
         <header className="sticky top-0 z-20 bg-white border-b px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">

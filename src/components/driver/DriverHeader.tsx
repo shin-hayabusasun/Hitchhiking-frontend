@@ -42,8 +42,10 @@ export function DriverHeader({
     const handleMyPageClick = () => router.push('/driver/mypage');
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100">
-            <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+        /* 全幅背景に中央寄せの仕組みを追加 */
+        <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 flex justify-center">
+            {/* コンテンツ幅を max-w-2xl に変更 */}
+            <div className="w-full max-w-2xl px-4 py-3 flex items-center justify-between">
                 
                 {/* 左側：戻るボタン + タイトル */}
                 <div className="flex items-center gap-2">
@@ -57,6 +59,7 @@ export function DriverHeader({
                             <ChevronLeft size={24} strokeWidth={2.5} />
                         </button>
                     )}
+                    {/* 色は変更せず text-green-600 のまま維持 */}
                     <h1 className="text-lg font-bold text-green-600 truncate max-w-[200px]">
                         {title}
                     </h1>

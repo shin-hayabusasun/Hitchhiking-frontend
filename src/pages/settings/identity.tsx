@@ -1,7 +1,6 @@
-// % Start(AI Assistant)
 // 本人確認画面（個人情報・セキュリティ設定）
 
-import React, { useState, useEffect } from 'react'; // ★ Reactをインポート
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { TitleHeader } from '@/components/TitleHeader';
 import { API_BASE_URL } from '@/config/api';
@@ -21,7 +20,6 @@ const UserIcon = () => (
 
 export function IdentitySettingsPage() {
     const router = useRouter();
-    // 環境に合わせてポート番号を確認してください
 
     // --- State管理 ---
     const [file, setFile] = useState<File | null>(null);
@@ -39,7 +37,7 @@ export function IdentitySettingsPage() {
     // 連絡先
     const [email, setEmail] = useState('');
 
-    // 住所（DBは address 1つだけなので、表示用には addressLine をメインで使います）
+    // 住所
     const [zipCode, setZipCode] = useState('');
     const [prefecture, setPrefecture] = useState('');
     const [city, setCity] = useState('');
@@ -79,16 +77,15 @@ export function IdentitySettingsPage() {
                         setBirthDay(d ? String(parseInt(d)) : '');
                     }
 
-                    // ★修正: 分割されたデータを受け取ってセットする
                     setZipCode(data.zipCode || '');
                     setPrefecture(data.prefecture || '');
                     setCity(data.city || '');
-                    setAddressLine(data.address || ''); // ここは番地のみが入ってくる
+                    setAddressLine(data.address || '');
 
                     setHasIdentityDoc(data.hasIdentityDoc || false);
                 }
             } catch (err) {
-                // ...
+                // error handling
             } finally {
                 setLoading(false);
             }
@@ -96,8 +93,6 @@ export function IdentitySettingsPage() {
         fetchProfile();
     }, []);
 
-    // --- ファイル選択ハンドラーの定義 ---
-    // ★ここが大事！コンポーネント内で定義する
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
@@ -108,19 +103,18 @@ export function IdentitySettingsPage() {
 
     // --- 保存処理 (PUT) ---
     const handleSaveAll = async () => {
-        // ... (エラーリセットなどはそのまま) ...
+        setIsSaving(true);
+        setError('');
+        setSuccessMsg('');
 
         try {
             const promises = [];
 
-            // 1. プロフィール更新
             let birthDateStr = '';
             if (birthYear && birthMonth && birthDay) {
                 birthDateStr = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
             }
 
-            // ★修正: 住所をスペース区切りで結合する
-            // 結合例: "100-0001 東京都 千代田区 1-1-1"
             const fullAddress = `${zipCode} ${prefecture} ${city} ${addressLine}`.trim(); 
 
             const profileData = {
@@ -128,7 +122,7 @@ export function IdentitySettingsPage() {
                 firstName,
                 birthDate: birthDateStr,
                 email,
-                address: fullAddress, // ★結合した住所を送る
+                address: fullAddress,
                 password: newPassword || undefined
             };
 
@@ -146,7 +140,6 @@ export function IdentitySettingsPage() {
             });
             promises.push(profilePromise);
 
-            // 2. 書類アップロード (Hiedaさん仕様: Base64変換)
             if (file) {
                 const reader = new FileReader();
                 const filePromise = new Promise((resolve, reject) => {
@@ -179,7 +172,6 @@ export function IdentitySettingsPage() {
             setNewPassword('');
             setConfirmPassword('');
             
-            // アップロード成功時にフラグを更新
             if (file) setHasIdentityDoc(true);
             
         } catch (err: any) {
@@ -191,19 +183,19 @@ export function IdentitySettingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                <p>読み込み中...</p>
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
+                <p className="text-gray-500">読み込み中...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto overflow-x-hidden">
+        <div className="min-h-screen bg-[#F8FAFC] font-sans">
+            <div className="max-w-2xl mx-auto min-h-screen flex flex-col bg-white shadow-sm relative">
+                
                 <TitleHeader title="プロフィール設定" backPath="/settings" />
                 
-                <main className="p-4 space-y-6 flex-1 pb-20"> 
+                <main className="p-4 sm:p-6 space-y-6 flex-1 pb-32"> 
 
                     {/* 説明ヘッダー */}
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start space-x-3">
@@ -220,10 +212,9 @@ export function IdentitySettingsPage() {
 
                     {/* 基本情報 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-gray-600 mb-4 font-medium">基本情報</h3>
+                        <h3 className="text-gray-600 mb-4 font-medium border-l-4 border-blue-500 pl-3">基本情報</h3>
                         
                         <div className="space-y-4">
-                            {/* 氏名 */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">氏名</label>
                                 <div className="flex space-x-2">
@@ -232,19 +223,18 @@ export function IdentitySettingsPage() {
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
                                         placeholder="姓"
-                                        className="flex-1 min-w-0 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="flex-1 min-w-0 bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                                     />
                                     <input 
                                         type="text" 
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
                                         placeholder="名"
-                                        className="flex-1 min-w-0 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="flex-1 min-w-0 bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                                     />
                                 </div>
                             </div>
 
-                            {/* 生年月日 */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">生年月日</label>
                                 <div className="flex space-x-2">
@@ -253,21 +243,21 @@ export function IdentitySettingsPage() {
                                         value={birthYear}
                                         onChange={(e) => setBirthYear(e.target.value)}
                                         placeholder="YYYY"
-                                        className="flex-1 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none min-w-0"
+                                        className="flex-1 bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none min-w-0"
                                     />
                                     <input 
                                         type="number" 
                                         value={birthMonth}
                                         onChange={(e) => setBirthMonth(e.target.value)}
                                         placeholder="MM"
-                                        className="w-20 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                        className="w-20 bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                     />
                                     <input 
                                         type="number" 
                                         value={birthDay}
                                         onChange={(e) => setBirthDay(e.target.value)}
                                         placeholder="DD"
-                                        className="w-20 bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                        className="w-20 bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                     />
                                 </div>
                             </div>
@@ -276,7 +266,7 @@ export function IdentitySettingsPage() {
 
                     {/* 連絡先 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-gray-600 mb-4 font-medium">連絡先</h3>
+                        <h3 className="text-gray-600 mb-4 font-medium border-l-4 border-blue-500 pl-3">連絡先</h3>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">メールアドレス</label>
@@ -284,7 +274,7 @@ export function IdentitySettingsPage() {
                                     type="email" 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                         </div>
@@ -292,16 +282,15 @@ export function IdentitySettingsPage() {
 
                     {/* 住所 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-gray-600 mb-4 font-medium">住所</h3>
+                        <h3 className="text-gray-600 mb-4 font-medium border-l-4 border-blue-500 pl-3">住所</h3>
                         <div className="space-y-4">
-                            {/* 郵便番号などは入力してもDBに保存されませんが、UIとして残しておきます */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">郵便番号</label>
                                 <input 
                                     type="text" 
                                     value={zipCode}
                                     onChange={(e) => setZipCode(e.target.value)}
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                             <div className="flex space-x-2">
@@ -311,7 +300,7 @@ export function IdentitySettingsPage() {
                                         type="text" 
                                         value={prefecture}
                                         onChange={(e) => setPrefecture(e.target.value)}
-                                        className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                        className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -320,18 +309,17 @@ export function IdentitySettingsPage() {
                                         type="text" 
                                         value={city}
                                         onChange={(e) => setCity(e.target.value)}
-                                        className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                        className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                     />
                                 </div>
                             </div>
-                            {/* ★ここがメインの住所欄になります */}
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">番地・建物名</label>
                                 <input 
                                     type="text" 
                                     value={addressLine}
                                     onChange={(e) => setAddressLine(e.target.value)}
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                         </div>
@@ -339,7 +327,7 @@ export function IdentitySettingsPage() {
 
                     {/* パスワード変更 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-gray-600 mb-4 font-medium">パスワード変更</h3>
+                        <h3 className="text-gray-600 mb-4 font-medium border-l-4 border-blue-500 pl-3">パスワード変更</h3>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs text-gray-500 mb-1 ml-1">現在のパスワード</label>
@@ -348,7 +336,7 @@ export function IdentitySettingsPage() {
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                             <div>
@@ -358,7 +346,7 @@ export function IdentitySettingsPage() {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="変更する場合のみ入力"
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                             <div>
@@ -368,24 +356,28 @@ export function IdentitySettingsPage() {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="確認のため再入力"
-                                    className="w-full bg-gray-100 rounded-lg px-4 py-3 text-gray-700 outline-none"
+                                    className="w-full bg-gray-50 rounded-lg px-4 py-3 text-gray-700 border border-gray-200 outline-none"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    {/* 本人確認書類アップロード */}
+                    {/* 本人確認書類 */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 className="text-gray-600 mb-2 font-medium">本人確認書類</h3>
-                        <p className="text-xs text-gray-500 mb-4">
+                        <h3 className="text-gray-600 mb-2 font-medium border-l-4 border-blue-500 pl-3">本人確認書類</h3>
+                        <p className="text-xs text-gray-500 mb-4 ml-3">
                             運転免許証、パスポート、マイナンバーカードのいずれかをアップロードしてください
                         </p>
                         
-                        <label className="flex items-center justify-center w-full bg-white border border-gray-300 rounded-lg px-4 py-3 cursor-pointer hover:bg-gray-50 transition">
-                            <FileIcon />
-                            <span className="text-gray-700 font-medium">
-                                {file ? file.name : '書類をアップロード'}
-                            </span>
+                        <label className="flex items-center justify-center w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl px-4 py-6 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition group">
+                            <div className="flex flex-col items-center">
+                                <div className="text-blue-500 group-hover:scale-110 transition-transform">
+                                    <FileIcon />
+                                </div>
+                                <span className="text-gray-600 font-medium text-sm mt-2">
+                                    {file ? file.name : '書類を選択する'}
+                                </span>
+                            </div>
                             <input 
                                 type="file" 
                                 accept="image/*" 
@@ -395,24 +387,24 @@ export function IdentitySettingsPage() {
                         </label>
                     </div>
 
-                    {error && <p className="text-red-500 text-sm font-bold text-center">{error}</p>}
-                    {successMsg && <p className="text-green-500 text-sm font-bold text-center">{successMsg}</p>}
+                    {error && <p className="text-red-500 text-sm font-bold text-center bg-red-50 py-2 rounded-lg">{error}</p>}
+                    {successMsg && <p className="text-green-500 text-sm font-bold text-center bg-green-50 py-2 rounded-lg">{successMsg}</p>}
 
-                    {/* 保存ボタン */}
-                    <div className="sticky bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-sm border-t border-gray-200 mt-4 -mx-4 mb-[-1rem]">
-                        <button 
-                            onClick={handleSaveAll}
-                            disabled={isSaving}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition disabled:opacity-50"
-                        >
-                            {isSaving ? '保存中...' : '変更を保存'}
-                        </button>
-                    </div>
                 </main>
+
+                {/* 保存ボタン - max-w-2xl内に収まるように配置 */}
+                <div className="sticky bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100">
+                    <button 
+                        onClick={handleSaveAll}
+                        disabled={isSaving}
+                        className="max-w-xl mx-auto block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition disabled:opacity-50 active:scale-[0.98]"
+                    >
+                        {isSaving ? '保存中...' : '変更を保存'}
+                    </button>
+                </div>
             </div>
         </div>
     );
 }
 
 export default IdentitySettingsPage;
-// % End

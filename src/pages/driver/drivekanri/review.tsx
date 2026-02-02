@@ -7,7 +7,7 @@ import { getApiUrl } from "@/config/api";
 
 export default function PassengerReviewPage() {
   const router = useRouter();
-  
+
   // 1. URLパラメータからは募集IDのみを受け取る
   const { recruitmentId } = router.query;
 
@@ -30,16 +30,16 @@ export default function PassengerReviewPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(getApiUrl('/api/reviews'), {
-        method: 'POST',
+      const response = await fetch(getApiUrl("/api/reviews"), {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           recruitment_id: Number(recruitmentId),
           rating: rating,
-          comment: comment
+          comment: comment,
         }),
       });
 
@@ -47,8 +47,14 @@ export default function PassengerReviewPage() {
       const data = await response.json();
 
       // ★ 追加: 二重投稿チェックロジック
-      if (response.ok && data.ok === false && data.status === "already_reviewed") {
-        alert("このドライブに対するレビューは既に投稿済みです。相手の評価が終わり次第、決済を反映させます。");
+      if (
+        response.ok &&
+        data.ok === false &&
+        data.status === "already_reviewed"
+      ) {
+        alert(
+          "このドライブに対するレビューは既に投稿済みです。相手の評価が終わり次第、決済を反映させます。"
+        );
         // 既に終わっているので、履歴（完了）画面へ飛ばす
         router.push("/driver/drivekanri/completion");
         return;
@@ -56,12 +62,11 @@ export default function PassengerReviewPage() {
 
       // 通常のエラーハンドリング
       if (!response.ok) {
-        throw new Error(data.detail || '送信に失敗しました');
+        throw new Error(data.detail || "送信に失敗しました");
       }
 
       alert("レビューを送信しました。");
       router.push("/driver/drivekanri/completion");
-
     } catch (error: any) {
       console.error(error);
       alert(error.message || "エラーが発生しました");
@@ -71,36 +76,45 @@ export default function PassengerReviewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      {/* スマホ画面外枠 */}
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-white overflow-y-auto rounded-[2rem]">
+    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更。元の白背景や影のデザインを維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-200">
         
-        {/* Header */}
-        <div className="px-4 py-3 flex items-center gap-3 border-b bg-white sticky top-0 z-10">
-          <button onClick={() => router.back()} disabled={isSubmitting} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+        {/* Header（元のデザインを維持） */}
+        <div className="w-full px-4 py-3 flex items-center gap-3 border-b bg-white sticky top-0 z-10">
+          <button
+            onClick={() => router.back()}
+            disabled={isSubmitting}
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          >
             <ArrowLeft size={20} />
           </button>
           <h1 className="font-semibold">レビュー</h1>
         </div>
 
-        <main className="p-6 space-y-8">
+        {/* メインエリア：幅を max-w-2xl に収まるように調整しつつ中身は維持 */}
+        <main className="w-full p-6 space-y-8 flex-grow">
           <div className="text-center mt-4">
             <h2 className="text-xl font-bold text-gray-800">ドライブの評価</h2>
-            <p className="text-sm text-gray-500 mt-2">相手の評価が終わり次第、決済を反映させます</p>
+            <p className="text-sm text-gray-500 mt-2">
+              相手の評価が終わり次第、決済を反映させます
+            </p>
           </div>
 
-          {/* 星評価セクション */}
+          {/* 星評価セクション（元のサイズ 48 を維持） */}
           <div className="flex justify-center gap-2 py-4">
             {[1, 2, 3, 4, 5].map((i) => (
-              <button 
-                key={i} 
+              <button
+                key={i}
                 onClick={() => setRating(i)}
                 disabled={isSubmitting}
                 type="button"
                 className="transition-transform active:scale-90"
               >
                 <Star
-                  size={40}
+                  size={48}
                   className={
                     i <= rating
                       ? "text-yellow-400 fill-yellow-400"
@@ -111,9 +125,11 @@ export default function PassengerReviewPage() {
             ))}
           </div>
 
-          {/* コメント入力セクション */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">Comment</label>
+          {/* コメント入力セクション（元のスタイルを維持） */}
+          <div className="space-y-2 w-full">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider pl-1">
+              Comment
+            </label>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -124,23 +140,27 @@ export default function PassengerReviewPage() {
             />
           </div>
 
-          {/* 送信ボタン */}
+          {/* 送信ボタン（元のボリューム感を維持） */}
           <div className="pt-4">
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || rating === 0}
               className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-[0.98]
-                ${isSubmitting || rating === 0 
-                  ? 'bg-gray-300 shadow-none cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 shadow-blue-100'}
-              `}
+                  ${
+                    isSubmitting || rating === 0
+                      ? "bg-gray-300 shadow-none cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 shadow-blue-100"
+                  }
+                `}
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   送信中...
                 </div>
-              ) : "レビューを確定する"}
+              ) : (
+                "レビューを確定する"
+              )}
             </button>
           </div>
         </main>

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { getApiUrl } from "@/config/api";
 
-/* ===== 型定義（趣味・目的・ライセンスを削除） ===== */
+/* ===== 型定義 ===== */
 type DriverProfile = {
   name: string;
   initial: string;
@@ -68,7 +68,7 @@ export default function DriverProfilePage() {
   /* ===== ローディング・エラー ===== */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center font-bold text-emerald-500">
         読み込み中...
       </div>
     );
@@ -76,129 +76,126 @@ export default function DriverProfilePage() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-red-500">
+      <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center text-red-500 font-bold">
         {error}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-
-        {/* ===== ヘッダー ===== */}
-        <header className="sticky top-0 z-10 bg-white border-b px-4 py-3 flex items-center justify-between">
-          <button onClick={() => router.back()}>
-            <ArrowLeft />
+    /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に制限。既存のシャドウや背景色を維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+        
+        {/* ヘッダー（そのままのデザインで枠幅に追従） */}
+        <header className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+          <button onClick={() => router.back()} className="p-1 hover:bg-slate-100 rounded-full transition-colors">
+            <ArrowLeft className="text-slate-600" />
           </button>
-          <h1 className="font-bold">マイページ</h1>
+          <h1 className="font-black text-slate-800 text-lg">マイページ</h1>
           <button
             onClick={() => router.push("/driver/mypage/edit")}
-            className="text-blue-600 flex items-center gap-1 text-sm"
+            className="bg-emerald-50 text-[#10B981] font-black px-4 py-1.5 rounded-full flex items-center gap-1 text-sm hover:bg-emerald-100 transition-all"
           >
-            <Pencil size={16} /> 編集
+            <Pencil size={14} /> 編集
           </button>
         </header>
 
-        <main className="p-4 space-y-4 pb-8">
+        <main className="w-full flex-1 p-5 space-y-5 pb-10">
 
           {/* ===== プロフィール概要 ===== */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center text-3xl font-bold text-green-600">
+          <section className="w-full bg-white rounded-3xl p-8 shadow-sm border border-slate-50 text-center">
+            <div className="w-24 h-24 bg-emerald-50 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl font-black text-[#10B981] shadow-inner">
               {profile.initial}
             </div>
-            <h2 className="text-xl font-bold">{profile.name}</h2>
+            <h2 className="text-2xl font-black text-slate-800 mb-6">{profile.name}</h2>
 
-            {/* 本人確認・免許証確認バッジを削除 */}
-
-            <div className="flex justify-around border-t pt-4 mt-4 text-sm">
-              <div>
-                <p className="font-bold text-lg">{profile.driveCount}</p>
-                <p className="text-gray-500">ドライブ回数</p>
+            <div className="w-full flex justify-around border-t border-slate-50 pt-6 text-center">
+              <div className="flex-1">
+                <p className="font-black text-xl text-slate-800">{profile.driveCount}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">ドライブ回数</p>
               </div>
-              <div>
-                <p className="font-bold text-lg flex items-center justify-center">
-                  <Star size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
+              <div className="flex-1 border-x border-slate-50">
+                <p className="font-black text-xl text-slate-800 flex items-center justify-center">
+                  <Star size={18} className="text-yellow-400 fill-yellow-400 mr-1" />
                   {profile.rating}
                 </p>
-                <p className="text-gray-500">評価</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">評価</p>
               </div>
-              <div>
-                <p className="font-bold text-lg">{profile.registeredAt}</p>
-                <p className="text-gray-500">登録日</p>
+              <div className="flex-1">
+                <p className="font-black text-xl text-slate-800">{profile.registeredAt}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">登録日</p>
               </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-8">
               <button
                 onClick={() => router.push("/driver/drivekanri/schedule")}
-                className="w-full flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"
+                className="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl px-5 py-4 shadow-inner"
               >
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <FileText className="text-green-600" />
+                <div className="flex items-center gap-3 text-sm font-black text-slate-700">
+                  <span className="p-2 bg-white rounded-xl shadow-sm"><FileText size={18} className="text-[#10B981]" /></span>
                   ドライブ管理
                 </div>
-                <span className="text-gray-400">›</span>
+                <span className="text-slate-300 font-bold text-xl">›</span>
               </button>
             </div>
           </section>
 
           {/* ===== 車両情報 ===== */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm text-sm">
-            <h3 className="font-bold text-gray-500 mb-3 flex items-center gap-2">
+          <section className="w-full bg-white rounded-3xl p-6 shadow-sm border border-slate-50">
+            <h3 className="font-black text-slate-400 text-xs uppercase tracking-wider mb-4 ml-1 flex items-center gap-2">
               <Car size={16} /> 車両情報
             </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-gray-500">車種</span>
-                <span className="font-medium">{profile.car.model}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">色</span>
-                <span className="font-medium">{profile.car.color}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">年式</span>
-                <span className="font-medium">{profile.car.year}年</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">ナンバー</span>
-                <span className="font-medium">{profile.car.number}</span>
-              </div>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { label: "車種", value: profile.car.model },
+                { label: "色", value: profile.car.color },
+                { label: "年式", value: `${profile.car.year}年` },
+                { label: "ナンバー", value: profile.car.number },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center p-3 bg-slate-50/50 rounded-2xl border border-slate-50">
+                  <span className="text-xs font-bold text-slate-400">{item.label}</span>
+                  <span className="text-sm font-black text-slate-700">{item.value}</span>
+                </div>
+              ))}
             </div>
           </section>
 
           {/* ===== 車両ルール ===== */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="font-bold text-gray-500 text-sm">車両ルール</h3>
-
-            {[
-              { label: "禁煙", icon: <XCircle className="text-red-500" />, on: profile.rules.smoking },
-              { label: "ペット可", icon: <PawPrint className="text-orange-500" />, on: profile.rules.pet },
-              { label: "飲食OK", icon: <AlertTriangle className="text-yellow-500" />, on: profile.rules.food },
-              { label: "音楽OK", icon: <Music className="text-purple-500" />, on: profile.rules.music },
-            ].map((item) => (
-              <div key={item.label} className="flex justify-between items-center">
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  {item.icon}
-                  {item.label}
+          <section className="w-full bg-white rounded-3xl p-6 shadow-sm border border-slate-50 space-y-4">
+            <h3 className="font-black text-slate-400 text-xs uppercase tracking-wider ml-1">車両ルール</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { label: "禁煙", icon: <XCircle size={18} className="text-red-500" />, on: profile.rules.smoking },
+                { label: "ペット可", icon: <PawPrint size={18} className="text-orange-500" />, on: profile.rules.pet },
+                { label: "飲食OK", icon: <AlertTriangle size={18} className="text-yellow-500" />, on: profile.rules.food },
+                { label: "音楽OK", icon: <Music size={18} className="text-purple-500" />, on: profile.rules.music },
+              ].map((item) => (
+                <div key={item.label} className="flex justify-between items-center p-3 bg-slate-50/50 rounded-2xl border border-slate-50">
+                  <div className="flex items-center gap-3 text-sm font-black text-slate-700">
+                    <span className="p-2 bg-white rounded-xl shadow-sm">{item.icon}</span>
+                    {item.label}
+                  </div>
+                  <div className={`w-12 h-7 rounded-full px-1 flex items-center transition-all duration-300 ${item.on ? "bg-[#10B981]" : "bg-slate-300"}`}>
+                    <div className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${item.on ? "translate-x-5" : ""}`} />
+                  </div>
                 </div>
-                <div className={`w-11 h-6 rounded-full px-1 flex items-center transition-colors ${item.on ? "bg-blue-600" : "bg-gray-300"}`}>
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${item.on ? "translate-x-5" : ""}`} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </section>
 
           {/* ===== 自己紹介 ===== */}
-          <section className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-500 text-sm mb-2">自己紹介</h3>
-            <p className="text-sm leading-relaxed whitespace-pre-wrap">
-              {profile.introduction}
-            </p>
+          <section className="w-full bg-white rounded-3xl p-6 shadow-sm border border-slate-50">
+            <h3 className="font-black text-slate-400 text-xs uppercase tracking-wider mb-3 ml-1">自己紹介</h3>
+            <div className="w-full bg-slate-50/50 p-4 rounded-2xl border border-slate-50">
+              <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {profile.introduction || "自己紹介が設定されていません。"}
+              </p>
+            </div>
           </section>
-
-          {/* 趣味・目的・設定 セクションを削除 */}
 
         </main>
       </div>

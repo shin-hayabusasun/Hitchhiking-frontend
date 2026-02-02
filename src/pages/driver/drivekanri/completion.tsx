@@ -1,5 +1,3 @@
-// src/pages/driver/drivekanri/completion.tsx
-
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ArrowLeft } from "lucide-react";
@@ -57,20 +55,25 @@ export default function DriveCompletionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 text-gray-800">
-      {/* スマホ外枠 */}
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-50 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto rounded-[2rem]">
-
-        {/* ヘッダー */}
-        <header className="sticky top-0 bg-white z-10 border-b px-4 py-3 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
+    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更し、スマホ風の枠組みを維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-200">
+        
+        {/* ヘッダー（元のデザインとボタンサイズをそのまま維持） */}
+        <header className="sticky top-0 bg-white z-10 border-b px-4 py-3 flex items-center gap-3 w-full">
+          <button
+            onClick={() => router.back()}
+            className="p-1 hover:bg-gray-100 rounded-full"
+          >
             <ArrowLeft />
           </button>
           <h1 className="font-bold">ドライブ管理</h1>
         </header>
 
-        {/* タブ */}
-        <div className="px-4 py-3">
+        {/* タブ（元のデザイン、フォントサイズ、色を維持） */}
+        <div className="w-full px-4 py-3 bg-white">
           <div className="flex bg-gray-200 rounded-full text-sm p-1 font-medium">
             <button
               onClick={() => router.push("/driver/drivekanri/schedule")}
@@ -90,11 +93,15 @@ export default function DriveCompletionPage() {
           </div>
         </div>
 
-        {/* 完了ドライブ一覧 */}
-        <main className="p-4 space-y-4">
+        {/* 完了ドライブ一覧（DriveStatusCard の中身も変更なし） */}
+        <main className="w-full p-4 space-y-4 flex-grow">
           {drives.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-400 text-sm">完了したドライブは<br />ありません</p>
+              <p className="text-gray-400 text-sm">
+                完了したドライブは
+                <br />
+                ありません
+              </p>
             </div>
           ) : (
             drives.map((drive) => (
@@ -107,13 +114,15 @@ export default function DriveCompletionPage() {
                 price={drive.price}
                 driver={drive.driver}
                 onReview={() =>
-                  router.push(`/driver/drivekanri/review?recruitmentId=${drive.id}`)
+                  router.push(
+                    `/driver/drivekanri/review?recruitmentId=${drive.id}`
+                  )
                 }
               />
             ))
           )}
         </main>
-        
+
         <div className="h-10" />
       </div>
     </div>

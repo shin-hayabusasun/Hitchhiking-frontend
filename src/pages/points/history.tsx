@@ -28,7 +28,7 @@ type PointHistory = {
   title: string;
   date: string;
   point: number;
-  type: 'use'; // 今回は注文履歴（交換）なので'use'固定
+  type: 'use'; 
   status: 'preparing' | 'shipped' | 'delivered';
 };
 
@@ -39,50 +39,47 @@ export default function PointHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-useEffect(() => {
-  const fetchOrders = async () => {
-    try {
-      // 1. URLをバックエンドの絶対パスに変更し、credentialsを追加
-      const response = await fetch(getApiUrl('/api/points/orders'), {
-        method: 'GET',
-        credentials: 'include', // クッキー(session_id)を送信するために必須
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(getApiUrl('/api/points/orders'), {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.warn("ログインしていないため履歴を取得できません");
-          return;
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.warn("ログインしていないため履歴を取得できません");
+            return;
+          }
+          throw new Error('Fetch failed');
         }
-        throw new Error('Fetch failed');
+        
+        const data = await response.json();
+        
+        const mappedOrders: PointHistory[] = data.orders.map((order: any) => ({
+          id: order.id,
+          title: order.productName,
+          date: order.orderDate,
+          point: -order.points,
+          type: 'use',
+          status: order.status === 'pending' ? 'preparing' : order.status,
+        }));
+
+        setHistories(mappedOrders);
+      } catch (err) {
+        console.error('注文履歴の取得に失敗しました:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
-      
-      const data = await response.json();
-      
-      // 2. APIのレスポンス（OrderItemResponse）をフロントの型（PointHistory）に変換
-      const mappedOrders: PointHistory[] = data.orders.map((order: any) => ({
-        id: order.id,
-        title: order.productName,
-        date: order.orderDate,
-        point: -order.points, // 使用ポイントなのでマイナスに
-        type: 'use',
-        // FastAPI側の "pending" をフロント側の表示用 "preparing" に変換
-        status: order.status === 'pending' ? 'preparing' : order.status,
-      }));
+    };
 
-      setHistories(mappedOrders);
-    } catch (err) {
-      console.error('注文履歴の取得に失敗しました:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchOrders();
-}, []);
+    fetchOrders();
+  }, []);
 
   const filtered = histories.filter((h) => {
     if (tab === 'all') return true;
@@ -90,9 +87,13 @@ useEffect(() => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto">
-        {/* ヘッダー */}
+    /* ★ 背景を w-full で画面一杯に広げる */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更し、中央寄せ。元の枠デザイン（border, shadow）は維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 flex flex-col relative overflow-y-auto">
+        
+        {/* ヘッダー（元のデザインを維持） */}
         <header className="bg-white px-4 py-3 flex items-center gap-3 border-b sticky top-0 z-10">
           <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
             <ArrowLeft />
@@ -100,7 +101,7 @@ useEffect(() => {
           <h1 className="font-bold text-lg">交換履歴</h1>
         </header>
 
-        {/* タブ */}
+        {/* タブ（元のデザインとボタンサイズを維持） */}
         <div className="px-3 py-3 bg-white border-b sticky top-[53px] z-10">
           <div className="flex bg-gray-200 rounded-full text-xs font-medium overflow-hidden">
             {[
@@ -124,7 +125,7 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* 履歴一覧 */}
+        {/* 履歴一覧（元のカードデザインを維持） */}
         <main className="p-4 space-y-3">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-2">

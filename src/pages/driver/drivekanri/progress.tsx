@@ -8,7 +8,7 @@ import { getApiUrl } from "@/config/api";
 // 型定義
 interface OngoingDrive {
   id: string;
-  application_id: number; // 申請ID（取引ID）
+  application_id: number;
   from_loc: string;
   to_loc: string;
   datetime: string;
@@ -25,12 +25,11 @@ export default function Progress() {
   const [drives, setDrives] = useState<OngoingDrive[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- データ取得処理を関数として独立させる ---
   const fetchProgress = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(getApiUrl("/api/driver/progress"), {
-        credentials: "include", // セッション情報を送信
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -50,7 +49,6 @@ export default function Progress() {
     fetchProgress();
   }, [fetchProgress]);
 
-  // --- ドライブ完了 API の呼び出し ---
   const handleComplete = async (id: string) => {
     if (!confirm("このドライブを完了状態にしますか？")) return;
 
@@ -62,7 +60,7 @@ export default function Progress() {
         },
         credentials: "include",
         body: JSON.stringify({
-          driveId: parseInt(id, 10), // APIの型に合わせて数値に変換
+          driveId: parseInt(id, 10),
         }),
       });
 
@@ -70,7 +68,6 @@ export default function Progress() {
 
       if (response.ok && result.ok) {
         alert("ドライブを完了しました。お疲れ様でした！");
-        // リストを再取得して、完了した項目を画面から消す
         await fetchProgress();
       } else {
         alert(result.message || "完了処理に失敗しました");
@@ -90,42 +87,56 @@ export default function Progress() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 text-gray-800">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto rounded-[2rem]">
+    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更し、スマホ風の枠組みとデザインを維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-200">
         
-        {/* ヘッダー */}
-        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100">
-          <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
+        {/* ヘッダー（元のデザイン、フォントサイズをそのまま維持） */}
+        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100 w-full">
+          <button
+            onClick={() => router.back()}
+            className="p-1 hover:bg-gray-100 rounded-full"
+          >
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-lg font-bold">ドライブ管理</h1>
         </div>
 
-        {/* ステータスタブ */}
-        <div className="mx-4 mt-4 bg-gray-200 rounded-full p-1 flex text-sm font-medium">
-          <button
-            onClick={() => router.push("/driver/drivekanri/schedule")}
-            className="flex-1 py-2 text-center text-gray-500"
-          >
-            予定中
-          </button>
-          <div className="flex-1 bg-white rounded-full py-2 text-center font-bold shadow-sm text-blue-600">
-            進行中
+        {/* ステータスタブ（元のデザインとボタンサイズをそのまま維持） */}
+        <div className="w-full px-4 pt-4">
+          <div className="bg-gray-200 rounded-full p-1 flex text-sm font-medium">
+            <button
+              onClick={() => router.push("/driver/drivekanri/schedule")}
+              className="flex-1 py-2 text-center text-gray-500"
+            >
+              予定中
+            </button>
+            <div className="flex-1 bg-white rounded-full py-2 text-center font-bold shadow-sm text-blue-600">
+              進行中
+            </div>
+            <button
+              onClick={() => router.push("/driver/drivekanri/completion")}
+              className="flex-1 py-2 text-center text-gray-500"
+            >
+              完了
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/driver/drivekanri/completion")}
-            className="flex-1 py-2 text-center text-gray-500"
-          >
-            完了
-          </button>
+          <p className="mt-2 text-gray-400 text-[10px] px-1">
+            あなたの募集とあなたが承認した同乗者募集の両方あります
+          </p>
         </div>
-        <p className="px-5 mt-2 text-gray-400 text-[10px]">あなたの募集とあなたが承認した同乗者募集の両方あります</p>
 
-        {/* コンテンツ */}
-        <div className="p-4 space-y-4">
+        {/* コンテンツエリア（Cardのデザイン等は一切変更なし） */}
+        <main className="w-full p-4 space-y-4 flex-grow">
           {drives.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-400 text-sm">現在進行中のドライブは<br />ありません</p>
+              <p className="text-gray-400 text-sm">
+                現在進行中のドライブは
+                <br />
+                ありません
+              </p>
             </div>
           ) : (
             drives.map((drive) => (
@@ -138,11 +149,11 @@ export default function Progress() {
                 price={drive.price}
                 driver={drive.driver}
                 onChat={() => router.push(`/chat/${drive.application_id}`)}
-                onComplete={() => handleComplete(drive.id)} // ここで実行
+                onComplete={() => handleComplete(drive.id)}
               />
             ))
           )}
-        </div>
+        </main>
 
         <div className="h-10" />
       </div>

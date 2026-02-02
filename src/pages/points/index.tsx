@@ -40,10 +40,13 @@ export default function PointsHomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] h-[800px] bg-white shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto rounded-[3rem]">
+    /* ★ 背景を w-full で画面一杯に広げる */
+    <div className="w-full min-h-screen bg-gray-50 flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に変更し中央寄せ。元の枠デザイン（border, shadow, rounded）を維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto flex flex-col">
         
-        {/* ヘッダー */}
+        {/* ヘッダー（元のデザインをそのまま維持） */}
         <header className="bg-white px-4 py-4 flex items-center gap-3 border-b sticky top-0 z-10">
           <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
             <ArrowLeft size={24} />
@@ -51,8 +54,8 @@ export default function PointsHomePage() {
           <h1 className="font-bold text-lg text-gray-800">売上・ポイント</h1>
         </header>
 
-        <main className="p-5 space-y-6">
-          {/* メインカード: 決済売上をメインに配置 */}
+        <main className="p-5 space-y-6 flex-1">
+          {/* メインカード: デザイン、グラデーション、テキストサイズを維持 */}
           <section className="bg-gradient-to-br from-indigo-600 to-purple-500 rounded-3xl p-6 shadow-lg text-white">
             <div className="flex items-center gap-2 mb-2 opacity-90">
               <Banknote size={18} />
@@ -80,7 +83,7 @@ export default function PointsHomePage() {
             </div>
           </section>
 
-          {/* ナビゲーション */}
+          {/* ナビゲーション：ボタンの大きさやアイコン背景色をそのまま維持 */}
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => router.push('/points/exchange')}

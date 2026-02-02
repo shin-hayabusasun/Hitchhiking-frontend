@@ -1,66 +1,35 @@
-// % Start(小松憲生)
 // 商品情報管理画面
-
-import { useEffect, useState, useRef } from 'react'; // ★ useRefを追加
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Product } from '@/types';
 import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductHeader } from '@/components/admin/products/ProductHeader';
 import { ProductFormModal } from '@/components/admin/products/ProductFormModal';
 import { getApiUrl } from '@/config/api';
+import { Loader2 } from 'lucide-react';
 
-// ★ここにサンプルデータを定義します（IDは不要です）
 const SAMPLE_DATA = [
-    {
-        name: '10円分のクオカード（テスト）',
-        description: '全国の加盟店で使えるクオカード',
-        points: 10,
-        stock: 5,
-    },
-    {
-        name: 'Amazonギフト券 1,000円分',
-        description: 'すぐに使えるAmazonギフト券',
-        points: 1000,
-        stock: 50,
-    },
-    {
-        name: 'コンビニコーヒー無料券',
-        description: 'セブン-イレブンで使えるコーヒー券',
-        points: 150,
-        stock: 100,
-    },
-    {
-        name: 'スターバックスカード 500円分',
-        description: 'スタバで使えるプリペイドカード',
-        points: 500,
-        stock: 30,
-    },
-    {
-        name: 'クオカード 3,000円分',
-        description: '全国の加盟店で使えるクオカード',
-        points: 3000,
-        stock: 0,
-    }
+    { name: '10円分のクオカード（テスト）', description: '全国の加盟店で使えるクオカード', points: 10, stock: 5 },
+    { name: 'Amazonギフト券 1,000円分', description: 'すぐに使えるAmazonギフト券', points: 1000, stock: 50 },
+    { name: 'コンビニコーヒー無料券', description: 'セブン-イレブンで使えるコーヒー券', points: 150, stock: 100 },
+    { name: 'スターバックスカード 500円分', description: 'スタバで使えるプリペイドカード', points: 500, stock: 30 },
+    { name: 'クオカード 3,000円分', description: '全国の加盟店で使えるクオカード', points: 3000, stock: 0 }
 ];
-
 
 export function ProductManagementPage() {
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    // ★追加: データ投入が走ったかを記録するフラグ
     const hasSeeded = useRef(false);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-    // ★追加: サンプルデータを自動投入する関数
+    // サンプルデータを自動投入する関数
     async function seedSampleData() {
         console.log("🌱 データベースが空のため、サンプルデータを投入します...");
         try {
-            // SAMPLE_DATAを1つずつループして登録APIに投げる
             for (const item of SAMPLE_DATA) {
                 await fetch(getApiUrl('/api/admin/products'), {
                     method: 'POST',
@@ -75,7 +44,6 @@ export function ProductManagementPage() {
         }
     }
 
-    // ★重要: useEffect の外に定義する
     async function fetchProducts() {
         try {
             const response = await fetch(getApiUrl('/api/admin/products'), {
@@ -87,27 +55,17 @@ export function ProductManagementPage() {
             const data = await response.json();
             const currentList = data.products || [];
 
-            // ★ここが修正ポイント
-            // もし取得したリストが0件なら、サンプルデータを投入してから再取得する
             if (currentList.length === 0) {
                 if (hasSeeded.current) return; 
-                
-                // 投入処理を開始する前にフラグを立てる
                 hasSeeded.current = true;
-
                 await seedSampleData();
-                
-                // 投入後に、もう一度だけデータを取得して画面を更新
                 const retryResponse = await fetch(getApiUrl('/api/admin/products'), {
-
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });
                 const retryData = await retryResponse.json();
                 setProducts(retryData.products || []);
-                return; // ここで終了
             } else {
-                // 通常のケース: 取得したデータをセット
                 setProducts(currentList);
             }
         } catch (err) {
@@ -118,7 +76,6 @@ export function ProductManagementPage() {
         }
     }
 
-    // 初回読み込みはここで呼ぶ
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -156,15 +113,11 @@ export function ProductManagementPage() {
             if (response.ok) {
                 alert(editingProduct ? '更新しました' : '登録しました');
                 setIsModalOpen(false);
-                
-                // ★これでエラーにならずに再読み込みできるはずです
                 await fetchProducts();
-                
             } else {
                 alert('処理に失敗しました');
             }
         } catch (error) {
-            // エラー内容をコンソールに出して確認できるようにする
             console.error("エラーの詳細:", error);
             alert('エラーが発生しました。コンソール(F12)を確認してください。');
         }
@@ -175,7 +128,6 @@ export function ProductManagementPage() {
         try {
             await fetch(getApiUrl(`/api/admin/products/${id}`), { 
                 method: 'DELETE' ,
-                
             });
             setProducts(prev => prev.filter(p => p.id !== id));
             alert('削除しました');
@@ -190,26 +142,32 @@ export function ProductManagementPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                <div className="w-full max-w-[390px] aspect-[9/19] bg-white shadow-2xl rounded-[3rem] flex items-center justify-center">
-                    <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                </div>
+            <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+                <p className="text-blue-600 font-bold">商品を読み込み中...</p>
             </div>
         );
     }
 
     return (
-        
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                <ProductHeader onBack={handleBack} onCreate={handleCreate} />
-                <div className="p-5 pb-20"> 
+        <div className="min-h-screen bg-white">
+            {/* 【修正後】角丸を削除し、全画面に青のグラデーションを適用 */}
+            <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+                
+                {/* ヘッダーエリア：TitleHeaderのラッパー */}
+                <div className="sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/50">
+                    <ProductHeader onBack={handleBack} onCreate={handleCreate} />
+                </div>
+
+                <div className="flex-1 p-5 pb-24 max-w-4xl mx-auto w-full"> 
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+                        <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-bold flex items-center shadow-sm">
+                            <span className="mr-2">⚠️</span>
                             {error}
                         </div>
                     )}
-                    <div className="space-y-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {products.map((product) => (
                             <ProductCard 
                                 key={product.id} 
@@ -219,12 +177,15 @@ export function ProductManagementPage() {
                             />
                         ))}
                     </div>
+
                     {products.length === 0 && !error && (
-                        <div className="text-center py-10 text-gray-400">
-                            <p>商品がありません</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4">
+                            <div className="w-16 h-16 bg-white/40 rounded-full flex items-center justify-center text-2xl shadow-sm">🎁</div>
+                            <p className="text-sm font-bold opacity-70">商品がありません</p>
                         </div>
                     )}
                 </div>
+
                 <ProductFormModal 
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
@@ -237,4 +198,3 @@ export function ProductManagementPage() {
 }
 
 export default ProductManagementPage;
-// % End

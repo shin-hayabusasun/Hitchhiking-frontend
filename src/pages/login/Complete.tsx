@@ -4,19 +4,20 @@
 import { useRouter } from 'next/router';
 
 export function CompletePage() {
-	const router = useRouter();
+    const router = useRouter();
 
-	function handleLoginClick() {
-		router.push('/login');
-	}
+    function handleLoginClick() {
+        router.push('/login');
+    }
 
-	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    return (
+        /* 背景色を全体に適用し、中央配置にする構成に変更 */
+        <div className="min-h-screen bg-gradient-to-b from-sky-200 to-white flex items-center justify-center p-4 font-sans text-gray-800">
             
-            {/* ★ スマホ本体を模したコンテナ：ご指定のクラスを適用 */}
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+            {/* ★ サイズのみ変更：スマホ枠の制約を外し、max-w-2xl でゆったりとしたサイズに拡張 */}
+            <div className="w-full max-w-2xl flex flex-col relative">
                 
-                <div className="flex flex-col items-center justify-center h-full px-6 py-10">
+                <div className="flex flex-col items-center justify-center px-6 py-10">
                     
                     {/* 1. アプリロゴセクション */}
                     <div className="flex flex-col items-center mb-10">
@@ -29,11 +30,11 @@ export function CompletePage() {
                                 <circle cx="17" cy="17" r="2" />
                             </svg>
                         </div>
-                        <h2 className="text-blue-600 font-bold text-lg tracking-wider">相乗りサービス</h2>
+                        <h2 className="text-blue-600 font-black text-lg tracking-wider">相乗りサービス</h2>
                     </div>
 
                     {/* 2. メインカードセクション */}
-                    <div className="w-full bg-white rounded-[2.5rem] shadow-xl p-8 flex flex-col items-center">
+                    <div className="w-full bg-white rounded-[2.5rem] shadow-xl p-8 md:p-12 flex flex-col items-center">
                         
                         {/* 緑のチェックアイコン（画像中央） */}
                         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
@@ -45,23 +46,23 @@ export function CompletePage() {
                         </div>
 
                         {/* タイトルとメッセージ */}
-                        <h1 className="text-green-500 text-2xl font-bold mb-2">登録完了</h1>
-                        <p className="text-gray-600 font-medium mb-8">会員登録が完了しました</p>
+                        <h1 className="text-green-500 text-2xl md:text-3xl font-black mb-2">登録完了</h1>
+                        <p className="text-gray-600 font-bold mb-8">会員登録が完了しました</p>
 
-                        {/* 3. 本人確認審査の案内ボックス（画像の下部ボックス） */}
-                        <div className="w-full bg-blue-50/50 rounded-2xl p-5 mb-10 border border-blue-100/30">
-                            <p className="text-[12px] text-gray-500 text-center leading-relaxed font-medium">
+                        {/* 3. 本人確認審査の案内ボックス */}
+                        <div className="w-full bg-blue-50/50 rounded-2xl p-6 mb-10 border border-blue-100/30">
+                            <p className="text-sm text-gray-500 text-center leading-relaxed font-bold">
                                 本人確認書類の審査終了後に利用できます<br />
-                                <span className="block mt-2">
+                                <span className="block mt-2 text-blue-600">
                                     会員登録特典として100ポイントを付与しました!
                                 </span>
                             </p>
                         </div>
 
-                        {/* 4. ログイン画面へボタン（画像①） */}
+                        {/* 4. ログイン画面へボタン */}
                         <button
                             type="button"
-                            className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all"
+                            className="w-full max-w-sm bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-100 active:scale-[0.98] transition-all"
                             onClick={handleLoginClick}
                         >
                             ログイン画面へ
@@ -71,10 +72,9 @@ export function CompletePage() {
                 </div>
             </div>
         </div>
-	);
+    );
 }
 
 export default CompletePage;
 
 // % End
-

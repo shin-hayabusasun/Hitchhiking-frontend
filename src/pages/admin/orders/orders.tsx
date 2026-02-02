@@ -1,6 +1,4 @@
 // src/pages/admin/orders.tsx
-// 注文管理画面: 背景色を青グラデーションに変更、角丸削除
-
 import { useState, useEffect, useMemo } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { useRouter } from 'next/router';
@@ -64,13 +62,11 @@ export default function OrderManagementPage() {
     // 3. フィルタリングと検索ロジック
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
-            // タブによるフィルタ
             let matchesTab = true;
             if (activeTab === 'pending') matchesTab = order.status === 'pending';
             else if (activeTab === 'shipped') matchesTab = order.status === 'shipped';
             else if (activeTab === 'completed') matchesTab = order.status === 'completed';
             
-            // 検索ワードによるフィルタ
             const searchLower = searchQuery.toLowerCase();
             const matchesSearch = 
                 order.productName.toLowerCase().includes(searchLower) ||
@@ -90,28 +86,19 @@ export default function OrderManagementPage() {
         };
     }, [orders]);
 
-    const handleBack = () => {
-        router.push('/admin/dashboard');
-    };
-
     if (loading) return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="min-h-screen bg-sky-50 flex items-center justify-center">
             <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
         </div>
     );
 
     return (
         <div className="min-h-screen bg-white">
-            {/* ★修正ポイント: 
-               1. rounded-[3rem] を削除 (角丸なし)
-               2. bg-gray-50 を bg-gradient-to-b from-sky-200 to-white に変更 (青グラデーション)
-            */}
+            {/* 【修正後】角丸(rounded)を削除し、背景に青のグラデーションを適用 */}
             <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
                 
-                {/* ヘッダーエリア */}
-                {/* 背景を半透明(bg-white/50)にして背面の青色を透けさせます */}
+                {/* ヘッダーエリア：半透明にしてグラデーションを馴染ませる */}
                 <div className="bg-white/50 backdrop-blur-sm sticky top-0 z-20 pb-4 shadow-sm">
-                    
                     <TitleHeader title="注文管理" backPath="/admin/dashboard" />
                     
                     {/* 検索バー */}
@@ -122,10 +109,12 @@ export default function OrderManagementPage() {
                                 placeholder="注文番号・商品名で検索..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white/80 text-gray-700 text-sm font-bold rounded-2xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:font-medium"
+                                className="w-full bg-white/80 text-gray-700 text-sm font-bold rounded-2xl py-3.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:font-medium shadow-inner"
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -133,18 +122,18 @@ export default function OrderManagementPage() {
 
                 <div className="flex-1 overflow-y-auto p-5 scrollbar-hide pb-20">
                     
-                    {/* 3つの統計パネル */}
+                    {/* 3つの統計パネル：背景を透過させて統一感を出す */}
                     <div className="grid grid-cols-3 gap-3 mb-6">
-                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                        <div className="bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-white/50 flex flex-col items-center justify-center transition-transform active:scale-95">
                             <p className="text-[10px] text-gray-400 font-bold mb-1">総注文</p>
                             <p className="text-lg font-extrabold text-gray-800">{stats.total}</p>
                         </div>
-                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-yellow-100 flex flex-col items-center justify-center relative overflow-hidden">
+                        <div className="bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-yellow-100 flex flex-col items-center justify-center relative overflow-hidden transition-transform active:scale-95">
                             <div className="absolute top-0 right-0 w-8 h-8 bg-yellow-50 rounded-bl-full -mr-2 -mt-2"></div>
                             <p className="text-[10px] text-yellow-600 font-bold mb-1">対応待ち</p>
                             <p className="text-lg font-extrabold text-yellow-600">{stats.pending}</p>
                         </div>
-                        <div className="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
+                        <div className="bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-white/50 flex flex-col items-center justify-center transition-transform active:scale-95">
                             <p className="text-[10px] text-green-600 font-bold mb-1">完了済</p>
                             <p className="text-lg font-extrabold text-green-600">{stats.completed}</p>
                         </div>
@@ -161,10 +150,10 @@ export default function OrderManagementPage() {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 min-w-fit px-3 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all text-center ${
+                                className={`flex-1 min-w-fit px-4 py-2.5 rounded-xl text-xs font-black whitespace-nowrap transition-all text-center border ${
                                     activeTab === tab.id
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                        : 'bg-white/70 text-gray-500 border border-white/50 hover:bg-white'
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200 border-blue-600'
+                                        : 'bg-white/60 text-gray-500 border-white/50 hover:bg-white hover:border-white'
                                 }`}
                             >
                                 {tab.label}
@@ -180,9 +169,9 @@ export default function OrderManagementPage() {
                     )}
                     
                     {filteredOrders.length === 0 && !error ? (
-                        <div className="flex flex-col items-center justify-center py-10 text-gray-400 space-y-4">
-                            <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center text-2xl grayscale opacity-50">📦</div>
-                            <p className="text-sm font-bold">該当する注文がありません</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4">
+                            <div className="w-16 h-16 bg-white/40 rounded-full flex items-center justify-center text-2xl shadow-sm">📦</div>
+                            <p className="text-sm font-bold opacity-70">該当する注文がありません</p>
                         </div>
                     ) : (
                         <div className="space-y-3">

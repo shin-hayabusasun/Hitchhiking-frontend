@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
 import { getApiUrl } from '@/config/api';
-// 使わなくなったアイコン（Cigarette, Dog等）は整理し、Infoを追加
 import { Check, MapPin, Calendar, Clock, Users, DollarSign, Loader2, Info } from 'lucide-react';
 
 const CreateDrivePage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // useStateはそのまま保持（バックエンドへの送信形式を維持するため）
   const [formData, setFormData] = useState({
     departure: '',
     destination: '',
@@ -62,27 +60,34 @@ const CreateDrivePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100">
+    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
+    <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
+      
+      {/* ★ コンテンツを max-w-2xl に制限し、従来のカード感を維持 */}
+      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+        
+        {/* ヘッダー (そのまま維持) */}
+        <div className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100">
           <DriverHeader title="ドライブ作成" showBackButton={true} showNotification={false} showMyPage={false} />
         </div>
 
-        <main className="flex-1 px-5 pt-6 pb-24 space-y-6">
+        <main className="w-full flex-1 px-5 pt-6 pb-24 space-y-6">
           {/* ルート設定 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="w-full bg-white rounded-2xl p-5 shadow-sm space-y-4 border border-gray-50">
             <h2 className="text-xs font-bold text-slate-400 uppercase tracking-tight">ルート情報</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="text-[11px] font-bold text-slate-500 block mb-1">出発地 <span className="text-red-500 font-black ml-1">注意：自宅付近にしないでください</span></label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
+            <div className="space-y-4 w-full">
+              <div className="w-full">
+                <label className="text-[11px] font-bold text-slate-500 block mb-1">
+                  出発地 <span className="text-red-500 font-black ml-1">注意：自宅付近にしないでください</span>
+                </label>
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all w-full">
                   <MapPin className="w-4 h-4 text-slate-300 mr-3" />
                   <input type="text" placeholder="出発地を入力（例：高知駅）" className="bg-transparent w-full text-sm outline-none" value={formData.departure} onChange={e => setFormData({ ...formData, departure: e.target.value })} />
                 </div>
               </div>
-              <div>
+              <div className="w-full">
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">目的地</label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all">
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 border border-transparent focus-within:border-emerald-100 transition-all w-full">
                   <MapPin className="w-4 h-4 text-blue-500 mr-3" />
                   <input type="text" placeholder="目的地を入力（例：高知工科大学）" className="bg-transparent w-full text-sm outline-none" value={formData.destination} onChange={e => setFormData({ ...formData, destination: e.target.value })} />
                 </div>
@@ -91,19 +96,19 @@ const CreateDrivePage: React.FC = () => {
           </div>
 
           {/* 日時設定 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="w-full bg-white rounded-2xl p-5 shadow-sm space-y-4 border border-gray-50">
             <h2 className="text-xs font-bold text-slate-400 uppercase">日時</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="w-full">
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">出発日</label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 w-full">
                   <Calendar className="w-4 h-4 text-slate-300 mr-3" />
                   <input type="date" className="bg-transparent w-full text-sm outline-none" value={formData.departureDate} onChange={e => setFormData({ ...formData, departureDate: e.target.value })} />
                 </div>
               </div>
-              <div>
+              <div className="w-full">
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">出発時刻</label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 w-full">
                   <Clock className="w-4 h-4 text-slate-300 mr-3" />
                   <input type="time" className="bg-transparent w-full text-sm outline-none" value={formData.departureTime} onChange={e => setFormData({ ...formData, departureTime: e.target.value })} />
                 </div>
@@ -112,19 +117,19 @@ const CreateDrivePage: React.FC = () => {
           </div>
 
           {/* 金額・定員 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="w-full bg-white rounded-2xl p-5 shadow-sm space-y-4 border border-gray-50">
             <h2 className="text-xs font-bold text-slate-400 uppercase">詳細情報</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-2 gap-4 w-full">
+              <div className="w-full">
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">同乗可能人数</label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 w-full">
                   <Users className="w-4 h-4 text-slate-300 mr-3" />
                   <input type="number" className="bg-transparent w-full text-sm outline-none" value={formData.capacity} onChange={e => setFormData({ ...formData, capacity: Number(e.target.value) })} />
                 </div>
               </div>
-              <div>
+              <div className="w-full">
                 <label className="text-[11px] font-bold text-slate-500 block mb-1">料金 (円/人)</label>
-                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3">
+                <div className="flex items-center bg-slate-50 rounded-xl px-4 py-3 w-full">
                   <DollarSign className="w-4 h-4 text-slate-300 mr-3" />
                   <input type="number" className="bg-transparent w-full text-sm outline-none" value={formData.fee} onChange={e => setFormData({ ...formData, fee: Number(e.target.value) })} />
                 </div>
@@ -138,10 +143,10 @@ const CreateDrivePage: React.FC = () => {
             />
           </div>
 
-          {/* 車両ルール (表示の変更) */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+          {/* 車両ルール */}
+          <div className="w-full bg-white rounded-2xl p-5 shadow-sm space-y-3 border border-gray-50">
             <h2 className="text-xs font-bold text-slate-400 uppercase">車両ルール</h2>
-            <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 w-full">
               <Info className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
               <p className="text-xs text-slate-600 leading-relaxed">
                 車両条件はプロフィールの値を使います
@@ -149,7 +154,7 @@ const CreateDrivePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-6 w-full">
             <button
               onClick={handleCreate}
               disabled={isSubmitting}

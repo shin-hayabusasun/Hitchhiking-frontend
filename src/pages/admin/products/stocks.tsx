@@ -1,13 +1,13 @@
 // src/pages/admin/stocks.tsx
-
 import { useState, useEffect } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { StockStatsCard } from '@/components/admin/stock/StockStatsCard';
 import { StockItemCard } from '@/components/admin/stock/StockItemCard';
 import { Product, StockStats } from '@/types';
 import { getApiUrl } from '@/config/api';
+import { Loader2, PackageSearch } from 'lucide-react'; // アイコン追加
 
-const ALERT_THRESHOLD = 20; //警告値
+const ALERT_THRESHOLD = 20; // 警告値
 
 export function StockManagementPage() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -24,7 +24,6 @@ export function StockManagementPage() {
 
     async function fetchData() {
         try {
-            // ★修正: 2つのAPIを並行して呼び出す
             const [productsRes, salesRes] = await Promise.all([
                 fetch(getApiUrl('/api/admin/stocks'), { method: 'GET' }),
                 fetch(getApiUrl('/api/admin/stocks/sales'), { method: 'GET' })
@@ -34,14 +33,12 @@ export function StockManagementPage() {
                 throw new Error('Network response was not ok');
             }
 
-            // それぞれの結果をJSONにする
             const productsData = await productsRes.json();
             const salesData = await salesRes.json();
 
             const productList: Product[] = productsData.products || [];
             const salesCount = salesData.total_sales || 0;
 
-            // 統計情報の計算
             const totalStock = productList.reduce((sum, p) => sum + p.stock, 0);
             const warningCount = productList.filter(p => p.stock < ALERT_THRESHOLD).length;
 
@@ -49,7 +46,7 @@ export function StockManagementPage() {
             setStats({
                 totalStock,
                 warningCount,
-                totalSales: salesCount // APIから取得した値
+                totalSales: salesCount
             });
 
         } catch (err) {
@@ -79,7 +76,7 @@ export function StockManagementPage() {
                 alert(`在庫を補充しました。現在庫: ${data.current_stock}`);
                 setReplenishId(null);
                 setReplenishAmount('');
-                fetchData(); // 再取得
+                fetchData();
             } else {
                 alert('補充に失敗しました');
             }
@@ -90,43 +87,56 @@ export function StockManagementPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                <div className="w-full max-w-[390px] aspect-[9/19] bg-white shadow-2xl rounded-[3rem] flex items-center justify-center">
-                    <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                </div>
+            // 【修正後】ローディング画面を他の画面と統一
+            <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+                <p className="text-blue-600 font-bold">在庫データを照合中...</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                <div className="bg-white/50 backdrop-blur-sm z-10 relative">
+        <div className="min-h-screen bg-white">
+            {/* 【修正後】角丸を削除し、全画面に青のグラデーションを適用 */}
+            <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
+                
+                {/* ヘッダー：透過デザインで統一 */}
+                <div className="bg-white/50 backdrop-blur-md sticky top-0 z-20 border-b border-white/20">
                     <TitleHeader title="在庫管理" backPath="/admin/dashboard" />
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-5 scrollbar-hide pb-20">
+                <div className="flex-1 p-5 pb-24 max-w-4xl mx-auto w-full">
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
+                        <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-bold flex items-center shadow-sm">
+                            <span className="mr-2">⚠️</span>
                             {error}
                         </div>
                     )}
 
-                    {stats && <StockStatsCard stats={stats} />}
+                    {/* 統計カードセクション */}
+                    <div className="mb-8">
+                        {stats && <StockStatsCard stats={stats} />}
+                    </div>
 
-                    <div className="mb-4 flex items-center justify-between">
-                        <h3 className="font-bold text-gray-700">商品在庫一覧</h3>
-                        <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full shadow-sm">
-                            閾値: {ALERT_THRESHOLD}個未満
+                    {/* リストヘッダー */}
+                    <div className="mb-6 flex items-end justify-between px-1">
+                        <div>
+                            <h3 className="text-lg font-black text-gray-800 leading-none">商品在庫一覧</h3>
+                            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider">Product Inventory</p>
+                        </div>
+                        <span className="text-[11px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-full shadow-sm">
+                            警告閾値: {ALERT_THRESHOLD}個未満
                         </span>
                     </div>
 
+                    {/* メインリスト */}
                     {products.length === 0 ? (
-                        <div className="text-center py-10 text-gray-400">
-                            <p>商品がありません</p>
+                        <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4 bg-white/30 rounded-[2rem] border border-dashed border-white/50">
+                            <PackageSearch className="w-12 h-12 opacity-30" />
+                            <p className="text-sm font-bold opacity-70">管理対象の商品がありません</p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
                             {products.map((product) => (
                                 <StockItemCard
                                     key={product.id}

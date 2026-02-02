@@ -41,8 +41,6 @@ export default function DriverRequestsPage() {
                     credentials: 'include',
                 });
                 const data = await response.json();
-                
-                // APIが { requests: [...] } の形式で返すことを想定
                 setRequests(data.requests || []);
             } catch (err) {
                 setError('申請情報の取得に失敗しました');
@@ -51,7 +49,6 @@ export default function DriverRequestsPage() {
                 setLoading(false);
             }
         }
-
         fetchRequests();
     }, []);
 
@@ -59,12 +56,10 @@ export default function DriverRequestsPage() {
     async function handleApprove(id: number) {
         if (!confirm('この申請を承認しますか？')) return;
         try {
-            // ★修正: バッククォート ( ` ) を使用
             await fetch(getApiUrl(`/api/applications/${id}/approve`), {
                 method: 'POST',
                 credentials: 'include',
             });
-            // 成功したらリストから削除
             setRequests(requests.filter((req) => req.id !== id));
             alert('承認しました');
         } catch (err) {
@@ -76,12 +71,10 @@ export default function DriverRequestsPage() {
     async function handleReject(id: number) {
         if (!confirm('この申請を拒否しますか？')) return;
         try {
-            // ★修正: バッククォート ( ` ) を使用
             await fetch(getApiUrl(`/api/applications/${id}/reject`), {
                 method: 'POST',
                 credentials: 'include',
             });
-            // 成功したらリストから削除
             setRequests(requests.filter((req) => req.id !== id));
             alert('拒否しました');
         } catch (err) {
@@ -91,7 +84,6 @@ export default function DriverRequestsPage() {
 
     // チャット処理
     function handleChat(id: number) {
-        // チャット画面に遷移（申請IDをchatidとして使用）
         router.push(`/chat/${id}`);
     }
 
@@ -100,26 +92,32 @@ export default function DriverRequestsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        /* 背景を w-full で全幅に広げ、中央寄せを適用 */
+        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
+            
+            {/* コンテンツを max-w-2xl に制限。既存のシャドウと背景色を維持 */}
+            <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+                
+                {/* ヘッダー */}
+                <div className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-100">
                     <DriverHeader title="申請確認" backPath="/"/>
                 </div>
 
-                <main className="flex-1 p-4 pb-10 scrollbar-hide">
+                <main className="w-full flex-1 p-5 pb-32 scrollbar-hide">
 
                     {/* タブメニュー */}
-                    <div className="grid grid-cols-4 gap-1 bg-gray-200/50 p-1 rounded-xl mb-6 backdrop-blur-sm">
+                    <div className="w-full grid grid-cols-4 gap-1 bg-slate-200/50 p-1 rounded-2xl mb-8 backdrop-blur-sm border border-white/50 shadow-inner">
                         {tabs.map((tab) => {
                             const isActive = currentPath === tab.path;
                             return (
                                 <button
                                     key={tab.path}
                                     type="button"
-                                    className={`py-2 text-[10px] font-bold rounded-lg transition-all duration-200 ${isActive
-                                        ? 'bg-white text-black shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
+                                    className={`py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${
+                                        isActive
+                                            ? 'bg-white text-slate-800 shadow-md transform scale-[1.02]'
+                                            : 'text-slate-500 hover:text-slate-700 hover:bg-white/30'
+                                    }`}
                                     onClick={() => router.push(tab.path)}
                                 >
                                     {tab.name}
@@ -129,15 +127,21 @@ export default function DriverRequestsPage() {
                     </div>
 
                     {loading && (
-                        <div className="flex justify-center py-10">
-                            <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
+                        <div className="w-full flex flex-col items-center justify-center py-20">
+                            {/* スピナーの色を更新した緑に変更 */}
+                            <div className="animate-spin h-10 w-10 border-4 border-[#00B049] border-t-transparent rounded-full mb-4"></div>
+                            <p className="text-slate-400 font-bold text-sm">申請を確認中...</p>
                         </div>
                     )}
 
-                    {error && <div className="text-red-500 text-center text-sm font-bold p-4 bg-white rounded-xl mb-4">{error}</div>}
+                    {error && (
+                        <div className="w-full bg-red-50 border border-red-100 p-5 rounded-3xl mb-6 shadow-sm">
+                            <p className="text-red-500 text-center text-sm font-black">{error}</p>
+                        </div>
+                    )}
 
                     {!loading && !error && (
-                        <div className="space-y-4">
+                        <div className="w-full space-y-5">
                             {requests.length > 0 ? (
                                 requests.map((request) => (
                                     <RequestCard
@@ -150,28 +154,35 @@ export default function DriverRequestsPage() {
                                         departure={request.departure}
                                         destination={request.destination}
                                         departureTime={request.departureTime}
-                                        createdAt={request.createdAt} // Propsとして渡す
+                                        createdAt={request.createdAt}
                                         onApprove={handleApprove}
                                         onReject={handleReject}
-                                        onChat={handleChat} // ★追加：チャット処理を渡す
+                                        onChat={handleChat}
                                     />
                                 ))
                             ) : (
-                                <div className="text-center py-20 text-gray-500 text-sm font-bold bg-white/50 rounded-3xl backdrop-blur-sm">
-                                    <p>現在、申請はありません</p>
+                                <div className="w-full bg-white/60 backdrop-blur-sm rounded-[2rem] py-20 px-8 text-center border border-white/80 shadow-sm">
+                                    <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                                        <Plus className="text-slate-300 rotate-45" size={32} />
+                                    </div>
+                                    <p className="text-slate-600 font-black text-lg">現在、申請はありません</p>
+                                    <p className="text-slate-400 text-xs mt-2 font-bold leading-relaxed">
+                                        乗客からの新しいドライブ申請が<br />届くまでお待ちください
+                                    </p>
                                 </div>
                             )}
                         </div>
                     )}
                 </main>
                 
-                <div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
+                {/* フフローティングボタンエリア：色を画像の緑（#00B049）に更新 */}
+                <div className="sticky bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
                     <button
                         type="button"
-                        className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                        className="w-full py-4 bg-[#00B049] hover:bg-[#009940] text-white rounded-2xl font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                         onClick={handleCreateClick}
                     >
-                        <Plus size={20} /> ドライブを作成
+                        <Plus size={22} strokeWidth={3} /> ドライブを作成
                     </button>
                 </div>
             </div>
