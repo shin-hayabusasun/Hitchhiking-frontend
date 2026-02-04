@@ -96,84 +96,106 @@ export default function DriverRequestsPage() {
     }
 
     function handleCreateClick() {
-        router.push('/driver/regist_drive');
+        router.push('/driver/drives/create');
     }
 
+
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
-                    <DriverHeader title="申請確認" backPath="/"/>
-                </div>
+        /* 全体背景：指定の薄グレー */
+        <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
+            <div className="w-full min-h-screen flex flex-col relative">
+                
+                {/* Header: 背景は白で全幅、中身は max-w-2xl */}
+                <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+                    <div className="max-w-2xl mx-auto w-full px-4 py-1">
+                        <DriverHeader title="申請確認" backPath="/"/>
+                    </div>
+                </header>
 
-                <main className="flex-1 p-4 pb-10 scrollbar-hide">
+                {/* Main Content: max-w-2xl で中央寄せ、白ベタ塗り、左右ボーダー */}
+                <main className="flex-1 overflow-y-auto bg-[#F8FAFC] max-w-2xl mx-auto w-full min-h-screen relative">
+                    <div className="p-5 space-y-4 pb-32">
 
-                    {/* タブメニュー */}
-                    <div className="grid grid-cols-4 gap-1 bg-gray-200/50 p-1 rounded-xl mb-6 backdrop-blur-sm">
-                        {tabs.map((tab) => {
-                            const isActive = currentPath === tab.path;
-                            return (
-                                <button
-                                    key={tab.path}
-                                    type="button"
-                                    className={`py-2 text-[10px] font-bold rounded-lg transition-all duration-200 ${isActive
-                                        ? 'bg-white text-black shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                        {/* 統一タブメニュー */}
+                        <div className="w-full grid grid-cols-4 gap-1 bg-gray-100/80 p-1 rounded-2xl mb-8 border border-gray-200/50">
+                            {tabs.map((tab) => {
+                                const isActive = currentPath === tab.path;
+                                return (
+                                    <button
+                                        key={tab.path}
+                                        type="button"
+                                        className={`py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${
+                                            isActive
+                                                ? 'bg-white text-gray-800 shadow-sm transform scale-[1.02]'
+                                                : 'text-gray-400 hover:text-gray-600'
                                         }`}
-                                    onClick={() => router.push(tab.path)}
-                                >
-                                    {tab.name}
-                                </button>
-                            );
-                        })}
+                                        onClick={() => router.push(tab.path)}
+                                    >
+                                        {tab.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {loading && (
+                            <div className="w-full flex flex-col items-center justify-center py-20">
+                                <div className="animate-spin h-10 w-10 border-4 border-[#00B049] border-t-transparent rounded-full mb-4"></div>
+                                <p className="text-gray-400 font-bold text-sm">申請を確認中...</p>
+                            </div>
+                        )}
+
+                        {error && (
+                            <div className="w-full bg-red-50 border border-red-100 p-5 rounded-3xl mb-6 shadow-sm">
+                                <p className="text-red-500 text-center text-sm font-black">{error}</p>
+                            </div>
+                        )}
+
+                        {!loading && !error && (
+                            <div className="w-full space-y-4">
+                                {requests.length > 0 ? (
+                                    requests.map((request) => (
+                                        <RequestCard
+                                            key={request.id}
+                                            id={request.id}
+                                            passengerName={request.passengerName}
+                                            matchingRate={request.matchingRate}
+                                            rating={request.rating}
+                                            reviewCount={request.reviewCount}
+                                            departure={request.departure}
+                                            destination={request.destination}
+                                            departureTime={request.departureTime}
+                                            createdAt={request.createdAt}
+                                            onApprove={handleApprove}
+                                            onReject={handleReject}
+                                            onChat={handleChat}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="w-full bg-gray-50 rounded-[2rem] py-20 px-8 text-center border border-gray-100">
+                                        <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 shadow-sm">
+                                            <Plus className="text-gray-300 rotate-45" size={32} />
+                                        </div>
+                                        <p className="text-gray-600 font-black text-lg">現在、申請はありません</p>
+                                        <p className="text-gray-400 text-xs mt-2 font-bold leading-relaxed">
+                                            乗客からの新しいドライブ申請が<br />届くまでお待ちください
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    {loading && (
-                        <div className="flex justify-center py-10">
-                            <div className="animate-spin h-8 w-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
-                        </div>
-                    )}
-
-                    {error && <div className="text-red-500 text-center text-sm font-bold p-4 bg-white rounded-xl mb-4">{error}</div>}
-
-                    {!loading && !error && (
-                        <div className="space-y-4">
-                            {requests.length > 0 ? (
-                                requests.map((request) => (
-                                    <RequestCard
-                                        key={request.id}
-                                        id={request.id}
-                                        passengerName={request.passengerName}
-                                        matchingRate={request.matchingRate}
-                                        rating={request.rating}
-                                        reviewCount={request.reviewCount}
-                                        departure={request.departure}
-                                        destination={request.destination}
-                                        departureTime={request.departureTime}
-                                        createdAt={request.createdAt} // Propsとして渡す
-                                        onApprove={handleApprove}
-                                        onReject={handleReject}
-                                        onChat={handleChat} // ★追加：チャット処理を渡す
-                                    />
-                                ))
-                            ) : (
-                                <div className="text-center py-20 text-gray-500 text-sm font-bold bg-white/50 rounded-3xl backdrop-blur-sm">
-                                    <p>現在、申請はありません</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    {/* 下部固定ボタンエリア: ボタンデザイン・色は完全維持 */}
+                    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl p-5 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
+                        <button
+                            type="button"
+                            className="w-full py-4 bg-[#00B049] hover:bg-[#009940] text-white rounded-2xl font-black shadow-xl shadow-emerald-100/50 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            onClick={handleCreateClick}
+                        >
+                            <Plus size={22} strokeWidth={3} /> ドライブを作成
+                        </button>
+                    </div>
                 </main>
-                
-                <div className="sticky bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
-                    <button
-                        type="button"
-                        className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-200 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        onClick={handleCreateClick}
-                    >
-                        <Plus size={20} /> ドライブを作成
-                    </button>
-                </div>
             </div>
         </div>
     );

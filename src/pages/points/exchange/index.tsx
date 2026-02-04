@@ -23,7 +23,7 @@ export default function PointExchangePage() {
   const router = useRouter();
   const [keyword, setKeyword] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
-  const [userPoints, setUserPoints] = useState<number | null>(null); // 所持ポイント用
+  const [userPoints, setUserPoints] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isExchanging, setIsExchanging] = useState(false);
   const [error, setError] = useState(false);
@@ -32,14 +32,12 @@ export default function PointExchangePage() {
     initPage();
   }, []);
 
-  // 画面初期化（商品一覧とユーザーポイントを両方取得）
   const initPage = async () => {
     setLoading(true);
     await Promise.all([fetchProducts(), fetchUserBalance()]);
     setLoading(false);
   };
 
-  // 商品一覧取得
   const fetchProducts = async () => {
     try {
       const response = await fetch(getApiUrl('/api/points/products'), {
@@ -56,7 +54,6 @@ export default function PointExchangePage() {
     }
   };
 
-  // ユーザーのポイント残高取得
   const fetchUserBalance = async () => {
     try {
       const response = await fetch(getApiUrl('/api/point/remain'), {
@@ -72,9 +69,7 @@ export default function PointExchangePage() {
     }
   };
 
-  // --- 商品交換APIを呼び出す関数 ---
   const handleExchange = async (productId: string, productName: string, cost: number) => {
-    // クライアント側でも簡易チェック
     if (userPoints !== null && userPoints < cost) {
       alert('ポイントが不足しています');
       return;
@@ -88,7 +83,6 @@ export default function PointExchangePage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        // productIdはDBに合わせて数値型に変換して送信
         body: JSON.stringify({ product_id: parseInt(productId) }), 
       });
 
@@ -96,7 +90,6 @@ export default function PointExchangePage() {
 
       if (response.ok && result.ok) {
         alert('交換が完了しました！');
-        // 在庫数と所持ポイントを最新にするため再取得
         await initPage();
       } else {
         alert(`エラー: ${result.detail || '交換に失敗しました'}`);
@@ -114,35 +107,42 @@ export default function PointExchangePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto">
-        
-        <header className="sticky top-0 z-20 bg-white border-b px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
-              <ArrowLeft />
+    <div className="w-full min-h-screen bg-[#F9FAFB] font-sans text-gray-800">
+      
+      {/* ★ ヘッダー：白背景は横いっぱい、ボーダーなし、高さを適正化 */}
+      <header className="sticky top-0 z-20 bg-white">
+        {/* ★ コンテンツのみ max-w-2xl で中央寄せ */}
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <ArrowLeft size={24} />
             </button>
             <h1 className="font-bold text-lg text-gray-800">商品交換</h1>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* 所持ポイント表示エリア */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
-          <div className="flex items-center gap-2 opacity-80 mb-1">
-            <Wallet size={14} />
-            <span className="text-xs font-medium">現在の所持ポイント</span>
+      {/* ★ メインコンテンツ：max-w-2xl で中央寄せ */}
+      <main className="max-w-2xl mx-auto min-h-full">
+        
+        {/* 所持ポイント表示エリア：適切な余白とフォントサイズ */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-7 text-white md:rounded-b-3xl shadow-md">
+          <div className="flex items-center gap-2 opacity-80 mb-2">
+            <Wallet size={16} />
+            <span className="text-xs font-semibold tracking-wide uppercase">現在の所持ポイント</span>
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-black">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-4xl font-black tracking-tight">
               {userPoints !== null ? userPoints.toLocaleString() : '---'}
             </span>
-            <span className="text-xs opacity-80">pt</span>
+            <span className="text-sm font-bold opacity-90">pt</span>
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50/50 border-b">
-          <div className="flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-sm border border-gray-100">
-            <Search size={18} className="text-gray-400" />
+        {/* 検索バー：適切なサイズ感 */}
+        <div className="p-4">
+          <div className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-sm">
+            <Search size={20} className="text-gray-400" />
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -152,59 +152,69 @@ export default function PointExchangePage() {
           </div>
         </div>
 
-        <main className="p-4 space-y-3">
+        {/* 商品リストエリア：適切なカードサイズ */}
+        <div className="px-4 space-y-3">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-2 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
               <Loader2 className="animate-spin" size={32} />
               <p className="text-sm">ロード中...</p>
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 text-red-500 gap-2 text-center">
+            <div className="flex flex-col items-center justify-center py-20 text-red-500 gap-3 text-center">
               <AlertCircle size={32} />
               <p className="text-sm">データの取得に失敗しました</p>
             </div>
-          ) : filtered.map((p) => (
-            <div
-              key={p.id}
-              className={`bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center border transition-all ${
-                p.stock === 0 ? 'opacity-60 grayscale' : 'hover:border-blue-200'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                  p.stock === 0 ? 'bg-gray-200' : 'bg-orange-50'
-                }`}>
-                  <Gift className={p.stock === 0 ? 'text-gray-400' : 'text-orange-500'} size={24} />
-                </div>
-                <div className="max-w-[150px]">
-                  <p className="text-sm font-bold text-gray-800 truncate">{p.name}</p>
-                  <p className="text-[10px] text-gray-400 line-clamp-1">{p.description}</p>
-                  <p className={`text-[10px] mt-1 font-medium ${p.stock > 0 ? 'text-blue-500' : 'text-red-500'}`}>
-                    {p.stock > 0 ? `残り ${p.stock} 個` : '在庫切れ'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right border-l pl-3">
-                <p className={`font-extrabold ${userPoints !== null && userPoints < p.points ? 'text-red-400' : 'text-emerald-600'}`}>
-                  {p.points.toLocaleString()} <span className="text-[10px]">pt</span>
-                </p>
-                <button
-                  disabled={p.stock === 0 || isExchanging || (userPoints !== null && userPoints < p.points)}
-                  onClick={() => handleExchange(p.id, p.name, p.points)}
-                  className={`mt-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                    p.stock > 0 && (userPoints === null || userPoints >= p.points)
-                      ? 'bg-blue-600 text-white active:scale-95' 
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  {isExchanging ? '...' : p.stock > 0 ? '交換する' : '品切れ'}
-                </button>
-              </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <Gift size={48} className="opacity-20 mb-3" />
+              <p className="text-sm font-medium">該当する商品が見つかりません</p>
             </div>
-          ))}
-        </main>
-      </div>
+          ) : (
+            filtered.map((p) => (
+              <div
+                key={p.id}
+                className={`bg-white rounded-2xl p-4 shadow-sm flex justify-between items-center transition-all border-none ${
+                  p.stock === 0 ? 'opacity-60 grayscale' : 'hover:shadow-md active:scale-[0.99]'
+                }`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                    p.stock === 0 ? 'bg-gray-100' : 'bg-orange-50'
+                  }`}>
+                    <Gift className={p.stock === 0 ? 'text-gray-400' : 'text-orange-500'} size={24} />
+                  </div>
+                  <div className="max-w-[200px]">
+                    <p className="text-sm font-bold text-gray-800 truncate">{p.name}</p>
+                    <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{p.description}</p>
+                    <p className={`text-xs mt-1.5 font-bold ${p.stock > 0 ? 'text-blue-500' : 'text-red-500'}`}>
+                      {p.stock > 0 ? `在庫：残り ${p.stock}` : '在庫切れ'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0">
+                  <p className={`text-lg font-black ${userPoints !== null && userPoints < p.points ? 'text-red-400' : 'text-[#00B049]'}`}>
+                    {p.points.toLocaleString()} <span className="text-[10px]">pt</span>
+                  </p>
+                  <button
+                    disabled={p.stock === 0 || isExchanging || (userPoints !== null && userPoints < p.points)}
+                    onClick={() => handleExchange(p.id, p.name, p.points)}
+                    className={`mt-2 px-5 py-2 rounded-xl text-xs font-black transition-all border-none ${
+                      p.stock > 0 && (userPoints === null || userPoints >= p.points)
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' 
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {isExchanging ? '...' : p.stock > 0 ? '交換' : '品切れ'}
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        
+        <div className="h-10" />
+      </main>
     </div>
   );
 }

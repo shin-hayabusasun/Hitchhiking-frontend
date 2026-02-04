@@ -113,108 +113,140 @@ export function DriverDriveDetailPage() {
     const currentStatus = statusLabels[drive.status] || { label: drive.status, color: 'bg-gray-100 text-gray-600' };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                
-                {/* ヘッダー */}
-                <div className="bg-white/80 backdrop-blur-md sticky top-0 z-20 p-4 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={handleBackClick} className="text-gray-600 p-1 hover:bg-gray-100 rounded-full transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-gray-800 font-bold text-lg">ドライブ詳細</h1>
-                    </div>
-                    <button onClick={handleEditClick} className="text-green-600 p-1 hover:bg-green-50 rounded-full transition-colors">
-                        <Edit className="w-5 h-5" />
+        <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
+            
+            {/* ヘッダー: 背景は全幅、中身は max-w-2xl 中央寄せ */}
+            <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50 w-full shadow-sm">
+                <div className="max-w-2xl mx-auto w-full px-5 py-4 flex items-center justify-between relative">
+                    {/* 左側: 戻る */}
+                    <button 
+                        onClick={handleBackClick} 
+                        className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-500 z-10"
+                    >
+                        <ArrowLeft size={24} />
+                    </button>
+                    
+                    {/* 中央: タイトル */}
+                    <h1 className="absolute left-1/2 -translate-x-1/2 text-[17px] font-black text-gray-700 whitespace-nowrap">
+                        ドライブ詳細
+                    </h1>
+                    
+                    {/* 右側: 編集 */}
+                    <button 
+                        onClick={handleEditClick} 
+                        className="p-2 hover:bg-emerald-50 rounded-full transition-colors text-emerald-600 z-10"
+                    >
+                        <Edit size={24} />
                     </button>
                 </div>
+            </header>
 
-                <main className="flex-1 p-4 space-y-4 pb-10">
+            {/* メインコンテンツ */}
+            <main className="max-w-2xl mx-auto w-full p-5 space-y-5 pb-20">
+                
+                {/* ルート情報カード */}
+                <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest pl-1">Route Info</p>
+                        <span className={`text-[10px] px-3 py-1.5 rounded-full font-black uppercase tracking-tighter ${currentStatus.color}`}>
+                            {currentStatus.label}
+                        </span>
+                    </div>
                     
-                    {/* ルート情報カード */}
-                    <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4 border border-gray-50">
-                        <div className="flex justify-between items-center">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">ルート情報</p>
-                            <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${currentStatus.color}`}>
-                                {currentStatus.label}
-                            </span>
-                        </div>
-                        <div className="space-y-4 relative pl-2">
-                            <div className="absolute left-[9px] top-[8px] bottom-[28px] w-[2px] bg-gray-100" />
-                            <div className="flex items-start gap-4 z-10 relative">
-                                <div className="w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white shadow-sm flex-shrink-0 mt-1" />
-                                <div>
-                                    <p className="text-[10px] text-gray-400 mb-0.5">出発地</p>
-                                    <p className="text-sm font-bold text-gray-800 leading-tight">{drive.departure}</p>
-                                </div>
+                    <div className="space-y-6 relative pl-2">
+                        {/* 経路の線 */}
+                        <div className="absolute left-[9px] top-[12px] bottom-[32px] w-[2px] bg-gray-50 border-l border-dashed border-gray-200" />
+                        
+                        <div className="flex items-start gap-5 z-10 relative">
+                            <div className="w-4 h-4 rounded-full bg-emerald-500 border-4 border-white shadow-sm flex-shrink-0 mt-1" />
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-gray-300 uppercase">Departure</p>
+                                <p className="text-base font-black text-gray-700 leading-tight">{drive.departure}</p>
                             </div>
-                            <div className="flex items-start gap-4 z-10 relative">
-                                <div className="w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-white shadow-sm flex-shrink-0 mt-1" />
-                                <div>
-                                    <p className="text-[10px] text-gray-400 mb-0.5">目的地</p>
-                                    <p className="text-sm font-bold text-gray-800 leading-tight">{drive.destination}</p>
-                                </div>
+                        </div>
+                        
+                        <div className="flex items-start gap-5 z-10 relative">
+                            <div className="w-4 h-4 rounded-full bg-rose-500 border-4 border-white shadow-sm flex-shrink-0 mt-1" />
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-gray-300 uppercase">Destination</p>
+                                <p className="text-base font-black text-gray-700 leading-tight">{drive.destination}</p>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* 日時・料金・定員 */}
-                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-50">
-                        <div className="grid grid-cols-2 gap-y-6">
-                            <div>
-                                <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1"><Calendar size={12}/> 出発日時</p>
-                                <p className="text-sm font-bold text-gray-800">{formattedDate}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1"><DollarSign size={12}/> 料金</p>
-                                <p className="text-sm font-bold text-green-600">¥{drive.fee.toLocaleString()}<span className="text-[10px] text-gray-400 font-normal"> /人</span></p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1"><Users size={12}/> 定員</p>
-                                <p className="text-sm font-bold text-gray-800">{drive.currentPassengers} / {drive.capacity}名</p>
-                            </div>
+                {/* 日時・料金・定員 グリッド */}
+                <div className="bg-white rounded-[2.5rem] p-7 shadow-sm border border-gray-100">
+                    <div className="grid grid-cols-2 gap-y-8">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-300 uppercase flex items-center gap-1.5">
+                                <Calendar size={14} className="text-gray-300" /> Departure Time
+                            </p>
+                            <p className="text-[15px] font-black text-gray-700">{formattedDate}</p>
                         </div>
-                    </div>
-
-                    {/* 車両ルール */}
-                    {drive.vehicleRules && (
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-50 space-y-3">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">車両ルール</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                <RuleBadge icon={<Car size={14} />} label="禁煙" active={drive.vehicleRules.noSmoking} />
-                                <RuleBadge icon={<Dog size={14} />} label="ペット可" active={drive.vehicleRules.petAllowed} />
-                                <RuleBadge icon={<Music size={14} />} label="音楽OK" active={drive.vehicleRules.musicAllowed} />
-                                <RuleBadge icon={<Utensils size={14} />} label="飲食OK" active={drive.vehicleRules.foodAllowed} />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* メッセージ */}
-                    {drive.message && (
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-50 space-y-2">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">メッセージ</p>
-                            <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl">
-                                {drive.message}
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-300 uppercase flex items-center gap-1.5">
+                                <DollarSign size={14} className="text-gray-300" /> Fee
+                            </p>
+                            <p className="text-[15px] font-black text-emerald-600">
+                                ¥{drive.fee.toLocaleString()}
+                                <span className="text-[10px] text-gray-300 font-bold ml-1">/ PER PERSON</span>
                             </p>
                         </div>
-                    )}
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black text-gray-300 uppercase flex items-center gap-1.5">
+                                <Users size={14} className="text-gray-300" /> Capacity
+                            </p>
+                            <div className="flex items-end gap-2">
+                                <p className="text-xl font-black text-gray-700">{drive.currentPassengers}</p>
+                                <p className="text-[13px] font-black text-gray-300 pb-0.5">/ {drive.capacity} SEATS</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                    {/* 同乗者リスト */}
-                    {drive.passengers && drive.passengers.length > 0 && (
-                        <div className="space-y-3">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">申請・同乗者リスト</p>
+                {/* 車両ルール */}
+                {drive.vehicleRules && (
+                    <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100 space-y-4">
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest pl-1">Vehicle Rules</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <RuleBadge icon={<Car size={16} />} label="禁煙" active={drive.vehicleRules.noSmoking} />
+                            <RuleBadge icon={<Dog size={16} />} label="ペット可" active={drive.vehicleRules.petAllowed} />
+                            <RuleBadge icon={<Music size={16} />} label="音楽OK" active={drive.vehicleRules.musicAllowed} />
+                            <RuleBadge icon={<Utensils size={16} />} label="飲食OK" active={drive.vehicleRules.foodAllowed} />
+                        </div>
+                    </div>
+                )}
+
+                {/* メッセージ */}
+                {drive.message && (
+                    <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100 space-y-3">
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest pl-1">Driver Message</p>
+                        <div className="bg-gray-50/50 rounded-3xl p-5 border border-gray-50">
+                            <p className="text-[14px] font-bold text-gray-600 leading-relaxed italic">
+                                "{drive.message}"
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* 同乗者リスト */}
+                {drive.passengers && drive.passengers.length > 0 && (
+                    <div className="space-y-4 pt-2">
+                        <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Passenger List</p>
+                        <div className="grid gap-3">
                             {drive.passengers.map((passenger) => (
-                                <div key={passenger.id} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
+                                <div key={passenger.id} className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between group transition-all hover:border-emerald-100">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 font-black text-lg border border-gray-100 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors">
                                             {passenger.name.charAt(0)}
                                         </div>
-                                        <span className="text-sm font-bold text-gray-700">{passenger.name}</span>
+                                        <span className="text-[15px] font-black text-gray-700">{passenger.name}</span>
                                     </div>
-                                    <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${
-                                        passenger.status === 'approved' ? 'bg-green-100 text-green-700' :
-                                        passenger.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                        'bg-yellow-100 text-yellow-700'
+                                    <span className={`text-[10px] px-3 py-1.5 rounded-full font-black uppercase tracking-tight ${
+                                        passenger.status === 'approved' ? 'bg-emerald-50 text-emerald-600' :
+                                        passenger.status === 'rejected' ? 'bg-rose-50 text-rose-600' :
+                                        'bg-amber-50 text-amber-600'
                                     }`}>
                                         {passenger.status === 'approved' ? '承認済み' : 
                                          passenger.status === 'rejected' ? '却下' : '承認待ち'}
@@ -222,9 +254,9 @@ export function DriverDriveDetailPage() {
                                 </div>
                             ))}
                         </div>
-                    )}
-                </main>
-            </div>
+                    </div>
+                )}
+            </main>
         </div>
     );
 }
@@ -232,10 +264,16 @@ export function DriverDriveDetailPage() {
 // ルール表示用サブコンポーネント
 function RuleBadge({ icon, label, active }: { icon: any, label: string, active?: boolean }) {
     return (
-        <div className={`flex items-center gap-2 p-2 rounded-xl border ${active ? 'bg-green-50 border-green-100 text-green-700' : 'bg-gray-50 border-transparent text-gray-400'}`}>
-            {icon}
-            <span className="text-xs font-bold">{label}</span>
-            {!active && <span className="text-[10px] ml-auto opacity-50">NG</span>}
+        <div className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
+            active 
+                ? 'bg-emerald-50/50 border-emerald-100 text-emerald-600' 
+                : 'bg-gray-50 border-transparent text-gray-300'
+        }`}>
+            <div className={`${active ? 'text-emerald-500' : 'text-gray-300'}`}>
+                {icon}
+            </div>
+            <span className="text-[13px] font-black">{label}</span>
+            {!active && <span className="text-[10px] ml-auto font-black opacity-40">NG</span>}
         </div>
     );
 }

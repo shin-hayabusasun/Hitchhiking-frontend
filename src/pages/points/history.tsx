@@ -11,24 +11,14 @@ import {
 } from 'lucide-react';
 import { getApiUrl } from '@/config/api';
 
-// APIから返ってくるデータの型
-type OrderFromAPI = {
-  id: string;
-  productName: string;
-  points: number;
-  status: 'pending' | 'shipped' | 'delivered';
-  orderDate: string;
-};
-
 type Status = 'all' | 'preparing' | 'shipped' | 'delivered';
 
-// コンポーネント内で扱う型
 type PointHistory = {
   id: string;
   title: string;
   date: string;
   point: number;
-  type: 'use'; // 今回は注文履歴（交換）なので'use'固定
+  type: 'use'; 
   status: 'preparing' | 'shipped' | 'delivered';
 };
 
@@ -39,50 +29,42 @@ export default function PointHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-useEffect(() => {
-  const fetchOrders = async () => {
-    try {
-      // 1. URLをバックエンドの絶対パスに変更し、credentialsを追加
-      const response = await fetch(getApiUrl('/api/points/orders'), {
-        method: 'GET',
-        credentials: 'include', // クッキー(session_id)を送信するために必須
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch(getApiUrl('/api/points/orders'), {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          console.warn("ログインしていないため履歴を取得できません");
-          return;
+        if (!response.ok) {
+          if (response.status === 401) return;
+          throw new Error('Fetch failed');
         }
-        throw new Error('Fetch failed');
+        
+        const data = await response.json();
+        const mappedOrders: PointHistory[] = data.orders.map((order: any) => ({
+          id: order.id,
+          title: order.productName,
+          date: order.orderDate,
+          point: -order.points,
+          type: 'use',
+          status: order.status === 'pending' ? 'preparing' : order.status,
+        }));
+
+        setHistories(mappedOrders);
+      } catch (err) {
+        console.error('注文履歴の取得に失敗しました:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
-      
-      const data = await response.json();
-      
-      // 2. APIのレスポンス（OrderItemResponse）をフロントの型（PointHistory）に変換
-      const mappedOrders: PointHistory[] = data.orders.map((order: any) => ({
-        id: order.id,
-        title: order.productName,
-        date: order.orderDate,
-        point: -order.points, // 使用ポイントなのでマイナスに
-        type: 'use',
-        // FastAPI側の "pending" をフロント側の表示用 "preparing" に変換
-        status: order.status === 'pending' ? 'preparing' : order.status,
-      }));
-
-      setHistories(mappedOrders);
-    } catch (err) {
-      console.error('注文履歴の取得に失敗しました:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchOrders();
-}, []);
+    };
+    fetchOrders();
+  }, []);
 
   const filtered = histories.filter((h) => {
     if (tab === 'all') return true;
@@ -90,19 +72,25 @@ useEffect(() => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-gray-100 shadow-2xl border-[8px] border-white ring-1 ring-gray-200 overflow-y-auto">
-        {/* ヘッダー */}
-        <header className="bg-white px-4 py-3 flex items-center gap-3 border-b sticky top-0 z-10">
-          <button onClick={() => router.back()} className="p-1 hover:bg-gray-100 rounded-full">
-            <ArrowLeft />
+    /* ★ 背景は横いっぱい、コンテンツは中央寄せ */
+    <div className="w-full min-h-screen bg-[#F8F9FA] flex flex-col items-center">
+      
+      {/* ★ ヘッダー：白背景は横いっぱい、中身は max-w-2xl */}
+      <header className="w-full bg-white sticky top-0 z-30">
+        <div className="max-w-2xl mx-auto px-5 py-4 flex items-center gap-4">
+          <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <ArrowLeft size={24} />
           </button>
-          <h1 className="font-bold text-lg">交換履歴</h1>
-        </header>
+          <h1 className="font-bold text-lg text-gray-800">交換履歴</h1>
+        </div>
+      </header>
 
-        {/* タブ */}
-        <div className="px-3 py-3 bg-white border-b sticky top-[53px] z-10">
-          <div className="flex bg-gray-200 rounded-full text-xs font-medium overflow-hidden">
+      {/* ★ メインコンテンツ：max-w-2xl で中央寄せ */}
+      <div className="w-full max-w-2xl min-h-screen flex flex-col relative overflow-y-auto">
+        
+        {/* タブ：ボーダーを削除し、適切な高さと文字サイズに調整 */}
+        <div className="px-4 py-3 bg-white sticky top-0 z-10">
+          <div className="flex bg-gray-100 rounded-2xl font-bold overflow-hidden p-1.5">
             {[
               { key: 'all', label: 'すべて' },
               { key: 'preparing', label: '準備中' },
@@ -112,10 +100,10 @@ useEffect(() => {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key as Status)}
-                className={`flex-1 py-2 transition-colors ${
+                className={`flex-1 py-2.5 rounded-xl text-sm transition-all border-none ${
                   tab === t.key
-                    ? 'bg-white text-blue-600 font-bold shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
                 {t.label}
@@ -124,59 +112,62 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* 履歴一覧 */}
-        <main className="p-4 space-y-3">
+        {/* 履歴一覧：カードサイズとフォントを適切に大きく */}
+        <main className="p-5 space-y-4">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-2">
-              <Loader2 className="animate-spin text-blue-500" size={32} />
-              <p className="text-sm text-gray-500">履歴を読み込み中...</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-3">
+              <Loader2 className="animate-spin text-blue-500" size={36} />
+              <p className="text-sm text-gray-400 font-medium">履歴を読み込み中...</p>
             </div>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-20 text-red-500 gap-2">
-              <AlertCircle size={32} />
-              <p className="text-sm">データの取得に失敗しました</p>
+            <div className="flex flex-col items-center justify-center py-24 text-red-500 gap-3">
+              <AlertCircle size={36} />
+              <p className="text-sm font-bold">データの取得に失敗しました</p>
             </div>
           ) : filtered.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm py-10">
-              該当する履歴がありません
-            </p>
+            <div className="text-center py-20 bg-white rounded-[32px] shadow-sm">
+               <p className="text-gray-400 text-sm font-medium">該当する履歴がありません</p>
+            </div>
           ) : (
             filtered.map((h) => (
               <div
                 key={h.id}
-                className="bg-white rounded-xl p-4 shadow-sm flex justify-between items-center"
+                className="bg-white rounded-[24px] p-5 shadow-sm flex justify-between items-center transition-all active:scale-[0.98] border-none"
               >
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-gray-800">{h.title}</p>
+                <div className="space-y-1.5">
+                  <p className="text-base font-bold text-gray-800">{h.title}</p>
                   <p className="text-xs text-gray-400">{h.date}</p>
 
-                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                  <div className="flex items-center gap-1.5 text-xs mt-2 font-bold">
                     {h.status === 'preparing' && (
-                      <span className="flex items-center gap-1 text-orange-500">
-                        <Package size={12} /> 準備中
+                      <span className="flex items-center gap-1 text-orange-400">
+                        <Package size={14} /> 準備中
                       </span>
                     )}
                     {h.status === 'shipped' && (
-                      <span className="flex items-center gap-1 text-blue-500">
-                        <Truck size={12} /> 発送済み
+                      <span className="flex items-center gap-1 text-blue-400">
+                        <Truck size={14} /> 発送済み
                       </span>
                     )}
                     {h.status === 'delivered' && (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <CheckCircle size={12} /> 配達済み
+                      <span className="flex items-center gap-1 text-[#00B049]">
+                        <CheckCircle size={14} /> 配達済み
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 font-bold text-red-500">
-                  <ArrowDownLeft size={16} />
-                  {Math.abs(h.point).toLocaleString()} pt
+                <div className="flex items-center gap-1 font-black text-red-500 text-lg">
+                  <ArrowDownLeft size={18} strokeWidth={3} />
+                  {Math.abs(h.point).toLocaleString()}
+                  <span className="text-xs ml-0.5 font-bold">pt</span>
                 </div>
               </div>
             ))
           )}
         </main>
+
+        <div className="h-20" />
       </div>
     </div>
   );

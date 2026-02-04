@@ -1,5 +1,4 @@
 // % Start(AI Assistant)
-//DBはメッセージがない
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { ArrowLeft, Calendar, Clock, Users, Check, AlertCircle, Loader2 } from 'lucide-react';
@@ -29,9 +28,8 @@ const CreateDrivePassengerPage: React.FC = () => {
     message: '',
   });
 
-  // APIリクエスト処理
+  // APIリクエスト処理（ロジックは変更なし）
   const handleCreate = async (): Promise<void> => {
-    // 簡易バリデーション
     if (!formData.departure || !formData.destination || !formData.departureDate || !formData.departureTime) {
       alert('必須項目を入力してください');
       return;
@@ -40,13 +38,11 @@ const CreateDrivePassengerPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // FastAPIのバックエンドを叩く
       const response = await fetch(getApiUrl('/api/hitchhiker/regist_recruitment'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        // クッキー（セッションID）を送信
         credentials: 'include',
         body: JSON.stringify(formData),
       });
@@ -59,8 +55,6 @@ const CreateDrivePassengerPage: React.FC = () => {
       const result = await response.json();
 
       if (result.ok) {
-        
-        // 募集管理画面（または詳細画面）へ遷移
         router.push('/hitch_hiker/RecruitmentManagement');
       }
     } catch (error: any) {
@@ -72,127 +66,130 @@ const CreateDrivePassengerPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans text-gray-800">
-      <div className="w-full max-w-[390px] aspect-[9/19] bg-[#F8FAFC] shadow-2xl flex flex-col border-[8px] border-white relative ring-1 ring-gray-200 overflow-hidden rounded-[3rem]">
-        
-        {/* ヘッダー */}
-        <div className="bg-white p-4 flex items-center border-b border-gray-100 pt-10 sticky top-0 z-10">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800 pb-32">
+      
+      {/* ヘッダー: 白背景は横いっぱい、中身は max-w-2xl で中央寄せ */}
+      <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center">
           <button onClick={() => router.back()} className="text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors">
             <ArrowLeft className="w-6 h-6" />
           </button>
           <h1 className="text-[17px] font-black text-blue-600 flex-1 text-center mr-8">同乗者募集を作成</h1>
         </div>
+      </header>
 
-        {/* フォームエリア */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6 pb-24 scrollbar-hide">
-          <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-            <p className="text-[12px] text-blue-700 leading-relaxed font-medium">
-              入力された地点から経路を自動計算します。住所や駅名を入力してください。
-            </p>
-          </div>
-
-          {/* ルート情報 */}
-          <section className="space-y-4">
-            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">ルート情報</h2>
-            <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-50 space-y-4">
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 ml-1">出発地</label>
-                <div className="relative mt-1.5">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-lg">📍</span>
-                  <input 
-                    type="text" 
-                    className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500" 
-                    placeholder="例: 高知駅" 
-                    value={formData.departure} 
-                    onChange={(e) => setFormData({...formData, departure: e.target.value})} 
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-[11px] font-bold text-gray-500 ml-1">目的地</label>
-                <div className="relative mt-1.5">
-                  <span className="absolute inset-y-0 left-4 flex items-center text-lg">🚩</span>
-                  <input 
-                    type="text" 
-                    className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500" 
-                    placeholder="例: 高知工科大学" 
-                    value={formData.destination} 
-                    onChange={(e) => setFormData({...formData, destination: e.target.value})} 
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 希望日時 */}
-          <section className="space-y-4">
-            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">希望日時</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 relative flex items-center">
-                <Calendar className="w-4 h-4 text-blue-500 mr-2" />
-                <input 
-                  type="date" 
-                  className="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0" 
-                  value={formData.departureDate} 
-                  onChange={(e) => setFormData({...formData, departureDate: e.target.value})} 
-                />
-              </div>
-              <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 relative flex items-center">
-                <Clock className="w-4 h-4 text-blue-500 mr-2" />
-                <input 
-                  type="time" 
-                  className="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0" 
-                  value={formData.departureTime} 
-                  onChange={(e) => setFormData({...formData, departureTime: e.target.value})} 
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* 詳細設定 */}
-          <section className="space-y-4">
-            <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">詳細設定</h2>
-            <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50 space-y-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-bold text-gray-600">希望人数</span>
-                </div>
-                <input 
-                  type="number" 
-                  className="w-20 bg-gray-50 border-none rounded-xl py-2 px-3 text-right font-black text-blue-600" 
-                  value={formData.capacity} 
-                  onChange={(e) => setFormData({...formData, capacity: Number(e.target.value)})} 
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold text-gray-400">¥</span>
-                  <span className="text-sm font-bold text-gray-600">希望予算</span>
-                </div>
-                <input 
-                  type="number" 
-                  className="w-24 bg-gray-50 border-none rounded-xl py-2 px-3 text-right font-black text-green-600" 
-                  value={formData.fee} 
-                  onChange={(e) => setFormData({...formData, fee: Number(e.target.value)})} 
-                />
-              </div>
-              <div className="pt-2">
-                <label className="text-[11px] font-bold text-gray-500 ml-1">メッセージ</label>
-                <textarea 
-                  className="w-full bg-gray-50 border-none rounded-2xl mt-2 p-4 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500" 
-                  placeholder="荷物の量や、待ち合わせの相談など" 
-                  value={formData.message} 
-                  onChange={(e) => setFormData({...formData, message: e.target.value})} 
-                />
-              </div>
-            </div>
-          </section>
+      {/* コンテンツエリア: max-w-2xl で中央寄せ */}
+      <main className="max-w-2xl mx-auto p-5 space-y-6">
+        
+        <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex items-start space-x-3">
+          <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+          <p className="text-[12px] text-blue-700 leading-relaxed font-medium">
+            入力された地点から経路を自動計算します。住所や駅名を入力してください。
+          </p>
         </div>
 
-        {/* 固定アクションボタン */}
-        <div className="absolute bottom-0 w-full p-6 bg-white/80 backdrop-blur-md border-t border-gray-50 z-20">
+        {/* ルート情報 */}
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">ルート情報</h2>
+          <div className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-50 space-y-4">
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 ml-1">出発地</label>
+              <div className="relative mt-1.5">
+                <span className="absolute inset-y-0 left-4 flex items-center text-lg">📍</span>
+                <input 
+                  type="text" 
+                  className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500" 
+                  placeholder="例: 高知駅" 
+                  value={formData.departure} 
+                  onChange={(e) => setFormData({...formData, departure: e.target.value})} 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 ml-1">目的地</label>
+              <div className="relative mt-1.5">
+                <span className="absolute inset-y-0 left-4 flex items-center text-lg">🚩</span>
+                <input 
+                  type="text" 
+                  className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-blue-500" 
+                  placeholder="例: 高知工科大学" 
+                  value={formData.destination} 
+                  onChange={(e) => setFormData({...formData, destination: e.target.value})} 
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 希望日時 */}
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">希望日時</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 relative flex items-center">
+              <Calendar className="w-4 h-4 text-blue-500 mr-2" />
+              <input 
+                type="date" 
+                className="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0" 
+                value={formData.departureDate} 
+                onChange={(e) => setFormData({...formData, departureDate: e.target.value})} 
+              />
+            </div>
+            <div className="bg-white p-3 rounded-2xl shadow-sm border border-gray-50 relative flex items-center">
+              <Clock className="w-4 h-4 text-blue-500 mr-2" />
+              <input 
+                type="time" 
+                className="w-full bg-transparent border-none p-0 text-xs font-bold focus:ring-0" 
+                value={formData.departureTime} 
+                onChange={(e) => setFormData({...formData, departureTime: e.target.value})} 
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* 詳細設定 */}
+        <section className="space-y-4">
+          <h2 className="text-[11px] font-black text-gray-400 uppercase tracking-wider ml-1">詳細設定</h2>
+          <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-50 space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-gray-400" />
+                <span className="text-sm font-bold text-gray-600">希望人数</span>
+              </div>
+              <input 
+                type="number" 
+                className="w-20 bg-gray-50 border-none rounded-xl py-2 px-3 text-right font-black text-blue-600" 
+                value={formData.capacity} 
+                onChange={(e) => setFormData({...formData, capacity: Number(e.target.value)})} 
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-gray-400">¥</span>
+                <span className="text-sm font-bold text-gray-600">希望予算</span>
+              </div>
+              <input 
+                type="number" 
+                className="w-24 bg-gray-50 border-none rounded-xl py-2 px-3 text-right font-black text-green-600" 
+                value={formData.fee} 
+                onChange={(e) => setFormData({...formData, fee: Number(e.target.value)})} 
+              />
+            </div>
+            <div className="pt-2">
+              <label className="text-[11px] font-bold text-gray-500 ml-1">メッセージ</label>
+              <textarea 
+                className="w-full bg-gray-50 border-none rounded-2xl mt-2 p-4 text-sm min-h-[100px] focus:ring-2 focus:ring-blue-500" 
+                placeholder="荷物の量や、待ち合わせの相談など" 
+                value={formData.message} 
+                onChange={(e) => setFormData({...formData, message: e.target.value})} 
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* 固定アクションボタン: 背景は横いっぱい、ボタンは中央寄せエリア内に配置 */}
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-gray-50 z-50">
+        <div className="max-w-2xl mx-auto">
           <button 
             onClick={handleCreate} 
             disabled={isSubmitting}
@@ -206,7 +203,7 @@ const CreateDrivePassengerPage: React.FC = () => {
             {isSubmitting ? '送信中...' : '募集を公開する'}
           </button>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };

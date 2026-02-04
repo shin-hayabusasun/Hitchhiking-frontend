@@ -6,191 +6,191 @@ import { TitleHeader } from '@/components/TitleHeader';
 import { API_BASE_URL } from '@/config/api';
 
 export function NotificationSettingsPage() {
-	const router = useRouter();
-	const [settings, setSettings] = useState({
-		rideRequest: true,
-		message: true,
-		reminder: true,
-		promotion: false,
-	});
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState('');
+    const router = useRouter();
+    const [settings, setSettings] = useState({
+        rideRequest: true,
+        message: true,
+        reminder: true,
+        promotion: false,
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-	useEffect(() => {
-		async function fetchSettings() {
-			try {
-				const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
-					method: 'GET',
-					credentials: 'include',
-				});
-				const data = await response.json();
-				if (response.ok) {
-					setSettings({
-						rideRequest: data.rideRequest ?? true,
-						message: data.message ?? true,
-						reminder: data.reminder ?? true,
-						promotion: data.promotion ?? false,
-					});
-				}
-			} catch (err) {
-				setError('設定の取得に失敗しました');
-			} finally {
-				setLoading(false);
-			}
-		}
-		fetchSettings();
-	}, []);
+    useEffect(() => {
+        async function fetchSettings() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setSettings({
+                        rideRequest: data.rideRequest ?? true,
+                        message: data.message ?? true,
+                        reminder: data.reminder ?? true,
+                        promotion: data.promotion ?? false,
+                    });
+                }
+            } catch (err) {
+                setError('設定の取得に失敗しました');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchSettings();
+    }, []);
 
-	async function handleSave() {
-		setError('');
+    async function handleSave() {
+        setError('');
 
-		try {
-			const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				credentials: 'include',
-				body: JSON.stringify(settings),
-			});
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/users/me/notifications`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(settings),
+            });
 
-			const data = await response.json();
-			if (response.ok) {
-				alert('通知設定を更新しました');
-				router.push('/settings');
-			} else {
-				setError(data.message || '更新に失敗しました');
-			}
-		} catch (err) {
-			setError('更新に失敗しました');
-		}
-	}
+            const data = await response.json();
+            if (response.ok) {
+                alert('通知設定を更新しました');
+                router.push('/settings');
+            } else {
+                setError(data.message || '更新に失敗しました');
+            }
+        } catch (err) {
+            setError('更新に失敗しました');
+        }
+    }
 
-	if (loading) {
-		return (
-			<div className="min-h-screen bg-gray-100">
-				<TitleHeader title="通知設定" backPath="/settings" />
-				<main className="p-8 text-center">
-					<p>読み込み中...</p>
-				</main>
-			</div>
-		);
-	}
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center font-sans text-slate-900">
+                <p className="text-gray-500">読み込み中...</p>
+            </div>
+        );
+    }
 
-	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-			<div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-			<TitleHeader title="通知設定" backPath="/settings" />
-			<main className="p-8">
-				<div className="bg-white p-6 rounded-lg shadow-md">
-					<h2 className="text-2xl font-bold mb-6">通知設定</h2>
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
+            <div className="max-w-2xl mx-auto min-h-screen flex flex-col bg-white shadow-sm relative">
+                
+                {/* ヘッダー */}
+                <TitleHeader title="通知設定" backPath="/settings" />
 
-					<div className="space-y-6">
-						<div className="flex justify-between items-center pb-4 border-b">
-							<div>
-								<h3 className="font-semibold">同乗申請通知</h3>
-								<p className="text-sm text-gray-600">
-									同乗者からの申請があった際の通知
-								</p>
-							</div>
-							<label className="relative inline-flex items-center cursor-pointer">
-								<input
-									type="checkbox"
-									checked={settings.rideRequest}
-									onChange={(e) =>
-										setSettings({ ...settings, rideRequest: e.target.checked })
-									}
-									className="sr-only peer"
-								/>
-								<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-							</label>
-						</div>
+                <main className="p-4 sm:p-6 flex-1 flex flex-col">
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-black text-gray-900">通知設定</h2>
+                        <p className="text-sm text-gray-500 mt-1 font-medium">受け取る通知の種類をカスタマイズできます</p>
+                    </div>
 
-						<div className="flex justify-between items-center pb-4 border-b">
-							<div>
-								<h3 className="font-semibold">メッセージ通知</h3>
-								<p className="text-sm text-gray-600">
-									新しいメッセージが届いた際の通知
-								</p>
-							</div>
-							<label className="relative inline-flex items-center cursor-pointer">
-								<input
-									type="checkbox"
-									checked={settings.message}
-									onChange={(e) =>
-										setSettings({ ...settings, message: e.target.checked })
-									}
-									className="sr-only peer"
-								/>
-								<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-							</label>
-						</div>
+                    {error && (
+                        <div className="mb-6 bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium border border-red-100">
+                            {error}
+                        </div>
+                    )}
 
-						<div className="flex justify-between items-center pb-4 border-b">
-							<div>
-								<h3 className="font-semibold">リマインダー</h3>
-								<p className="text-sm text-gray-600">
-									ドライブ予定のリマインダー通知
-								</p>
-							</div>
-							<label className="relative inline-flex items-center cursor-pointer">
-								<input
-									type="checkbox"
-									checked={settings.reminder}
-									onChange={(e) =>
-										setSettings({ ...settings, reminder: e.target.checked })
-									}
-									className="sr-only peer"
-								/>
-								<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-							</label>
-						</div>
+                    {/* 設定リストカード */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+                        {/* 項目: 同乗申請 */}
+                        <div className="p-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                            <div className="pr-4">
+                                <h3 className="font-bold text-gray-800">同乗申請通知</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    同乗者からの申請があった際にプッシュ通知を受け取ります
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={settings.rideRequest}
+                                    onChange={(e) => setSettings({ ...settings, rideRequest: e.target.checked })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
 
-						<div className="flex justify-between items-center pb-4">
-							<div>
-								<h3 className="font-semibold">プロモーション</h3>
-								<p className="text-sm text-gray-600">
-									キャンペーンやお得な情報の通知
-								</p>
-							</div>
-							<label className="relative inline-flex items-center cursor-pointer">
-								<input
-									type="checkbox"
-									checked={settings.promotion}
-									onChange={(e) =>
-										setSettings({ ...settings, promotion: e.target.checked })
-									}
-									className="sr-only peer"
-								/>
-								<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-							</label>
-						</div>
-					</div>
+                        {/* 項目: メッセージ */}
+                        <div className="p-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                            <div className="pr-4">
+                                <h3 className="font-bold text-gray-800">メッセージ通知</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    新しいメッセージが届いた際にお知らせします
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={settings.message}
+                                    onChange={(e) => setSettings({ ...settings, message: e.target.checked })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
 
-					{error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+                        {/* 項目: リマインダー */}
+                        <div className="p-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                            <div className="pr-4">
+                                <h3 className="font-bold text-gray-800">リマインダー</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    出発予定時刻が近づくと通知します
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={settings.reminder}
+                                    onChange={(e) => setSettings({ ...settings, reminder: e.target.checked })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
 
-					<div className="mt-8 flex justify-end space-x-4">
-						<button
-							onClick={() => router.back()}
-							className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded"
-						>
-							キャンセル
-						</button>
-						<button
-							onClick={handleSave}
-							className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded"
-						>
-							保存
-						</button>
-					</div>
-				</div>
-			</main>
-		</div>
-	</div>
-	);
+                        {/* 項目: プロモーション */}
+                        <div className="p-5 flex justify-between items-center hover:bg-gray-50 transition-colors">
+                            <div className="pr-4">
+                                <h3 className="font-bold text-gray-800">プロモーション</h3>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    キャンペーンやお得な情報をいち早くお届けします
+                                </p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={settings.promotion}
+                                    onChange={(e) => setSettings({ ...settings, promotion: e.target.checked })}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* 下部アクションボタン */}
+                    <div className="mt-auto pt-10 space-y-3">
+                        <button
+                            onClick={handleSave}
+                            className="w-full bg-blue-600 text-white font-black p-4 rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all"
+                        >
+                            設定を保存する
+                        </button>
+                        <button
+                            onClick={() => router.back()}
+                            className="w-full bg-white text-gray-400 font-bold p-4 rounded-2xl border border-gray-100 hover:text-gray-600 transition-colors"
+                        >
+                            キャンセル
+                        </button>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
 }
 
 export default NotificationSettingsPage;
-
-// % End
-

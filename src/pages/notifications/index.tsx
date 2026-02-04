@@ -73,7 +73,7 @@ export const NotificationsPage: React.FC = () => {
 
     const markAllAsRead = async () => {
         try {
-            const response = await fetch('/api/notifications/read-all', {
+            const response = await fetch(getApiUrl('/api/notifications/read-all'), {
                 method: 'POST',
                 credentials: 'include',
             });
@@ -116,27 +116,29 @@ export const NotificationsPage: React.FC = () => {
                 <title>通知 | ヒッチハイクマッチング</title>
             </Head>
 
-            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-                {/* スマホ風コンテナ */}
-                <div className="w-full max-w-[390px] aspect-[9/19] shadow-2xl flex flex-col font-sans border-[8px] border-white relative ring-1 ring-gray-200 bg-gradient-to-b from-sky-100 to-white overflow-hidden rounded-[3rem]">
-                    
-                    {/* ヘッダー */}
-                    <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between">
-                        <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                            <ArrowLeft size={20} className="text-gray-600" />
+            <div className="min-h-screen bg-white font-sans text-gray-800">
+                {/* ヘッダー：背景白・横いっぱい */}
+                <header className="sticky top-0 z-20 bg-white border-b border-gray-100">
+                    {/* ヘッダー内コンテンツ：2xlで中央寄せ */}
+                    <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
+                        <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors active:scale-90">
+                            <ArrowLeft size={24} className="text-gray-600" />
                         </button>
-                        <h1 className="text-lg font-bold text-gray-800">通知</h1>
-                        <div className="w-10 flex justify-end">
+                        <h1 className="text-xl font-black text-gray-800">通知</h1>
+                        <div className="w-12 flex justify-end">
                             {unreadCount > 0 && (
                                 <button onClick={markAllAsRead} className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="全て既読">
-                                    <CheckCheck size={20} />
+                                    <CheckCheck size={24} />
                                 </button>
                             )}
                         </div>
-                    </header>
+                    </div>
+                </header>
 
+                {/* メインコンテンツ：2xlで中央寄せ */}
+                <main className="max-w-2xl mx-auto px-4 py-6">
                     {/* フィルターバー */}
-                    <div className="flex gap-2 p-3 bg-white/50 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-3 mb-6 overflow-x-auto scrollbar-hide pb-2">
                         {[
                             { id: 'all', label: 'すべて' },
                             { id: 'unread', label: `未読${unreadCount > 0 ? `(${unreadCount})` : ''}` },
@@ -146,10 +148,10 @@ export const NotificationsPage: React.FC = () => {
                             <button
                                 key={f.id}
                                 onClick={() => setFilter(f.id)}
-                                className={`px-4 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${
+                                className={`px-6 py-2 rounded-full text-sm font-black whitespace-nowrap transition-all ${
                                     filter === f.id 
                                     ? 'bg-blue-600 text-white shadow-md' 
-                                    : 'bg-white text-gray-500 border border-gray-200'
+                                    : 'bg-gray-50 text-gray-500 border border-gray-200 hover:border-blue-300'
                                 }`}
                             >
                                 {f.label}
@@ -157,61 +159,59 @@ export const NotificationsPage: React.FC = () => {
                         ))}
                     </div>
 
-                    {/* メインリスト */}
-                    <main className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
-                        {error && (
-                            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold border border-red-100">
-                                {error}
-                            </div>
-                        )}
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-black border border-red-100 text-center mb-4">
+                            {error}
+                        </div>
+                    )}
 
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                                <div className="animate-spin h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full" />
-                                <p className="text-gray-400 text-xs font-bold">読み込み中...</p>
-                            </div>
-                        ) : filteredNotifications.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                                <Bell size={48} className="opacity-20 mb-3" />
-                                <p className="text-sm font-bold">通知はありません</p>
-                            </div>
-                        ) : (
-                            filteredNotifications.map((notif) => (
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+                            <p className="text-gray-400 text-sm font-black">読み込み中...</p>
+                        </div>
+                    ) : filteredNotifications.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-32 text-gray-400">
+                            <Bell size={64} className="opacity-10 mb-4" />
+                            <p className="text-base font-black">通知はありません</p>
+                        </div>
+                    ) : (
+                        <div className="grid gap-4">
+                            {filteredNotifications.map((notif) => (
                                 <div
                                     key={notif.id}
                                     onClick={() => handleNotificationClick(notif)}
-                                    className={`flex gap-3 p-4 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer ${
+                                    className={`flex gap-4 p-5 rounded-[1.5rem] border transition-all active:scale-[0.99] cursor-pointer hover:shadow-sm ${
                                         notif.isRead 
-                                        ? 'bg-white/60 border-gray-100' 
+                                        ? 'bg-gray-50/50 border-gray-100 opacity-80' 
                                         : 'bg-white border-blue-200 shadow-sm ring-1 ring-blue-50'
                                     }`}
                                 >
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-100' : 'bg-blue-50'}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${notif.isRead ? 'bg-gray-100' : 'bg-blue-50'}`}>
                                         {getNotificationIcon(notif.type)}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h3 className={`text-[13px] font-bold truncate ${notif.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
+                                            <h3 className={`text-[15px] font-black truncate ${notif.isRead ? 'text-gray-600' : 'text-gray-900'}`}>
                                                 {notif.title}
                                             </h3>
                                             {!notif.isRead && (
-                                                <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1.5" />
+                                                <span className="w-2.5 h-2.5 bg-blue-600 rounded-full flex-shrink-0 mt-1.5 ml-2" />
                                             )}
                                         </div>
-                                        <p className="text-[12px] text-gray-500 leading-relaxed mb-2">
+                                        <p className="text-[13px] text-gray-500 leading-relaxed mb-3 font-medium">
                                             {notif.message}
                                         </p>
-                                        <div className="flex items-center text-[10px] text-gray-400 font-medium">
-                                            <Clock size={12} className="mr-1" />
+                                        <div className="flex items-center text-[11px] text-gray-400 font-black">
+                                            <Clock size={14} className="mr-1.5" />
                                             {notif.timestamp}
                                         </div>
                                     </div>
                                 </div>
-                            ))
-                        )}
-                        <div className="h-10" />
-                    </main>
-                </div>
+                            ))}
+                        </div>
+                    )}
+                </main>
             </div>
         </>
     );
