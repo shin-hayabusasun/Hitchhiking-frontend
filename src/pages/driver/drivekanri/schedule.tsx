@@ -1,4 +1,4 @@
-// src/pages/driver/drivekanri/schedule.tsx
+// % Start(SchedulePage)
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { 
@@ -8,7 +8,8 @@ import {
   Calendar, 
   Users, 
   DollarSign, 
-  ChevronRight 
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { getApiUrl } from "@/config/api";
 
@@ -33,7 +34,6 @@ export default function Schedule() {
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
-        // credentials: "include" を追加してクッキーを送信可能にする
         const response = await fetch(getApiUrl("/api/driver/schedules"), {
           credentials: "include",
         });
@@ -43,7 +43,7 @@ export default function Schedule() {
         }
 
         const data = await response.json();
-        setSchedules(data.schedules);
+        setSchedules(data.schedules || []);
       } catch (error) {
         console.error("データ取得失敗:", error);
       } finally {
@@ -56,6 +56,7 @@ export default function Schedule() {
 
   function handleDel(id: string) {
     return async () => {
+      if (!confirm("この募集を消去してもよろしいですか？")) return;
       try {
         await fetch(getApiUrl(`/api/driver/schedules/${id}`), {
           method: "DELETE",
@@ -71,20 +72,16 @@ export default function Schedule() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+        <Loader2 className="animate-spin h-8 w-8 text-blue-500" />
       </div>
     );
   }
 
   return (
-    /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
-    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
-      
-      {/* ★ コンテンツを max-w-2xl に変更。元のスマホ風デザイン（shadow等）を維持 */}
-      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-200">
-        
-        {/* Header (元のデザイン、サイズ、stickyを維持) */}
-        <div className="bg-white px-4 py-3 flex items-center gap-3 sticky top-0 z-10 border-b border-gray-100 w-full">
+    <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
+      {/* Header: 背景全幅、中身 max-w-2xl 中央寄せ */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 w-full">
+        <div className="max-w-2xl mx-auto w-full px-4 py-3 flex items-center gap-3">
           <button 
             onClick={() => router.back()}
             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -93,9 +90,12 @@ export default function Schedule() {
           </button>
           <h1 className="text-lg font-bold">ドライブ管理</h1>
         </div>
+      </header>
 
-        {/* Tabs (元のデザインを維持) */}
-        <div className="w-full px-4 pt-4">
+      {/* メインコンテンツエリア: max-w-2xl で中央寄せ */}
+      <main className="max-w-2xl mx-auto w-full">
+        {/* Tabs */}
+        <div className="px-4 py-4">
           <div className="bg-gray-200 rounded-full p-1 flex text-sm font-medium">
             <div className="flex-1 bg-white rounded-full py-2 text-center shadow-sm text-blue-600">
               予定中
@@ -113,21 +113,20 @@ export default function Schedule() {
               完了
             </button>
           </div>
-          <p className="mt-2 px-1 text-gray-400 text-xs">あなたが募集しているリスト</p>
         </div>
 
-        {/* List (Cardのデザイン・ボタンサイズなどは一切変更なし) */}
-        <main className="w-full p-4 space-y-4 flex-grow">
+        {/* List */}
+        <div className="px-4 pb-10 space-y-4">
           {schedules.length === 0 ? (
-            <div className="text-center py-20">
+            <div className="text-center py-20 bg-white rounded-2xl border border-gray-50 shadow-sm">
               <p className="text-gray-400 text-sm">予定されているドライブは<br />ありません</p>
             </div>
           ) : (
             schedules.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4 w-full">
+              <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
                 
                 {/* ステータス & 作成日 */}
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center px-1">
                   <span className="flex items-center gap-1 text-blue-600 text-[10px] font-bold bg-blue-50 px-2 py-1 rounded-full uppercase">
                     <Clock size={12} /> {item.status}
                   </span>
@@ -160,7 +159,7 @@ export default function Schedule() {
                   </div>
                 </div>
 
-                {/* アクションボタン (元のサイズと配置を維持) */}
+                {/* アクションボタン */}
                 <div className="flex gap-3 pt-1">
                   <button 
                     onClick={() => router.push(`/driver/requests`)}
@@ -179,10 +178,9 @@ export default function Schedule() {
               </div>
             ))
           )}
-        </main>
-
-        <div className="h-10" />
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
+// % End

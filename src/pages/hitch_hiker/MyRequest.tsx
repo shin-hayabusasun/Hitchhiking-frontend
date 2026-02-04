@@ -1,15 +1,16 @@
+// % Start(AI Assistant)
 import React, { useState, useEffect } from 'react';
 import { MyRequestHeader } from '@/components/hitch_hiker/MyRequestHeader';
 import { MyRequestCard } from '@/components/hitch_hiker/MyRequestCard';
 import { getApiUrl } from '@/config/api';
-import { Loader2, Inbox } from 'lucide-react';
+import { Loader2, FolderOpen } from 'lucide-react';
 
 const MyRequest = () => {
   const [tab, setTab] = useState<'requesting' | 'approved' | 'completed'>('requesting');
   const [allData, setAllData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // --- APIからリクエスト一覧を取得 ---
+  // --- APIからリクエスト一覧を取得 (ロジック変更なし) ---
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -36,7 +37,7 @@ const MyRequest = () => {
     fetchRequests();
   }, []);
 
-  // --- 申請の取り消し処理 ---
+  // --- 申請の取り消し処理 (ロジック変更なし) ---
   const handleCancel = async (id: number) => {
     if (!confirm("このリクエストを取り消しますか？")) return;
 
@@ -59,68 +60,57 @@ const MyRequest = () => {
     }
   };
 
+  // 表示するタブのデータを抽出
   const displayRequests = allData ? allData[tab] : [];
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4 bg-[#F8FAFC]">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        <div className="text-[12px] text-gray-400 font-bold tracking-wider">リクエストを取得中...</div>
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <p className="text-gray-400 font-black text-sm tracking-widest">LOADING...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
-      <div className="w-full min-h-screen flex flex-col relative">
-        
-        {/* ヘッダー部分 (タブ切り替えを含む) */}
-        {/* 注意: MyRequestHeader内のデザインも、これまでの修正に合わせて
-            rounded-xl や text-xs 等に調整されていることを推奨します */}
-        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="max-w-2xl mx-auto w-full">
-            <MyRequestHeader currentTab={tab} onTabChange={setTab} />
-          </div>
+      
+      {/* ヘッダー部分: 
+        MyRequestHeader コンポーネント側で「背景白・横いっぱい」
+        「中身 max-w-2xl」の構造が維持されるようラップしています。
+      */}
+      <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-2xl mx-auto">
+          <MyRequestHeader currentTab={tab} onTabChange={setTab} />
         </div>
+      </header>
 
-        {/* リスト表示エリア */}
-        <main className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="max-w-2xl mx-auto w-full p-4 md:p-6 space-y-4 pb-24">
-            {displayRequests && displayRequests.length > 0 ? (
-              <div className="grid gap-4">
-                {displayRequests.map((item: any) => (
-                  <MyRequestCard 
-                    key={item.id} 
-                    item={item} 
-                    tab={tab} 
-                    onCancel={handleCancel} 
-                  />
-                ))}
+      {/* メインコンテンツ: max-w-2xl で中央寄せ */}
+      <main className="max-w-2xl mx-auto p-5">
+        <div className="space-y-4 pb-20">
+          {displayRequests && displayRequests.length > 0 ? (
+            displayRequests.map((item: any) => (
+              <MyRequestCard 
+                key={item.id} 
+                item={item} 
+                tab={tab} 
+                onCancel={handleCancel} 
+              />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-32 space-y-5 bg-white rounded-[2.5rem] border border-dashed border-gray-200 shadow-inner">
+              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                <FolderOpen className="w-8 h-8 text-gray-200" />
               </div>
-            ) : (
-              /* 空状態の表示 */
-              <div className="flex flex-col items-center justify-center py-32 space-y-5">
-                <div className="w-16 h-16 bg-white rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-center text-gray-200">
-                  <Inbox className="w-8 h-8" />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-[13px] font-black text-gray-500">
-                    {tab === 'requesting' ? '申請中のリクエストはありません' : 
-                     tab === 'approved' ? '承認済みのリクエストはありません' : 
-                     '完了した履歴はありません'}
-                  </p>
-                  <p className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">
-                    No data found
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* 下部に余白を確保するためのスペーサー (モバイルナビがある場合用) */}
-        <div className="h-16 md:hidden" />
-      </div>
+              <p className="text-center text-gray-400 font-black text-sm px-6">
+                {tab === 'requesting' ? '申請中のリクエストはありません' : 
+                 tab === 'approved' ? '承認済みのリクエストはありません' : 
+                 '完了した履歴はありません'}
+              </p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };

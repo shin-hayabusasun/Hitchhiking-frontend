@@ -53,22 +53,24 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
   };
 
   return (
-    /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center w-full overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center w-full font-sans">
       
-      {/* ★ コンテンツを max-w-2xl に制限 */}
-      <div className="w-full max-w-2xl min-h-screen bg-gray-50 flex flex-col relative border-x border-gray-100">
-        
-        <header className="flex items-center justify-between px-4 py-3 bg-white sticky top-0 z-20 border-b border-gray-100">
+      {/* Header: 背景は全幅、中身は max-w-2xl */}
+      <header className="w-full bg-white sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button onClick={() => router.back()} className="p-1.5 border border-gray-100 rounded-xl shadow-sm active:bg-gray-50">
             <LucideChevronLeft size={18} className="text-gray-600" />
           </button>
           <h1 className="text-base font-bold text-gray-800">条件絞り込み</h1>
           <button onClick={handleReset} className="text-xs font-bold text-gray-400">リセット</button>
-        </header>
+        </div>
+      </header>
 
-        {/* Main area */}
-        <main className="flex-1 overflow-y-auto p-4 space-y-4 pb-28">
+      {/* Main Content: 背景を広く見せつつコンテンツを 2xl に制限 */}
+      <div className="w-full max-w-2xl flex-1 flex flex-col bg-gray-50 relative min-h-[calc(100vh-57px)]">
+        
+        <main className="flex-1 p-4 space-y-4 pb-32">
+          {/* 場所セクション */}
           <section className="bg-white p-4 rounded-[1.5rem] shadow-sm space-y-3">
             <h2 className="text-xs font-bold text-gray-800">場所</h2>
             <div className="space-y-2">
@@ -83,6 +85,7 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
             </div>
           </section>
 
+          {/* 日時セクション */}
           <section className="bg-white p-4 rounded-[1.5rem] shadow-sm space-y-4">
             <h2 className="text-xs font-bold text-gray-800">日時</h2>
             <div className="space-y-3">
@@ -112,6 +115,7 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
             </div>
           </section>
 
+          {/* 金額セクション */}
           <section className="bg-white p-4 rounded-[1.5rem] shadow-sm space-y-3">
             <div className="flex justify-between items-center">
               <h2 className="text-xs font-bold text-gray-800">最低希望金額</h2>
@@ -122,6 +126,7 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
             </div>
           </section>
 
+          {/* 人数セクション */}
           <section className="bg-white p-4 rounded-[1.5rem] shadow-sm space-y-3">
             <h2 className="text-xs font-bold text-gray-800">人数（以下）</h2>
             <div className="flex items-center gap-3">
@@ -134,6 +139,7 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
             </div>
           </section>
 
+          {/* 本人確認セクション */}
           <section className="bg-white p-4 rounded-[1.5rem] shadow-sm flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 flex items-center justify-center bg-green-50 text-green-600 rounded-full font-bold text-xs">✓</div>
@@ -143,11 +149,11 @@ export default function DriverSearchFilterPage({ filter, setFilter }: Props) {
           </section>
         </main>
 
-        {/* ★ 検索ボタンを max-w-2xl 内の bottom に固定配置 */}
-        <div className="sticky bottom-5 px-6 z-30 pointer-events-none mt-auto pb-5">
+        {/* 検索ボタン: max-w-2xl の枠内で下部に固定 */}
+        <div className="sticky bottom-6 px-6 z-30 pointer-events-none mt-auto pb-4">
           <button 
             onClick={() => router.back()} 
-            className="w-full bg-green-600 text-white font-black py-3.5 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm pointer-events-auto shadow-green-200"
+            className="w-full bg-green-600 text-white font-black py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform text-sm pointer-events-auto shadow-green-200"
           >
             <LucideSearch size={18} strokeWidth={3} /> この条件で検索
           </button>

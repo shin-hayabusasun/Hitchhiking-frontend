@@ -88,24 +88,27 @@ export default function DriverEditPage() {
   };
 
   return (
-    /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
-    <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-      
-      {/* ★ コンテンツを max-w-2xl に制限。既存のシャドウと背景色を維持 */}
-      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="w-full flex flex-col items-center">
         
-        {/* ヘッダー (そのまま維持) */}
-        <header className="w-full sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ArrowLeft className="cursor-pointer text-slate-600" onClick={() => router.back()} />
-            <span className="font-extrabold text-slate-800">プロフィール編集</span>
+        {/* Header: 背景は白で横いっぱい、中身は max-w-2xl 中央寄せ */}
+        <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ArrowLeft className="cursor-pointer text-slate-600" onClick={() => router.back()} />
+              <span className="font-extrabold text-slate-800">プロフィール編集</span>
+            </div>
+            <button 
+              onClick={() => router.back()} 
+              className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              キャンセル
+            </button>
           </div>
-          <button onClick={() => router.back()} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
-            キャンセル
-          </button>
         </header>
 
-        <main className="w-full flex-1 p-5 space-y-5 pb-20">
+        {/* Main Content: max-w-2xl で中央寄せ */}
+        <main className="w-full max-w-2xl p-5 space-y-5 pb-20 flex-1">
 
           {/* プロフィール基本情報（氏名固定） */}
           <section className="w-full bg-white rounded-3xl p-8 shadow-sm text-center border border-slate-50">
@@ -209,7 +212,7 @@ export default function DriverEditPage() {
           <div className="pt-4 w-full">
             <button
               onClick={handleSave}
-              className="w-full bg-[#10B981] hover:bg-emerald-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-100 transition-all active:scale-[0.98]"
+              className="w-full bg-[#00B049] hover:bg-emerald-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-100 transition-all active:scale-[0.98]"
             >
               保存する
             </button>

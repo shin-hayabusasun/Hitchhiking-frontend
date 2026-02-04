@@ -1,4 +1,5 @@
-// 商品情報管理画面
+// 商品情報管理画面: 最新レイアウト規約を適用
+
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Product } from '@/types';
@@ -6,7 +7,6 @@ import { ProductCard } from '@/components/admin/products/ProductCard';
 import { ProductHeader } from '@/components/admin/products/ProductHeader';
 import { ProductFormModal } from '@/components/admin/products/ProductFormModal';
 import { getApiUrl } from '@/config/api';
-import { Loader2 } from 'lucide-react';
 
 const SAMPLE_DATA = [
     { name: '10円分のクオカード（テスト）', description: '全国の加盟店で使えるクオカード', points: 10, stock: 5 },
@@ -21,12 +21,11 @@ export function ProductManagementPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
     const hasSeeded = useRef(false);
-    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-    // サンプルデータを自動投入する関数
     async function seedSampleData() {
         console.log("🌱 データベースが空のため、サンプルデータを投入します...");
         try {
@@ -65,6 +64,7 @@ export function ProductManagementPage() {
                 });
                 const retryData = await retryResponse.json();
                 setProducts(retryData.products || []);
+                return;
             } else {
                 setProducts(currentList);
             }
@@ -126,9 +126,7 @@ export function ProductManagementPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('本当に削除しますか？')) return;
         try {
-            await fetch(getApiUrl(`/api/admin/products/${id}`), { 
-                method: 'DELETE' ,
-            });
+            await fetch(getApiUrl(`/api/admin/products/${id}`), { method: 'DELETE' });
             setProducts(prev => prev.filter(p => p.id !== id));
             alert('削除しました');
         } catch (err) {
@@ -142,57 +140,59 @@ export function ProductManagementPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-                <p className="text-blue-600 font-bold">商品を読み込み中...</p>
+            <div className="min-h-screen bg-sky-50 flex items-center justify-center">
+                <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* 【修正後】角丸を削除し、全画面に青のグラデーションを適用 */}
-            <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                
-                {/* ヘッダーエリア：TitleHeaderのラッパー */}
-                <div className="sticky top-0 z-20 shadow-sm backdrop-blur-md bg-white/50">
+        /* ★ 背景は画面一杯（wide）、角丸なし */
+        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center font-sans">
+            
+            {/* ★ ヘッダー：白背景は横いっぱい、中身は max-w-2xl */}
+            <header className="w-full bg-white/60 backdrop-blur-md sticky top-0 z-30 shadow-sm border-none">
+                <div className="max-w-2xl mx-auto">
                     <ProductHeader onBack={handleBack} onCreate={handleCreate} />
                 </div>
+            </header>
 
-                <div className="flex-1 p-5 pb-24 max-w-4xl mx-auto w-full"> 
-                    {error && (
-                        <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-bold flex items-center shadow-sm">
-                            <span className="mr-2">⚠️</span>
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {products.map((product) => (
-                            <ProductCard 
-                                key={product.id} 
-                                product={product} 
-                                onEdit={handleEdit} 
-                                onDelete={handleDelete} 
-                            />
-                        ))}
+            {/* ★ メインコンテンツ：max-w-2xl で中央寄せ */}
+            <main className="w-full max-w-2xl flex flex-col p-5">
+                {error && (
+                    <div className="bg-red-50 text-red-600 px-4 py-4 rounded-2xl mb-6 text-sm font-bold text-center border-none shadow-sm">
+                        {error}
                     </div>
+                )}
 
-                    {products.length === 0 && !error && (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4">
-                            <div className="w-16 h-16 bg-white/40 rounded-full flex items-center justify-center text-2xl shadow-sm">🎁</div>
-                            <p className="text-sm font-bold opacity-70">商品がありません</p>
-                        </div>
-                    )}
+                <div className="space-y-4">
+                    {products.map((product) => (
+                        <ProductCard 
+                            key={product.id} 
+                            product={product} 
+                            onEdit={handleEdit} 
+                            onDelete={handleDelete} 
+                        />
+                    ))}
                 </div>
 
-                <ProductFormModal 
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSubmit={handleFormSubmit}
-                    initialData={editingProduct}
-                />
-            </div>
+                {products.length === 0 && !error && (
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4">
+                        <div className="w-20 h-20 bg-white/50 rounded-full flex items-center justify-center text-3xl grayscale opacity-50 shadow-sm">📦</div>
+                        <p className="text-sm font-black tracking-wider uppercase">No Products Found</p>
+                    </div>
+                )}
+
+                {/* フッター余白 */}
+                <div className="h-20" />
+            </main>
+
+            <ProductFormModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleFormSubmit}
+                initialData={editingProduct}
+            />
         </div>
     );
 }

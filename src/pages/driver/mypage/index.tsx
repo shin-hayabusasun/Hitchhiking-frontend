@@ -68,7 +68,7 @@ export default function DriverProfilePage() {
   /* ===== ローディング・エラー ===== */
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center font-bold text-emerald-500">
+      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center font-bold text-emerald-500">
         読み込み中...
       </div>
     );
@@ -76,34 +76,39 @@ export default function DriverProfilePage() {
 
   if (error || !profile) {
     return (
-      <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center text-red-500 font-bold">
+      <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center text-red-500 font-bold">
         {error}
       </div>
     );
   }
 
   return (
-    /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
-    <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-      
-      {/* ★ コンテンツを max-w-2xl に制限。既存のシャドウや背景色を維持 */}
-      <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="w-full flex flex-col items-center">
         
-        {/* ヘッダー（そのままのデザインで枠幅に追従） */}
-        <header className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between">
-          <button onClick={() => router.back()} className="p-1 hover:bg-slate-100 rounded-full transition-colors">
-            <ArrowLeft className="text-slate-600" />
-          </button>
-          <h1 className="font-black text-slate-800 text-lg">マイページ</h1>
-          <button
-            onClick={() => router.push("/driver/mypage/edit")}
-            className="bg-emerald-50 text-[#10B981] font-black px-4 py-1.5 rounded-full flex items-center gap-1 text-sm hover:bg-emerald-100 transition-all"
-          >
-            <Pencil size={14} /> 編集
-          </button>
+        {/* Header: 背景は白で横いっぱい、中身は max-w-2xl 中央寄せ、タイトル左寄せ */}
+        <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
+          <div className="max-w-2xl mx-auto px-5 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => router.back()} 
+                className="p-1 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="text-slate-600" />
+              </button>
+              <h1 className="font-black text-slate-800 text-lg">マイページ</h1>
+            </div>
+            <button
+              onClick={() => router.push("/driver/mypage/edit")}
+              className="bg-emerald-50 text-[#10B981] font-black px-4 py-1.5 rounded-full flex items-center gap-1 text-sm hover:bg-emerald-100 transition-all"
+            >
+              <Pencil size={14} /> 編集
+            </button>
+          </div>
         </header>
 
-        <main className="w-full flex-1 p-5 space-y-5 pb-10">
+        {/* Main Content: max-w-2xl で中央寄せ */}
+        <main className="w-full max-w-2xl p-5 space-y-5 pb-10 flex-1">
 
           {/* ===== プロフィール概要 ===== */}
           <section className="w-full bg-white rounded-3xl p-8 shadow-sm border border-slate-50 text-center">

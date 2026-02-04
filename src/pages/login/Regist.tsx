@@ -1,5 +1,5 @@
 // % Start(稗田隼也)
-// 新規登録画面: ファイル名保持機能を追加した完全版UI
+// 新規登録画面: 2xlワイドレイアウト・ファイル名保持機能版
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
@@ -110,7 +110,7 @@ export function RegistPage() {
         /* 背景色を全体に広げ、中央寄せにする */
         <div className="min-h-screen bg-gradient-to-b from-sky-200 to-white flex items-start justify-center p-4 font-sans text-gray-800">
             
-            {/* ★ サイズ変更：スマホ枠を外し、max-w-2xlに拡張。全体のスクロールを許容 */}
+            {/* コンテンツ幅を max-w-2xl に設定 */}
             <div className="w-full max-w-2xl flex flex-col relative py-8">
                 
                 {/* ヘッダーセクション */}
@@ -123,7 +123,7 @@ export function RegistPage() {
                     <h1 className="ml-4 text-blue-600 font-black text-xl">新規会員登録</h1>
                 </div>
 
-                {/* メインカード：幅を十分に確保 */}
+                {/* メインカード */}
                 <div className="bg-white rounded-[2.5rem] shadow-xl p-8 md:p-12 mb-6">
                     <h2 className="text-xl font-black text-gray-800 mb-1">会員情報入力</h2>
                     <p className="text-gray-400 text-xs mb-8 font-bold">すべての項目を入力してください</p>
@@ -240,5 +240,4 @@ export function RegistPage() {
 }
 
 export default RegistPage;
-
 // % End

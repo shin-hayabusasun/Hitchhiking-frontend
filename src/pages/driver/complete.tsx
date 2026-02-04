@@ -72,13 +72,18 @@ export function DriveCompletePage() {
     }
 
     return (
-        /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
-        <div className="min-h-screen bg-gray-50 flex justify-center w-full">
+        /* 背景を全幅に広げ、中央寄せを適用 */
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center w-full font-sans">
             
-            {/* ★ コンテンツを max-w-2xl に制限。デザイン・サイズは維持 */}
-            <div className="w-full max-w-2xl min-h-screen bg-gray-50 flex flex-col border-x border-gray-100">
-                
-                <TitleHeader title="ドライブ完了" backPath="/driver/manage" />
+            {/* Header: 背景は白で横いっぱい、中身は max-w-2xl */}
+            <header className="w-full bg-white sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+                <div className="max-w-2xl mx-auto">
+                    <TitleHeader title="ドライブ完了" backPath="/driver/manage" />
+                </div>
+            </header>
+
+            {/* Content Area: max-w-2xl に制限 */}
+            <div className="w-full max-w-2xl flex-1 flex flex-col bg-gray-50 border-x border-gray-100 relative">
                 
                 <main className="p-4 flex-1 overflow-y-auto pb-10">
                     <div className="bg-white p-5 rounded-[1.5rem] shadow-sm border border-gray-100">
@@ -101,6 +106,7 @@ export function DriveCompletePage() {
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
                                                     key={star}
+                                                    type="button"
                                                     onClick={() => updateRating(index, 'rating', star)}
                                                     className={`text-2xl transition-all duration-200 active:scale-125 ${
                                                         star <= passenger.rating

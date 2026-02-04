@@ -2,9 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { HitchhikerHeader } from '@/components/hitch_hiker/Header';
 import { SearchCard } from '@/components/hitch_hiker/SearchCard';
-import { SearchFilters } from "../_app";
+import { SearchFilters } from "../_app"; 
 import { getApiUrl } from '@/config/api';
-import { MapPin, Search, Filter, Plus, Loader2, Inbox } from 'lucide-react';
 
 type Props = {
   filter: SearchFilters;
@@ -32,14 +31,8 @@ type Drive = {
 
 export function SearchPage({ filter, setFilter }: Props) {
   if (!filter) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-        <div className="text-[12px] text-gray-400 font-bold">読み込み中...</div>
-      </div>
-    );
+    return <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">Loading...</div>;
   }
-
   const router = useRouter();
   const [drives, setDrives] = useState<Drive[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,118 +84,104 @@ export function SearchPage({ filter, setFilter }: Props) {
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
       <div className="w-full min-h-screen flex flex-col relative">
         
-        {/* ヘッダー */}
-        <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="max-w-2xl mx-auto w-full">
+        {/* Header: 背景白・全幅 / 中身 max-w-2xl */}
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-2xl mx-auto w-full px-4 py-1">
             <HitchhikerHeader title="同乗者として利用" />
-            
-            {/* タブ切り替え */}
-            <div className="flex px-4 py-2 gap-2 bg-white">
-              <button className="flex-1 py-2 text-xs font-black text-blue-600 bg-blue-50/50 rounded-lg">
-                募集検索
-              </button>
-              <button 
-                onClick={handleManagementClick} 
-                className="flex-1 py-2 text-xs font-black text-gray-400 hover:text-gray-500 transition-colors flex items-center justify-center gap-1.5"
-              >
-                募集管理
-                <span className="bg-gray-200 text-gray-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full font-black">1</span>
-              </button>
-            </div>
           </div>
-        </div>
+        </header>
 
-        <main className="flex-1 overflow-y-auto scrollbar-hide">
-          <div className="max-w-2xl mx-auto w-full p-4 space-y-4 pb-32">
-            
-            {/* 検索入力セクション */}
-            <div className="bg-white p-4 rounded-[1.5rem] shadow-sm border border-gray-100 space-y-3">
-              <div className="grid gap-2">
-                {/* 出発地 */}
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 w-4 h-4" />
-                  <input 
-                    type="text" 
-                    placeholder="出発地を入力" 
-                    className="w-full bg-gray-50 py-3 pl-10 pr-4 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/10 placeholder:text-gray-300"
-                    value={filter.departure}
-                    onChange={(e) => setFilter({ ...filter, departure: e.target.value })}
-                  />
-                </div>
+        {/* Main Content: max-w-2xl で中央寄せ */}
+        <main className="flex-1 max-w-2xl mx-auto w-full px-5 pt-4 pb-32">
+          
+          {/* タブ切り替え */}
+          <div className="flex py-4 gap-2">
+            <button className="flex-1 bg-white py-3 rounded-2xl shadow-sm border border-blue-100 text-blue-600 font-black text-sm">
+              募集検索
+            </button>
+            <button onClick={handleManagementClick} className="flex-1 bg-gray-200/50 py-3 rounded-2xl text-gray-500 font-bold text-sm flex items-center justify-center gap-2">
+              募集管理
+              <span className="bg-blue-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">1</span>
+            </button>
+          </div>
 
-                {/* 目的地 */}
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-400 w-4 h-4" />
-                  <input 
-                    type="text" 
-                    placeholder="目的地を入力" 
-                    className="w-full bg-gray-50 py-3 pl-10 pr-4 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/10 placeholder:text-gray-300"
-                    value={filter.destination}
-                    onChange={(e) => setFilter({ ...filter, destination: e.target.value })}
-                  />
-                </div>
+          {/* 検索入力セクション */}
+          <section className="mb-8">
+            <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-50 space-y-4">
+              {/* 出発地 */}
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="出発地を入力" 
+                  className="w-full bg-gray-50 py-4 pl-12 pr-4 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                  value={filter.departure}
+                  onChange={(e) => setFilter({ ...filter, departure: e.target.value })}
+                />
               </div>
 
-              <div className="flex gap-2">
+              {/* 目的地 */}
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                </span>
+                <input 
+                  type="text" 
+                  placeholder="目的地を入力" 
+                  className="w-full bg-gray-50 py-4 pl-12 pr-4 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all"
+                  value={filter.destination}
+                  onChange={(e) => setFilter({ ...filter, destination: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-1">
                 <button 
                   onClick={fetchRecruitments}
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-100 active:scale-95 transition-all"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-lg shadow-blue-200 transition-all active:scale-95"
                 >
-                  <Search className="w-3.5 h-3.5 stroke-[3px]" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                   検索する
                 </button>
-                <button 
-                  onClick={handleGofilter} 
-                  className="w-12 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-gray-400 shadow-sm hover:bg-gray-50 transition-colors"
-                >
-                  <Filter className="w-4 h-4" />
+                <button onClick={handleGofilter} className="w-16 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-gray-500 shadow-sm hover:bg-gray-50 transition-colors">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></svg>
                 </button>
               </div>
             </div>
+          </section>
 
-            {/* 検索結果リスト */}
-            <div className="space-y-4">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 space-y-3">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Searching...</p>
-                </div>
-              ) : error ? (
-                <div className="text-center py-10 text-red-400 text-xs font-bold">{error}</div>
-              ) : drives.length > 0 ? (
-                <div className="grid gap-4">
-                  {drives.map((drive) => (
-                    <SearchCard key={drive.id} {...drive} />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-24 space-y-4">
-                  <div className="w-16 h-16 bg-white rounded-[1.5rem] shadow-sm border border-gray-100 flex items-center justify-center text-gray-200">
-                    <Inbox className="w-8 h-8" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[13px] font-black text-gray-400">該当する募集が見つかりません</p>
-                    <p className="text-[9px] text-gray-300 font-bold uppercase tracking-widest mt-1">Try changing filters</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </main>
+          {/* 検索結果リスト */}
+          <section className="space-y-4">
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-gray-400 font-bold">読み込み中...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-20 px-6 bg-red-50 rounded-3xl text-red-500 font-bold">{error}</div>
+            ) : drives.length > 0 ? (
+              <div className="grid gap-4">
+                {drives.map((drive) => (
+                  <SearchCard key={drive.id} {...drive} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-gray-400 font-bold">
+                該当する募集が見つかりません
+              </div>
+            )}
+          </section>
 
-        {/* 下部固定ボタン */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 z-40">
-          <div className="max-w-2xl mx-auto w-full p-5">
-            <button 
-              onClick={handleCreateClick} 
-              className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-100 active:scale-95 transition-all"
-            >
-              <Plus className="w-4 h-4 stroke-[3px]" />
+          {/* 下部固定アクションエリア */}
+          <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl p-6 bg-gradient-to-t from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent z-40">
+            <button onClick={handleCreateClick} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-xl shadow-blue-200 flex items-center justify-center gap-2 active:scale-95 transition-all">
+              <span className="text-2xl leading-none">+</span>
               同乗者として募集を作成
             </button>
           </div>
-        </div>
 
+        </main>
       </div>
     </div>
   );

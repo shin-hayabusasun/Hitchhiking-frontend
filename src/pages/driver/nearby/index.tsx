@@ -100,110 +100,110 @@ export function DriverNearbyPage() {
 
     if (loading) {
         return (
-            <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-                <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col border-x border-gray-100">
-                    <div className="w-full bg-white/95 backdrop-blur-md shadow-sm p-4 flex items-center gap-3 border-b border-slate-100">
-                        <button onClick={() => router.push('/driver/drives')} className="text-slate-600 p-1 hover:bg-slate-50 rounded-full transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </button>
-                        {/* テキストカラーも調整が必要な場合はここも変更可能ですが、指示に基づきロゴ的な色は維持しています */}
-                        <h1 className="text-[#00B049] font-black text-lg">近くの募集</h1>
-                    </div>
-                    <div className="flex-1 flex flex-col items-center justify-center space-y-3">
-                        {/* スピナーの色を #00B049 に変更 */}
+            <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
+                <div className="w-full min-h-screen flex flex-col relative">
+                    <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+                        <div className="max-w-2xl mx-auto w-full px-4 py-1">
+                            <DriverHeader title="近くの募集" backPath="/driver/drives"/>
+                        </div>
+                    </header>
+                    <main className="flex-1 bg-white border-x border-gray-100 max-w-2xl mx-auto w-full flex flex-col items-center justify-center space-y-3">
                         <div className="animate-spin h-10 w-10 border-4 border-[#00B049] border-t-transparent rounded-full"></div>
-                        <p className="text-slate-400 font-bold text-sm animate-pulse">近くの募集を探しています...</p>
-                    </div>
+                        <p className="text-gray-400 font-bold text-sm animate-pulse">近くの募集を探しています...</p>
+                    </main>
                 </div>
             </div>
         );
     }
 
     return (
-        /* 背景を w-full で全幅に広げ、中央寄せを適用 */
-        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-            
-            {/* コンテンツを max-w-2xl に制限 */}
-            <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+        <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
+            <div className="w-full min-h-screen flex flex-col relative">
                 
-                {/* ヘッダー */}
-                <div className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-100">
-                    <DriverHeader title="近くの募集" backPath="/"/>
-                </div>
+                {/* Header: 背景白・全幅 / 中身 max-w-2xl */}
+                <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
+                    <div className="max-w-2xl mx-auto w-full px-4 py-1">
+                        <DriverHeader title="近くの募集" backPath="/"/>
+                    </div>
+                </header>
 
-                <main className="w-full flex-1 p-5 pb-32">
-                    {/* タブメニュー */}
-                    <div className="w-full grid grid-cols-4 gap-1 bg-slate-200/50 p-1 rounded-2xl mb-8 backdrop-blur-sm border border-white/50">
-                        {tabs.map((tab) => {
-                            const isActive = currentPath === tab.path;
-                            return (
-                                <button
-                                    key={tab.path}
-                                    type="button"
-                                    className={`py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${
-                                        isActive 
-                                        ? 'bg-white text-slate-800 shadow-md transform scale-[1.02]' 
-                                        : 'text-slate-500 hover:text-slate-700 hover:bg-white/30'
-                                    }`}
-                                    onClick={() => router.push(tab.path)}
-                                >
-                                    {tab.name}
-                                </button>
-                            );
-                        })}
+                {/* Main Content: max-w-2xl / 白ベタ塗り / 両端ボーダー */}
+                <main className="flex-1 overflow-y-auto bg-[#F8FAFC] max-w-2xl mx-auto w-full min-h-screen relative">
+                    <div className="p-5 space-y-4 pb-32">
+                        
+                        {/* 統一タブメニュー */}
+                        <div className="w-full grid grid-cols-4 gap-1 bg-gray-100/80 p-1 rounded-2xl mb-8 border border-gray-200/50">
+                            {tabs.map((tab) => {
+                                const isActive = currentPath === tab.path;
+                                return (
+                                    <button
+                                        key={tab.path}
+                                        type="button"
+                                        className={`py-3 text-[11px] font-black rounded-xl transition-all duration-300 ${
+                                            isActive 
+                                            ? 'bg-white text-gray-800 shadow-sm transform scale-[1.02]' 
+                                            : 'text-gray-400 hover:text-gray-600'
+                                        }`}
+                                        onClick={() => router.push(tab.path)}
+                                    >
+                                        {tab.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {error && (
+                            <div className="w-full bg-red-50 border border-red-100 p-4 rounded-2xl mb-6">
+                                <p className="text-red-500 text-center text-sm font-bold">{error}</p>
+                            </div>
+                        )}
+
+                        {!loading && !error && (
+                            <div className="space-y-4 pt-2">
+                                {requests.length > 0 ? (
+                                    requests.map((request) => (
+                                        <RecruitmentCard
+                                            key={request.id}
+                                            id={request.id.toString()}
+                                            passengerName={request.passengerName}
+                                            rating={request.rating}
+                                            reviewCount={request.reviewCount}
+                                            departure={request.departure}
+                                            destination={request.destination}
+                                            date={request.date}
+                                            budget={request.budget}
+                                            distance={request.distance}
+                                            matchingScore={request.matchingScore}
+                                            startsIn={request.startsIn}
+                                            onClick={() => router.push(`/driver/search/${request.id}`)}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="w-full bg-gray-50 rounded-[2rem] py-20 px-6 text-center border border-gray-100">
+                                        <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                            <Plus className="text-gray-300 rotate-45" size={32} />
+                                        </div>
+                                        <p className="text-gray-600 font-black text-base">条件に合う募集はありません</p>
+                                        <p className="text-gray-400 text-xs mt-2 font-bold leading-relaxed">
+                                            10km以内・2時間以内の<br />新しい募集をお待ちください
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    {error && (
-                        <div className="w-full bg-red-50 border border-red-100 p-4 rounded-2xl mb-6">
-                            <p className="text-red-500 text-center text-sm font-bold">{error}</p>
-                        </div>
-                    )}
-
-                    {!loading && !error && (
-                        <div className="w-full space-y-5">
-                            {requests.length > 0 ? (
-                                requests.map((request) => (
-                                    <RecruitmentCard
-                                        key={request.id}
-                                        id={request.id.toString()}
-                                        passengerName={request.passengerName}
-                                        rating={request.rating}
-                                        reviewCount={request.reviewCount}
-                                        departure={request.departure}
-                                        destination={request.destination}
-                                        date={request.date}
-                                        budget={request.budget}
-                                        distance={request.distance}
-                                        matchingScore={request.matchingScore}
-                                        startsIn={request.startsIn}
-                                        onClick={() => router.push(`/driver/search/${request.id}`)}
-                                    />
-                                ))
-                            ) : (
-                                <div className="w-full bg-white/60 backdrop-blur-sm rounded-3xl py-20 px-6 text-center border border-white/80 shadow-sm">
-                                    <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Plus className="text-slate-300 rotate-45" size={32} />
-                                    </div>
-                                    <p className="text-slate-600 font-black text-base">条件に合う募集はありません</p>
-                                    <p className="text-slate-400 text-xs mt-2 font-bold leading-relaxed">
-                                        10km以内・2時間以内の<br />新しい募集をお待ちください
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    {/* 下部固定ボタンエリア：デザイン維持 */}
+                    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl p-5 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
+                        <button
+                            type="button"
+                            className="w-full py-4 bg-[#00B049] hover:bg-[#009940] text-white rounded-2xl font-black shadow-xl shadow-emerald-100/50 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            onClick={handleCreateClick}
+                        >
+                            <Plus size={22} strokeWidth={3} /> ドライブを作成
+                        </button>
+                    </div>
                 </main>
-                
-                {/* フローティングボタンエリア：色を #00B049 に更新 */}
-                <div className="sticky bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-white via-white/95 to-transparent z-30">
-                    <button
-                        type="button"
-                        className="w-full py-4 bg-[#00B049] hover:bg-[#009940] text-white rounded-2xl font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        onClick={handleCreateClick}
-                    >
-                        <Plus size={22} strokeWidth={3} /> ドライブを作成
-                    </button>
-                </div>
             </div>
         </div>
     );

@@ -227,20 +227,21 @@ export default function RequestDetailPage() {
     const { request, passenger, matchingScore } = data;
 
     return (
-        /* ★ 背景を w-full で全幅に広げ、中央寄せを適用 */
-        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-            
-            {/* ★ コンテンツを max-w-2xl に制限。デザインを維持 */}
-            <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative border-x border-gray-100">
+        <div className="min-h-screen bg-gray-50 font-sans">
+            {/* 全体の背景コンテナ */}
+            <div className="w-full flex flex-col items-center bg-gradient-to-b from-sky-200 to-white min-h-screen">
                 
-                {/* ヘッダー */}
-                <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm w-full">
-                    <DriverHeader title="募集詳細" showMyPage={false} showNotification={false}/>
-                </div>
+                {/* Header: 背景は全幅、中身は中央寄せ */}
+                <header className="w-full bg-white sticky top-0 z-50 shadow-sm">
+                    <div className="max-w-2xl mx-auto px-4 py-1">
+                        <DriverHeader title="募集詳細" showMyPage={false} showNotification={false}/>
+                    </div>
+                </header>
 
-                <main className="w-full flex-1 p-5 space-y-6 pb-32 overflow-y-auto">
+                {/* Main Content: max-w-2xl に制限 */}
+                <main className="w-full max-w-2xl p-5 space-y-6 pb-32 flex-1 bg-white/40 backdrop-blur-sm shadow-xl border-x border-gray-100 relative">
                     
-                    {/* マッチング度（デザイン維持） */}
+                    {/* マッチング度 */}
                     {matchingScore !== undefined && (
                         <div className="w-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl p-5 text-white text-center shadow-lg shadow-green-100">
                             <div className="flex items-center justify-center gap-2 mb-1">
@@ -320,7 +321,7 @@ export default function RequestDetailPage() {
                             </div>
                         </div>
                         
-                        {/* 地図表示（z-indexを考慮し、max-w-2xl内で正しく表示） */}
+                        {/* 地図表示 */}
                         <div className="mt-6 h-80 bg-gray-50 rounded-2xl overflow-hidden relative border border-gray-100 shadow-inner z-0 w-full">
                             {markers.length > 0 ? (
                                 <div className="h-full w-full relative z-0">
@@ -364,28 +365,28 @@ export default function RequestDetailPage() {
                             </div>
                         </div>
                     </div>
-                </main>
 
-                {/* 固定アクションボタン（stickyでmax-w-2xl内に配置） */}
-                <div className="sticky bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-50">
-                    <button 
-                        onClick={handleRespond}
-                        disabled={processing}
-                        className={`w-full py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] ${
-                            processing 
-                            ? 'bg-gray-400 text-white cursor-not-allowed' 
-                            : 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
-                        }`}
-                    >
-                        {processing ? (
-                            '処理中...'
-                        ) : (
-                            <>
-                                <Check size={20} strokeWidth={3} /> この同乗を受け入れる
-                            </>
-                        )}
-                    </button>
-                </div>
+                    {/* 固定アクションボタン: コンテンツ幅に固定 */}
+                    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-50">
+                        <button 
+                            onClick={handleRespond}
+                            disabled={processing}
+                            className={`w-full py-4 rounded-2xl font-black flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] ${
+                                processing 
+                                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                                : 'bg-green-600 hover:bg-green-700 text-white shadow-green-200'
+                            }`}
+                        >
+                            {processing ? (
+                                '処理中...'
+                            ) : (
+                                <>
+                                    <Check size={20} strokeWidth={3} /> この同乗を受け入れる
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </main>
             </div>
         </div>
     );

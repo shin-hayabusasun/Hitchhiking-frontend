@@ -1,11 +1,9 @@
-// src/pages/admin/stocks.tsx
 import { useState, useEffect } from 'react';
 import { TitleHeader } from '@/components/TitleHeader';
 import { StockStatsCard } from '@/components/admin/stock/StockStatsCard';
 import { StockItemCard } from '@/components/admin/stock/StockItemCard';
 import { Product, StockStats } from '@/types';
 import { getApiUrl } from '@/config/api';
-import { Loader2, PackageSearch } from 'lucide-react'; // アイコン追加
 
 const ALERT_THRESHOLD = 20; // 警告値
 
@@ -87,76 +85,72 @@ export function StockManagementPage() {
 
     if (loading) {
         return (
-            // 【修正後】ローディング画面を他の画面と統一
-            <div className="min-h-screen bg-sky-100 flex flex-col items-center justify-center space-y-4">
-                <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-                <p className="text-blue-600 font-bold">在庫データを照合中...</p>
+            <div className="min-h-screen bg-sky-50 flex items-center justify-center">
+                <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-white">
-            {/* 【修正後】角丸を削除し、全画面に青のグラデーションを適用 */}
-            <div className="w-full min-h-screen flex flex-col font-sans relative bg-gradient-to-b from-sky-200 to-white overflow-y-auto">
-                
-                {/* ヘッダー：透過デザインで統一 */}
-                <div className="bg-white/50 backdrop-blur-md sticky top-0 z-20 border-b border-white/20">
+        /* ★ 背景は画面一杯（wide）、角丸・外枠なし */
+        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center font-sans">
+            
+            {/* ★ ヘッダー：白背景は横いっぱい、中身は max-w-2xl */}
+            <header className="w-full bg-white/60 backdrop-blur-md sticky top-0 z-30 shadow-sm border-none">
+                <div className="max-w-2xl mx-auto">
                     <TitleHeader title="在庫管理" backPath="/admin/dashboard" />
                 </div>
+            </header>
 
-                <div className="flex-1 p-5 pb-24 max-w-4xl mx-auto w-full">
-                    {error && (
-                        <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-bold flex items-center shadow-sm">
-                            <span className="mr-2">⚠️</span>
-                            {error}
-                        </div>
-                    )}
-
-                    {/* 統計カードセクション */}
-                    <div className="mb-8">
-                        {stats && <StockStatsCard stats={stats} />}
+            {/* ★ メインコンテンツ：max-w-2xl で中央寄せ */}
+            <main className="w-full max-w-2xl flex flex-col p-5">
+                {error && (
+                    <div className="bg-red-50 border-none text-red-600 px-4 py-4 rounded-2xl mb-6 text-sm font-bold text-center shadow-sm">
+                        {error}
                     </div>
+                )}
 
-                    {/* リストヘッダー */}
-                    <div className="mb-6 flex items-end justify-between px-1">
-                        <div>
-                            <h3 className="text-lg font-black text-gray-800 leading-none">商品在庫一覧</h3>
-                            <p className="text-[10px] text-gray-500 font-bold mt-1 uppercase tracking-wider">Product Inventory</p>
-                        </div>
-                        <span className="text-[11px] font-black text-orange-600 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-full shadow-sm">
-                            警告閾値: {ALERT_THRESHOLD}個未満
-                        </span>
-                    </div>
+                {/* 統計パネル */}
+                <section className="mb-6">
+                    {stats && <StockStatsCard stats={stats} />}
+                </section>
 
-                    {/* メインリスト */}
-                    {products.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4 bg-white/30 rounded-[2rem] border border-dashed border-white/50">
-                            <PackageSearch className="w-12 h-12 opacity-30" />
-                            <p className="text-sm font-bold opacity-70">管理対象の商品がありません</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-4">
-                            {products.map((product) => (
-                                <StockItemCard
-                                    key={product.id}
-                                    product={product}
-                                    alertThreshold={ALERT_THRESHOLD}
-                                    isReplenishing={replenishId === product.id}
-                                    replenishAmount={replenishAmount}
-                                    onStartReplenish={setReplenishId}
-                                    onCancelReplenish={() => {
-                                        setReplenishId(null);
-                                        setReplenishAmount('');
-                                    }}
-                                    onConfirmReplenish={handleReplenishConfirm}
-                                    onAmountChange={setReplenishAmount}
-                                />
-                            ))}
-                        </div>
-                    )}
+                <div className="mb-4 flex items-center justify-between">
+                    <h3 className="font-black text-gray-700 tracking-tight">商品在庫一覧</h3>
+                    <span className="text-[10px] font-black text-gray-500 bg-white/80 px-3 py-1 rounded-full shadow-sm border border-white/50">
+                        閾値: {ALERT_THRESHOLD}個未満
+                    </span>
                 </div>
-            </div>
+
+                {products.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-4">
+                        <div className="w-20 h-20 bg-white/50 rounded-full flex items-center justify-center text-3xl grayscale opacity-50 shadow-sm">📦</div>
+                        <p className="text-sm font-black tracking-wider uppercase">No Products Found</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {products.map((product) => (
+                            <StockItemCard
+                                key={product.id}
+                                product={product}
+                                alertThreshold={ALERT_THRESHOLD}
+                                isReplenishing={replenishId === product.id}
+                                replenishAmount={replenishAmount}
+                                onStartReplenish={setReplenishId}
+                                onCancelReplenish={() => {
+                                    setReplenishId(null);
+                                    setReplenishAmount('');
+                                }}
+                                onConfirmReplenish={handleReplenishConfirm}
+                                onAmountChange={setReplenishAmount}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* フッター余白 */}
+                <div className="h-20" />
+            </main>
         </div>
     );
 }

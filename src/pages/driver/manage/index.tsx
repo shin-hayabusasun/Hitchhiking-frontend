@@ -1,3 +1,6 @@
+// % Start(AI Assistant)
+// ドライブ管理画面（予定中、進行中、完了のタブ切り替え）
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DriverHeader } from '@/components/driver/DriverHeader';
@@ -93,22 +96,23 @@ export function DriveManagePage() {
     }
 
     return (
-        /* ★ 背景を w-full で画面一杯に広げ、中央寄せを適用 */
-        <div className="w-full min-h-screen bg-gradient-to-b from-sky-200 to-white flex flex-col items-center">
-            
-            {/* ★ コンテンツを max-w-2xl に制限。既存のシャドウと背景色を維持 */}
-            <div className="w-full max-w-2xl min-h-screen bg-white shadow-2xl flex flex-col relative overflow-y-auto border-x border-gray-100">
+        /* 全体背景：指定の 2xl コンテンツ幅に合わせつつ、背景は広げる */
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+            <div className="w-full flex flex-col items-center">
                 
-                {/* ヘッダー（そのまま維持） */}
-                <div className="w-full sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-100">
-                    <DriverHeader />
-                </div>
+                {/* ヘッダー：白背景は横いっぱい、内部のみ max-w-2xl で中央寄せ */}
+                <header className="w-full bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
+                    <div className="max-w-2xl mx-auto w-full px-4 py-1">
+                        <DriverHeader title="ドライブ管理" backPath="/driver/drives" />
+                    </div>
+                </header>
 
-                <main className="w-full flex-1 p-5 pb-10">
+                {/* メインコンテンツ：max-w-2xl で中央寄せ、デザイン・サイズは維持 */}
+                <main className="w-full max-w-2xl p-5 pb-10 flex-1">
                     <h2 className="text-xl font-extrabold mb-6 text-center text-[#10B981]">ドライブ管理</h2>
 
-                    {/* タブ切り替え（デザイン・サイズを維持） */}
-                    <div className="w-full mb-6 flex justify-center space-x-2 bg-white/50 p-1 rounded-2xl backdrop-blur-sm shadow-sm border border-slate-100">
+                    {/* タブ切り替え */}
+                    <div className="w-full mb-6 flex justify-center space-x-2 bg-white/80 p-1 rounded-2xl shadow-sm border border-slate-100">
                         <button
                             onClick={() => setActiveTab('scheduled')}
                             className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${
@@ -142,11 +146,11 @@ export function DriveManagePage() {
                     </div>
 
                     {loading ? (
-                        <div className="w-full flex justify-center py-20 text-emerald-500 font-bold">読み込み中...</div>
+                        <div className="w-full flex justify-center py-20 text-[#10B981] font-bold">読み込み中...</div>
                     ) : error ? (
                         <div className="w-full text-center text-red-500 font-bold">{error}</div>
                     ) : drives.length === 0 ? (
-                        <div className="w-full text-center py-20 text-slate-500 bg-white/50 rounded-3xl">
+                        <div className="w-full text-center py-20 text-slate-500 bg-white rounded-3xl border border-slate-100 shadow-sm">
                             <p className="font-bold">
                                 {activeTab === 'scheduled' && '予定中のドライブはありません'}
                                 {activeTab === 'active' && '進行中のドライブはありません'}
@@ -154,10 +158,9 @@ export function DriveManagePage() {
                             </p>
                         </div>
                     ) : (
-                        /* ★ カードリスト：max-w-2xl 内で最適な grid 配置を維持 */
                         <div className="w-full grid grid-cols-1 gap-5">
                             {drives.map((drive) => (
-                                <div key={drive.id} className="w-full bg-white rounded-3xl shadow-sm border border-slate-50 p-6 flex flex-col transition-all hover:shadow-md">
+                                <div key={drive.id} className="w-full bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col transition-all hover:shadow-md">
                                     <h3 className="font-black text-lg mb-2 text-slate-800">
                                         {drive.departure} → {drive.destination}
                                     </h3>
@@ -227,3 +230,5 @@ export function DriveManagePage() {
 }
 
 export default DriveManagePage;
+
+// % End
