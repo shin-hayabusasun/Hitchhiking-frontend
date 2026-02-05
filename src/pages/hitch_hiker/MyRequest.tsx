@@ -1,16 +1,17 @@
-// % Start(AI Assistant)
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { MyRequestHeader } from '@/components/hitch_hiker/MyRequestHeader';
 import { MyRequestCard } from '@/components/hitch_hiker/MyRequestCard';
 import { getApiUrl } from '@/config/api';
 import { Loader2, FolderOpen } from 'lucide-react';
 
 const MyRequest = () => {
+  const router = useRouter();
   const [tab, setTab] = useState<'requesting' | 'approved' | 'completed'>('requesting');
   const [allData, setAllData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // --- APIからリクエスト一覧を取得 (ロジック変更なし) ---
+  // --- APIからリクエスト一覧を取得 ---
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -37,7 +38,7 @@ const MyRequest = () => {
     fetchRequests();
   }, []);
 
-  // --- 申請の取り消し処理 (ロジック変更なし) ---
+  // --- 申請の取り消し処理 ---
   const handleCancel = async (id: number) => {
     if (!confirm("このリクエストを取り消しますか？")) return;
 
@@ -60,6 +61,12 @@ const MyRequest = () => {
     }
   };
 
+  // --- 詳細ページへの遷移処理 (パスを修正) ---
+  const handleViewDetail = (id: number) => {
+    // ファイル名 [id].tsx に合わせた正しいルーティングパス
+    router.push(`/hitch_hiker_DriveDetail/${id}`);
+  };
+
   // 表示するタブのデータを抽出
   const displayRequests = allData ? allData[tab] : [];
 
@@ -75,10 +82,7 @@ const MyRequest = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-gray-800">
       
-      {/* ヘッダー部分: 
-        MyRequestHeader コンポーネント側で「背景白・横いっぱい」
-        「中身 max-w-2xl」の構造が維持されるようラップしています。
-      */}
+      {/* ヘッダー部分: 背景白・横いっぱい、中身 max-w-2xl */}
       <header className="w-full bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
         <div className="max-w-2xl mx-auto">
           <MyRequestHeader currentTab={tab} onTabChange={setTab} />
@@ -95,6 +99,7 @@ const MyRequest = () => {
                 item={item} 
                 tab={tab} 
                 onCancel={handleCancel} 
+                onViewDetail={() => handleViewDetail(item.id)} // ここに関数を追加
               />
             ))
           ) : (

@@ -71,7 +71,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                     }
                     
                     const driverDestinationLat = driveData.destinationLatitude || driveData.destination_latitude || driveData.destinationLat;
-                    const driverDestinationLng = driveData.destinationLongitude || driveData.destination_longitude || driveData.destinationLng;
+                    const driverDestinationLng = driveData.destinationLongitude || driveData.destination_longitude || driverDestinationLng;
                     
                     if (driverDestinationLat && driverDestinationLng) {
                         newMarkers.push({
@@ -143,18 +143,18 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-100 font-bold text-gray-400">Loading...</div>;
-    if (!drive) return <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">Data not found.</div>;
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 font-bold text-gray-400">Loading...</div>;
+    if (!drive) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Data not found.</div>;
 
     return (
         <div className="min-h-screen bg-[#F3F4F6] font-sans pb-32">
-            {/* ヘッダー: 白背景は横いっぱい、コンテンツは中央寄せ */}
+            {/* ヘッダー: 白背景は横いっぱい、中身は max-w-2xl */}
             <header className="w-full bg-white border-b sticky top-0 z-50 shadow-sm">
                 <div className="max-w-2xl mx-auto px-4 py-4 flex items-center">
-                    <button onClick={() => router.back()} className="mr-3 p-1">
+                    <button onClick={() => router.back()} className="mr-3 p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </button>
-                    <h1 className="text-base font-bold text-gray-800">ドライブ詳細</h1>
+                    <h1 className="text-base font-black text-gray-800 tracking-tight">ドライブ詳細</h1>
                 </div>
             </header>
 
@@ -170,14 +170,14 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                 <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Driver</p>
                     <div className="flex items-start space-x-3">
-                        <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 text-xl font-bold border border-blue-100 shadow-sm">
+                        <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold border border-gray-100 shadow-sm">
                             {drive.driverName?.[0] || 'D'}
                         </div>
                         <div className="flex-1">
                             <div className="flex items-center space-x-2">
                                 <h2 className="text-base font-bold text-gray-800">{drive.driverName || 'ドライバー'}</h2>
                                 {drive.isVerified && (
-                                    <span className="bg-green-50 text-green-600 text-[9px] px-2 py-0.5 rounded-full flex items-center font-bold border border-green-100">
+                                    <span className="bg-blue-50 text-blue-600 text-[9px] px-2 py-0.5 rounded-full flex items-center font-bold border border-blue-100">
                                         <ShieldCheck className="w-3 h-3 mr-0.5" /> 認証済
                                     </span>
                                 )}
@@ -193,7 +193,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                             </div>
                             
                             {(drive.driverProfile?.bio || drive.message || drive.driverMessage) && (
-                                <div className="mt-3 bg-blue-50 rounded-xl p-3 border border-blue-100">
+                                <div className="mt-3 bg-gray-50 rounded-xl p-3 border border-gray-100">
                                     <p className="text-[11px] text-gray-700 leading-relaxed whitespace-pre-wrap">
                                         {drive.driverProfile?.bio || drive.message || drive.driverMessage}
                                     </p>
@@ -201,8 +201,12 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                             )}
                         </div>
                     </div>
-                    <button className="w-full py-2 rounded-xl border border-gray-100 text-[11px] font-bold text-gray-600 flex items-center justify-center space-x-1 hover:bg-gray-50 transition-colors">
-                        <MessageCircle className="w-4 h-4" /> <span>メッセージ</span>
+                    {/* メッセージボタン */}
+                    <button 
+                        onClick={() => router.push(`/chat/${id}`)}
+                        className="w-full py-2.5 rounded-xl border border-gray-100 text-[11px] font-black text-gray-600 flex items-center justify-center space-x-1 hover:bg-gray-50 transition-all active:scale-[0.98]"
+                    >
+                        <MessageCircle className="w-4 h-4 text-blue-600" /> <span>メッセージを送る</span>
                     </button>
                 </div>
 
@@ -211,7 +215,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                     <div className="relative pl-6 space-y-6">
                         <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-50"></div>
                         <div className="relative">
-                            <div className="absolute -left-[20px] top-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                            <div className="absolute -left-[20px] top-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm"></div>
                             <p className="text-[9px] text-gray-400 font-bold">出発地</p>
                             <p className="text-sm font-bold text-gray-800">{drive.departure}</p>
                         </div>
@@ -235,27 +239,6 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                             </div>
                         )}
                     </div>
-                    
-                    {markers.length > 0 && (
-                        <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
-                                <span className="text-gray-600">ドライバー出発</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
-                                <span className="text-gray-600">ドライバー目的地</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm"></div>
-                                <span className="text-gray-600">あなたの出発</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-purple-500 border-2 border-white shadow-sm"></div>
-                                <span className="text-gray-600">あなたの目的地</span>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
@@ -274,10 +257,12 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                     </div>
                     <div className="flex items-center justify-between pb-3 border-b border-gray-50 text-xs">
                         <div className="flex items-center space-x-3 text-gray-500 font-bold uppercase tracking-tighter"><DollarSign className="w-4 h-4 text-gray-300" /><span>Fee</span></div>
-                        <span className="font-bold text-green-600 font-mono">¥{drive.fee} /人</span>
+                        <span className="font-bold text-blue-600 font-mono">¥{drive.fee} /人</span>
                     </div>
                     <div className="flex items-center space-x-3">
-                        <Car className="w-4 h-4 text-gray-300" />
+                        <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                            <Car className="w-4 h-4 text-gray-400" />
+                        </div>
                         <div className="flex-1">
                             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">Vehicle</p>
                             <p className="text-xs font-bold text-gray-800">{drive.vehicle.model}</p>
@@ -308,7 +293,7 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                         <div className="grid grid-cols-2 gap-3">
                             {drive.vehicleRules.noSmoking !== undefined && (
                                 <div className="flex items-center gap-2 text-xs">
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${drive.vehicleRules.noSmoking ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${drive.vehicleRules.noSmoking ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
                                         {drive.vehicleRules.noSmoking ? '✓' : '✗'}
                                     </div>
                                     <span className="text-gray-700">禁煙</span>
@@ -316,26 +301,10 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                             )}
                             {drive.vehicleRules.petAllowed !== undefined && (
                                 <div className="flex items-center gap-2 text-xs">
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${drive.vehicleRules.petAllowed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${drive.vehicleRules.petAllowed ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
                                         {drive.vehicleRules.petAllowed ? '✓' : '✗'}
                                     </div>
                                     <span className="text-gray-700">ペット可</span>
-                                </div>
-                            )}
-                            {drive.vehicleRules.musicAllowed !== undefined && (
-                                <div className="flex items-center gap-2 text-xs">
-                                    <div className={`w-5 h-5 rounded-full flex items-center justify-center ${drive.vehicleRules.musicAllowed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                                        {drive.vehicleRules.musicAllowed ? '✓' : '✗'}
-                                    </div>
-                                    <span className="text-gray-700">音楽</span>
-                                </div>
-                            )}
-                            {drive.vehicleRules.conversation && (
-                                <div className="col-span-2 flex items-center gap-2 text-xs">
-                                    <div className="w-5 h-5 rounded-full flex items-center justify-center bg-blue-100 text-blue-600">
-                                        💬
-                                    </div>
-                                    <span className="text-gray-700">{drive.vehicleRules.conversation}</span>
                                 </div>
                             )}
                         </div>
@@ -343,17 +312,17 @@ export default function DriveDetailPage({ filter }: DriveDetailPageProps) {
                 )}
             </main>
 
-            {/* フッターアクション: 背景は横いっぱい、中身は中央寄せ */}
+            {/* フッターアクション */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                 <div className="max-w-2xl mx-auto px-6 py-5 flex items-center justify-between">
                     <div>
                         <p className="text-[9px] text-gray-400 font-bold uppercase">Total Price</p>
-                        <p className="text-lg font-black text-green-600">¥{drive.fee}</p>
+                        <p className="text-lg font-black text-blue-600">¥{drive.fee}</p>
                     </div>
                     <button 
                         onClick={handleApply}
                         disabled={applying}
-                        className="bg-blue-600 text-white px-10 py-3 rounded-xl font-black shadow-lg shadow-blue-100 active:scale-95 transition-transform disabled:bg-gray-400"
+                        className="text-white px-10 py-3 rounded-xl font-black shadow-lg shadow-blue-600/20 active:scale-95 transition-all disabled:bg-gray-300 bg-blue-600"
                     >
                         {applying ? '送信中...' : '申請する'}
                     </button>
